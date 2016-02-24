@@ -64,14 +64,14 @@ public static void main(String[] args)
         } while (basicTask.getEnvironment().getEvaluationInfo().marioStatus != Environment.MARIO_STATUS_WIN);
     }
     Runtime rt = Runtime.getRuntime();
-    try
-    {
-//            Process proc = rt.exec("/usr/local/bin/mate " + marioTraceFileName);
-        Process proc = rt.exec("python hello.py");
-    } catch (IOException e)
-    {
-        e.printStackTrace();
-    }
+//    try
+//    {
+////            Process proc = rt.exec("/usr/local/bin/mate " + marioTraceFileName);
+//        Process proc = rt.exec("python hello.py");
+//    } catch (IOException e)
+//    {
+//        e.printStackTrace();
+//    }
     System.exit(0);
 
 }
