@@ -46,7 +46,7 @@ import java.util.List;
 public class HumanKeyboardAgent extends KeyAdapter implements Agent
 {
 List<boolean[]> history = new ArrayList<boolean[]>();
-private boolean[] Action = null;
+protected boolean[] Action = null;
 private String Name = "HumanKeyboardAgent";
 
 /*final*/
@@ -148,7 +148,7 @@ public void keyReleased(KeyEvent e)
 }
 
 
-private void toggleKey(int keyCode, boolean isPressed)
+protected void toggleKey(int keyCode, boolean isPressed)
 {
     switch (keyCode)
     {

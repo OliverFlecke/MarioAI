@@ -15,12 +15,17 @@ public class Agent01 extends BasicMarioAIAgent implements Agent {
 	public void reset()
 	{
 	    action = new boolean[Environment.numberOfKeys];
+
 	}
 	
 	public boolean[] getAction()
 	{
-		reset();
-		if (isMarioAbleToJump)
+		action[Mario.KEY_RIGHT] = true;
+//		action[Mario.KEY_SPEED] = true;
+		
+		System.out.println(marioEgoCol + " " + marioEgoRow);
+		
+		if (isMarioAbleToJump || (!isMarioOnGround && action[Mario.KEY_JUMP]))
 			action[Mario.KEY_JUMP] = true;
 		else 
 			action[Mario.KEY_JUMP] = false;
