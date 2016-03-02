@@ -23,8 +23,20 @@ public class HumanTestAgent extends HumanKeyboardAgent implements Agent {
 	
 	public boolean[] getAction()
 	{
-		marioPos[0] = ((int) marioFloatPos[0]);
+//		marioPos[0] = ((int) marioFloatPos[0] / 16);
+//		marioPos[1] = ((int) marioFloatPos[1] / 16);
+		byte lv = getField(1, 0);
+		
+		if (lv != 0)
+		{			
+//			System.out.println(lv);//+ " X: " + marioPos[0] + " Y: " + marioPos[1]);
+		}
 		return action;
+	}
+	
+	private byte getField(int x, int y)
+	{
+		return levelScene[9 + y][9 + x];
 	}
 	
 	public void keyPressed(KeyEvent e)
@@ -80,7 +92,8 @@ public class HumanTestAgent extends HumanKeyboardAgent implements Agent {
 
 	
 	private void printMarioPos() {
-		System.out.println("X: " + marioFloatPos[0] + " Y: " + marioFloatPos[1]);
+//		System.out.println("X: " + marioFloatPos[0] + " Y: " + marioFloatPos[1]);
+		System.out.println("X: " + marioPos[0] + " Y: " + marioPos[1]);
 	}
 
 	private void printMarioDetails() {
@@ -100,9 +113,19 @@ public class HumanTestAgent extends HumanKeyboardAgent implements Agent {
 
 	private void printLevelData()
 	{
-		for (int i = 0; i < levelScene.length; i++) {
-			for (int j = 0; j < levelScene[0].length; j++) {
-				System.out.format("%3d ", levelScene[i][j]);
+		for (int x = 0; x < levelScene.length; x++) {
+			for (int y = 0; y < levelScene[0].length; y++) {
+				System.out.format("%3d ", levelScene[x][y]);
+			}
+			System.out.println();
+		}
+		System.out.println("-----------------------");
+		for (int x = 0; x < levelScene.length; x++)
+		{
+			for (int y = 0; y < levelScene[0].length; y++)
+			{
+				if (levelScene[x][y] != 0)
+					System.out.print(x + ":" + y + "\t");
 			}
 			System.out.println();
 		}
