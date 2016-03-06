@@ -72,6 +72,7 @@ public class Agent01 extends BasicMarioAIAgent implements Agent {
 	
 	private byte getField(int x, int y)
 	{
-		return levelScene[marioEgoCol + y][marioEgoRow + x];
+//		return levelScene[marioEgoCol + y][marioEgoRow + x];
+		return mergedObservation[marioEgoCol + y][marioEgoRow + x];
 	}
 }
