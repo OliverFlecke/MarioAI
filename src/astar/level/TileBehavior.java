@@ -11,7 +11,7 @@ public class TileBehavior {
 	
 	public TileBehavior() throws IOException{
 		
-		loadBehaviors(new DataInputStream(TileBehavior.class.getResourceAsStream("/tiles.dat")));
+		loadBehaviors(new DataInputStream(TileBehavior.class.getResourceAsStream("tiles.dat")));
 
 	}
 

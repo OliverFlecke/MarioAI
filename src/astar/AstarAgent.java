@@ -1,51 +1,102 @@
 package astar;
 
+import astar.level.Level;
 import ch.idsia.agents.Agent;
+import ch.idsia.agents.controllers.BasicMarioAIAgent;
+import ch.idsia.benchmark.mario.engine.sprites.Mario;
 import ch.idsia.benchmark.mario.environments.Environment;
 
-public class AstarAgent implements Agent {
+public class AstarAgent extends BasicMarioAIAgent implements Agent {
 
-	private String name = "Astar Agent";
-	private boolean[] action = new boolean[Environment.numberOfKeys];
+	private int[] marioPos = new int[2];
 	
-	@Override
-	public boolean[] getAction() {
-		// TODO Auto-generated method stub
-		return null;
+	// To specify jump height
+	int jumpCounter = 0;
+	int jumpRotation = 0;
+	
+	
+	public AstarAgent() 
+	{
+		super("Agent01");
 	}
 
-	@Override
-	public void integrateObservation(Environment environment) {
-		// TODO Auto-generated method stub
+	public void reset()
+	{
+	    action = new boolean[Environment.numberOfKeys];
 
 	}
+	
+	public boolean[] getAction()
+	{
+		action[Mario.KEY_RIGHT] = true;
 
-	@Override
-	public void giveIntermediateReward(float intermediateReward) {
-		// TODO Auto-generated method stub
-
+		// Jump logic
+		boolean jump = false;
+//		jump = (getField(1, 0) != 0) || (getField(2, 0) != 0); 
+		int jumpHeight = (jump = (getField(1, 0) != 0) && (getField(1, -1) == 0)) ? 1 : 6;
+		if (!jump) 
+		{
+			jump = getField(1, 0) != 0 && getField(1, -1) != 0;
+		}
+		
+		// Check for holes
+		if (getField(1, 1) == 0)
+		{	
+			jump = true;
+			for (int i = 1; i < 9; i++)
+			{
+				jump &= (getField(1, i) == 0);
+			}
+		}
+		
+		if (jump && (isMarioAbleToJump || (!isMarioOnGround && action[Mario.KEY_JUMP])) && jumpRotation == 0)
+		{
+			action[Mario.KEY_JUMP] = true;
+			jumpCounter++;
+		} else if (jumpRotation == 1){
+			action[Mario.KEY_JUMP] = false;
+			jumpRotation = 0;
+		}
+		if (jumpCounter > jumpHeight){
+			jumpCounter = 0;
+			jumpRotation = 1; 
+		}
+		
+//		if (jump && isMarioAbleToJump || (!isMarioOnGround && action[Mario.KEY_JUMP]))
+//			action[Mario.KEY_JUMP] = true;
+//		else 
+//		{			
+//			action[Mario.KEY_JUMP] = false;
+//		}
+		runSim();
+		return action;
+	}
+	
+	private void runSim() {
+		LevelScene levelScene = new LevelScene();
+		
+		levelScene.level = new Level(1500,15);	
+		
+		printCreatures(levelScene);
+		
+		levelScene.tick();
+		
+		printCreatures(levelScene);
+		
+		levelScene.setup(environment.getLevelSceneObservationZ(1),environment.getEnemiesObservationZ(0));
+	}
+	void printCreatures(LevelScene levelScene){
+		for(int i=0; i<levelScene.getCreaturesFloatPos().length-1; i++){
+			System.out.println("creature coordinate =(" + levelScene.getCreaturesFloatPos()[i] + "," + levelScene.getCreaturesFloatPos()[i+1] + ")"); 
+			
+		}		
 	}
 
-	@Override
-	public void reset() {
-		// TODO Auto-generated method stub
-
+	private byte getField(int x, int y)
+	{
+//		return levelScene[marioEgoCol + y][marioEgoRow + x];
+		return mergedObservation[marioEgoCol + y][marioEgoRow + x];
 	}
-
-	@Override
-	public void setObservationDetails(int rfWidth, int rfHeight, int egoRow, int egoCol) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public String getName() {
-		return name;
-	}
-
-	@Override
-	public void setName(String name) {
-		this.name = name;
-	}
-
+	
+	
 }

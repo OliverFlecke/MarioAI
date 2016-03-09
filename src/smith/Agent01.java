@@ -75,4 +75,6 @@ public class Agent01 extends BasicMarioAIAgent implements Agent {
 //		return levelScene[marioEgoCol + y][marioEgoRow + x];
 		return mergedObservation[marioEgoCol + y][marioEgoRow + x];
 	}
+	
+	
 }

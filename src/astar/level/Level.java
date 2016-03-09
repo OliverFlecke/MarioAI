@@ -169,9 +169,9 @@ public Level(int length, int height)
 //        System.out.println("observation = " + observation);
 }
 
-public static void loadBehaviors(DataInputStream dis) throws IOException
+public static void loadBehaviors() throws IOException
 {
-    dis.readFully(Level.TILE_BEHAVIORS);
+    Level.TILE_BEHAVIORS = new TileBehavior().getTileBehavior();
 }
 
 public static void saveBehaviors(DataOutputStream dos) throws IOException
