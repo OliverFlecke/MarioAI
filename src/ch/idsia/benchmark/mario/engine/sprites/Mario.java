@@ -128,7 +128,7 @@ public boolean ableToShoot = false;
 int width = 4;
 int height = 24;
 
-public static LevelScene levelScene;
+public LevelScene levelScene;
 public int facing;
 
 public int xDeathPos, yDeathPos;
