@@ -1,23 +1,69 @@
 package astar;
-
 import astar.level.Level;
 import ch.idsia.agents.Agent;
-import ch.idsia.agents.controllers.BasicMarioAIAgent;
 import ch.idsia.benchmark.mario.engine.sprites.Mario;
 import ch.idsia.benchmark.mario.environments.Environment;
 
-public class AstarAgent extends BasicMarioAIAgent implements Agent {
+public class AstarAgent implements Agent {
 
 	private int[] marioPos = new int[2];
 	
 	// To specify jump height
-	int jumpCounter = 0;
-	int jumpRotation = 0;
+	private int jumpCounter = 0;
+	private int jumpRotation = 0;
+	private Environment environment;
+
+	private int zLevelScene=1;
+
+	private int zLevelEnemies=0;
+
+	private boolean[] action;
+
+	private int marioMode;
+
+	private int marioStatus;
+
+	private boolean isMarioOnGround;
+
+	private boolean isMarioAbleToJump;
+
+	private boolean isMarioAbleToShoot;
+
+	private boolean isMarioCarrying;
+
+	private int getKillsTotal;
+
+	private int getKillsByFire;
+
+	private int getKillsByStomp;
+
+	private int getKillsByShell;
+
+	private byte[][] levelScene;
+
+	private byte[][] enemies;
+
+	private byte[][] mergedObservation;
+
+	private float[] marioFloatPos;
+
+	private float[] enemiesFloatPos;
+
+	private int[] marioState;
+
+	private int receptiveFieldWidth;
+
+	private int receptiveFieldHeight;
+
+	private int marioEgoCol;
+
+	private int marioEgoRow;
 	
+	private String name = "AstarAgent";
 	
 	public AstarAgent() 
 	{
-		super("Agent01");
+		System.out.println("sup");
 	}
 
 	public void reset()
@@ -28,6 +74,8 @@ public class AstarAgent extends BasicMarioAIAgent implements Agent {
 	
 	public boolean[] getAction()
 	{
+		//this.environment = environment;
+		System.out.println("sup2");
 		action[Mario.KEY_RIGHT] = true;
 
 		// Jump logic
@@ -73,21 +121,26 @@ public class AstarAgent extends BasicMarioAIAgent implements Agent {
 	}
 	
 	private void runSim() {
-		LevelScene levelScene = new LevelScene();
 		
-		levelScene.level = new Level(1500,15);	
+		LevelScene simLevelScene = new LevelScene();
 		
-		printCreatures(levelScene);
+		simLevelScene.level = new Level(1500,15);	
 		
-		levelScene.tick();
+		printCreatures(simLevelScene);
 		
-		printCreatures(levelScene);
+		simLevelScene.setup(environment.getLevelSceneObservationZ(1),environment.getEnemiesObservationZ(0));
 		
-		levelScene.setup(environment.getLevelSceneObservationZ(1),environment.getEnemiesObservationZ(0));
+		printCreatures(simLevelScene);
+		
+		simLevelScene.tick();
+		
+		printCreatures(simLevelScene);
+		
+		
 	}
-	void printCreatures(LevelScene levelScene){
-		for(int i=0; i<levelScene.getCreaturesFloatPos().length-1; i++){
-			System.out.println("creature coordinate =(" + levelScene.getCreaturesFloatPos()[i] + "," + levelScene.getCreaturesFloatPos()[i+1] + ")"); 
+	void printCreatures(LevelScene simLevelScene){
+		for(int i=0; i<simLevelScene.getCreaturesFloatPos().length-1; i++){
+			System.out.println("creature coordinate =(" + simLevelScene.getCreaturesFloatPos()[i] + "," + simLevelScene.getCreaturesFloatPos()[i+1] + ")"); 
 			
 		}		
 	}
@@ -97,6 +150,56 @@ public class AstarAgent extends BasicMarioAIAgent implements Agent {
 //		return levelScene[marioEgoCol + y][marioEgoRow + x];
 		return mergedObservation[marioEgoCol + y][marioEgoRow + x];
 	}
-	
+	public void integrateObservation(Environment environment)
+	{
+		this.environment = environment;
+	    levelScene = environment.getLevelSceneObservationZ(zLevelScene);
+	    enemies = environment.getEnemiesObservationZ(zLevelEnemies);
+	    mergedObservation = environment.getMergedObservationZZ(1, 0);
+
+	    this.marioFloatPos = environment.getMarioFloatPos();
+	    this.enemiesFloatPos = environment.getEnemiesFloatPos();
+	    this.marioState = environment.getMarioState();
+
+	    receptiveFieldWidth = environment.getReceptiveFieldWidth();
+	    receptiveFieldHeight = environment.getReceptiveFieldHeight();
+
+	    // It also possible to use direct methods from Environment interface.
+	    //
+	    marioStatus = marioState[0];
+	    marioMode = marioState[1];
+	    isMarioOnGround = marioState[2] == 1;
+	    isMarioAbleToJump = marioState[3] == 1;
+	    isMarioAbleToShoot = marioState[4] == 1;
+	    isMarioCarrying = marioState[5] == 1;
+	    getKillsTotal = marioState[6];
+	    getKillsByFire = marioState[7];
+	    getKillsByStomp = marioState[8];
+	    getKillsByShell = marioState[9];
+	}
+
+	@Override
+	public void giveIntermediateReward(float intermediateReward) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setObservationDetails(int rfWidth, int rfHeight, int egoRow,
+			int egoCol) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public String getName() {
+		return name;
+	}
+
+	@Override
+	public void setName(String name) {
+		this.name = name;
+		
+	}
 	
 }

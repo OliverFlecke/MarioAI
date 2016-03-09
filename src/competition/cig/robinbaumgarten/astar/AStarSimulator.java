@@ -23,6 +23,7 @@ public class AStarSimulator
 {
 	// LevelScene objects store all the information about the environment,
 	// Mario and enemies. 
+
     public LevelScene levelScene;  		// current world state
     public LevelScene workScene;   		// world state used by the planner (some ticks in the future)
     public SearchNode bestPosition; 	// the current best position found by the planner
