@@ -61,11 +61,14 @@ public class Agent02 extends BasicMarioAIAgent implements Agent {
 	}
 	
 	public void jump(int height) {
+		
 		int jumpHeight = height;
+		
 		if ((isMarioAbleToJump || (!isMarioOnGround && action[Mario.KEY_JUMP])) && jumpRotation == 0)
 		{
 			action[Mario.KEY_JUMP] = true;
 			jumpCounter++;
+
 		} else if (jumpRotation == 1){
 			action[Mario.KEY_JUMP] = false;
 			jumpRotation = 0;
@@ -107,8 +110,8 @@ public class Agent02 extends BasicMarioAIAgent implements Agent {
 	
 	public boolean[] getAction()
 	{
-		reset();
-
+		
+		jump(6);
 
 		return action;
 	}
