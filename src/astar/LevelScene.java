@@ -106,6 +106,11 @@ public static int killedCreaturesByFireBall;
 public static int killedCreaturesByStomp;
 public static int killedCreaturesByShell;
 
+
+public void initialize(){
+	Level.loadBehaviors();
+}
+
 //    private int[] args; //passed to reset method. ATTENTION: not cloned.
 
 public LevelScene()
