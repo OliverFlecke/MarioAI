@@ -6,11 +6,14 @@ import ch.idsia.benchmark.mario.engine.sprites.Sprite;
 import ch.idsia.benchmark.mario.environments.Environment;
 
 public class Node implements Comparator<Node> {
+	
+	private static float alpha = 1;
+	
 	// Coordinates of the node
 	private float x, y;
 	
-	int fitness = 0;				// Overall rating of this option 
-	int depth;					// Depth of the current node
+	public int fitness = 0;				// Overall rating of this option 
+	public int depth;					// Depth of the current node
 	private boolean[] action;	// Action that are done in this node
 	
 	// Game elements 
@@ -23,26 +26,44 @@ public class Node implements Comparator<Node> {
 	LevelScene levelScene;
 	
 	// Graph pointers 
-	public Node parent;
+	public Node parent, head;
 	public List<Node> children = new ArrayList<Node>();
 	
 	// Should have everything needed to compute next frame
-	public Node(Node parent, LevelScene levelScene, Mario mario, List<Sprite> enemies, boolean[] action) 
+	public Node(Node parent, Node head, LevelScene levelScene, Mario mario, List<Sprite> enemies, boolean[] action) 
 	{
 		this.parent = parent;
+		this.depth = this.parent.depth + 1;
+		this.head = head;
+		
+		// Copy these elements, don't just save the pointers 
 		this.levelScene = levelScene;
 		this.mario = mario; 
 		this.enemies = enemies;
+		
 		this.action = action;
 		
-		// Update mario
+		// Update Mario
 		this.mario.keys = this.action;
+		this.x = mario.x;
+		this.y = mario.y;
 	}
 	
 	// The function to evaluate the current frame
 	public void fitnessEval()
 	{
-		
+		float g = this.head.x;
+		float toGoal = alpha * ((head.x + 150f) - this.x);
+		float h = 0;
+		if (mario.isDead()) 
+		{
+			this.fitness = Integer.MAX_VALUE;
+		}
+		else 
+		{
+			h = toGoal;
+			this.fitness = (int) (g + h);
+		}
 	}
 	
 	// The main search function to find the optimal path
@@ -52,13 +73,13 @@ public class Node implements Comparator<Node> {
 		// Base case: If no children, return this node's actions 
 		if (children == null) return this;
 		
-		int max = Integer.MIN_VALUE;
+		int min = Integer.MAX_VALUE;
 		Node bestNode = null;
 		for (Node node : children) 
 		{
-			if (node.fitness > max)
+			if (node.fitness < min)
 			{
-				max = node.fitness;
+				min = node.fitness;
 				bestNode = node;
 			}
 		}
@@ -105,42 +126,65 @@ public class Node implements Comparator<Node> {
 			newEnemy.tick();
 			newEnemies.add(newEnemy);
 		}
+		Node node;
 		
 		// Create new nodes with actions 
 		// TODO Should every node have a clone of the levelScene, Mario, and enemies?
 		// Action: Nothing
-		queue.add(new Node(this, newScene, newMario, newEnemies, Node.createAction(false, false, false, false, false, false)));
+		node = new Node(this, this.head, newScene, newMario, newEnemies, Node.createAction(false, false, false, false, false, false));
+		node.fitnessEval();
+		queue.add(node);
 		
 		// Action: Move right
-		queue.add(new Node(this, newScene, newMario, newEnemies, Node.createAction(true, false, false, false, false, false)));
+		node = new Node(this, this.head, newScene, newMario, newEnemies, Node.createAction(true, false, false, false, false, false));
+		node.fitnessEval();
+		queue.add(node);
 		// Action: Move right with speed
-		queue.add(new Node(this, newScene, newMario, newEnemies, Node.createAction(true, false, false, true, false, false)));
+		node = new Node(this, this.head, newScene, newMario, newEnemies, Node.createAction(true, false, false, true, false, false));
+		node.fitnessEval();
+		queue.add(node);
 	
 		// Action: Move left
-		queue.add(new Node(this, newScene, newMario, newEnemies, Node.createAction(false, true, false, false, false, false)));
+		node = new Node(this, this.head, newScene, newMario, newEnemies, Node.createAction(false, true, false, false, false, false));
+		node.fitnessEval();
+		queue.add(node);
 		// Action: Move left with speed
-		queue.add(new Node(this, newScene, newMario, newEnemies, Node.createAction(false, true, false, true, false, false)));
+		node = new Node(this, this.head, newScene, newMario, newEnemies, Node.createAction(false, true, false, true, false, false));
+		node.fitnessEval();
+		queue.add(node);
 	
 		// Check if pressing the jump key makes a differers, and generate nodes if it does
 		if (mario.jumpTime >= 0)
 		{
 			// Action: Jump
-			queue.add(new Node(this, newScene, newMario, newEnemies, Node.createAction(false, false, true, false, false, false)));
+			node = new Node(this, this.head, newScene, newMario, newEnemies, Node.createAction(false, false, true, false, false, false));
+			node.fitnessEval();
+			queue.add(node);
 			// Action: Jump and move right
-			queue.add(new Node(this, newScene, newMario, newEnemies, Node.createAction(true, false, true, false, false, false)));
+			node = new Node(this, this.head, newScene, newMario, newEnemies, Node.createAction(true, false, true, false, false, false));
+			node.fitnessEval();
+			queue.add(node);
 			// Action: Jump, right and speed
-			queue.add(new Node(this, newScene, newMario, newEnemies, Node.createAction(true, false, true, true, false, false)));
+			node = new Node(this, this.head, newScene, newMario, newEnemies, Node.createAction(true, false, true, true, false, false));
+			node.fitnessEval();
+			queue.add(node);
 			
 			// Action: Jump and left
-			queue.add(new Node(this, newScene, newMario, newEnemies, Node.createAction(false, true, true, false, false, false)));
+			node = new Node(this, this.head, newScene, newMario, newEnemies, Node.createAction(false, true, true, false, false, false));
+			node.fitnessEval();
+			queue.add(node);
 			// Action: Jump, left and speed
-			queue.add(new Node(this, newScene, newMario, newEnemies, Node.createAction(false, true, true, true, false, false)));
+			node = new Node(this, this.head, newScene, newMario, newEnemies, Node.createAction(false, true, true, true, false, false));
+			node.fitnessEval();
+			queue.add(node);
 		}
 	
 		// Is mario able to shoot?
 		if (mario.ableToShoot && mario.getMode() == 2 && this.levelScene.fireballsOnScreen < 2)
 		{
-			queue.add(new Node(this, newScene, newMario, newEnemies, Node.createAction(false, false, false, true, false, false)));
+			node = new Node(this, this.head, newScene, newMario, newEnemies, Node.createAction(false, false, false, true, false, false));
+			node.fitnessEval();
+			queue.add(node);
 		}
 	}
 	
@@ -174,6 +218,6 @@ public class Node implements Comparator<Node> {
 	 */
 	@Override
 	public int compare(Node a, Node b) {
-		return a.fitness - b.fitness;
+		return (a.fitness - b.fitness);
 	}
 }
