@@ -1,11 +1,6 @@
 package astar;
 
-<<<<<<< HEAD
 import astar.level.Level;
-=======
-import java.util.*;
-
->>>>>>> origin/master
 import ch.idsia.agents.Agent;
 import ch.idsia.agents.controllers.BasicMarioAIAgent;
 import ch.idsia.benchmark.mario.engine.sprites.Mario;
@@ -15,7 +10,6 @@ public class AstarAgent extends BasicMarioAIAgent implements Agent {
 
 	private int[] marioPos = new int[2];
 	
-<<<<<<< HEAD
 	// To specify jump height
 	int jumpCounter = 0;
 	int jumpRotation = 0;
@@ -29,30 +23,6 @@ public class AstarAgent extends BasicMarioAIAgent implements Agent {
 	public void reset()
 	{
 	    action = new boolean[Environment.numberOfKeys];
-=======
-	private final int numberOfSteps = 2;
-	private int count = 0;
-	private Stack<boolean[]> actions;
-	
-	@Override
-	public boolean[] getAction() {
-		// Only run this after numberOfSteps or if the actions stack is empty
-		if (!(count++ < this.numberOfSteps) || actions.isEmpty())
-		{
-			// Run the A-star to get a list of steps
-			count = 0;
-		}
-		return actions.pop();
-	}
-
-	@Override
-	public void integrateObservation(Environment environment) {
-
-	}
-
-	@Override
-	public void giveIntermediateReward(float intermediateReward) {
->>>>>>> origin/master
 
 	}
 	
@@ -60,7 +30,6 @@ public class AstarAgent extends BasicMarioAIAgent implements Agent {
 	{
 		action[Mario.KEY_RIGHT] = true;
 
-<<<<<<< HEAD
 		// Jump logic
 		boolean jump = false;
 //		jump = (getField(1, 0) != 0) || (getField(2, 0) != 0); 
@@ -101,11 +70,6 @@ public class AstarAgent extends BasicMarioAIAgent implements Agent {
 //		}
 		runSim();
 		return action;
-=======
-	@Override
-	public void reset() {
-		this.action = new boolean[Environment.numberOfKeys];
->>>>>>> origin/master
 	}
 	
 	private void runSim() {
