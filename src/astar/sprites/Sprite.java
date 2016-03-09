@@ -27,11 +27,13 @@
 
 package astar.sprites;
 
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Image;
+
+import astar.level.SpriteTemplate;
 import ch.idsia.benchmark.mario.engine.GlobalOptions;
 import ch.idsia.benchmark.mario.engine.MarioVisualComponent;
-import ch.idsia.benchmark.mario.engine.level.SpriteTemplate;
-
-import java.awt.*;
 
 public class Sprite
 {

@@ -25,41 +25,54 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package astar.sprites;
+package astar;
 
-import astar.LevelScene;
-import ch.idsia.benchmark.mario.engine.Art;
+import ch.idsia.agents.Agent;
+import ch.idsia.agents.controllers.ForwardAgent;
+import ch.idsia.benchmark.mario.environments.Environment;
+import ch.idsia.benchmark.tasks.BasicTask;
+import ch.idsia.tools.MarioAIOptions;
 
+import java.io.IOException;
 
-public class Princess extends Sprite
+/**
+ * Created by IntelliJ IDEA.
+ * User: Sergey Karakovskiy, sergey@idsia.ch
+ * Date: May 7, 2009
+ * Time: 4:38:23 PM
+ * Package: ch.idsia
+ */
+
+public class Play
 {
-private LevelScene world;
-private int runTime = 0;
-
-public Princess(LevelScene world, int x, int y, int mapX, int mapY)
+public static void main(String[] args)
 {
-    kind = KIND_PRINCESS;
-    sheet = Art.princess;
+//final String argsString = "-vis on";
+    final MarioAIOptions marioAIOptions = new MarioAIOptions(args);
+    final Agent agent = new ForwardAgent();
+    final BasicTask basicTask = new BasicTask(marioAIOptions);
+    for (int i = 0; i < 10; ++i)
+    {
+        int seed = 0;
+        do
+        {
+            marioAIOptions.setLevelDifficulty(i);
+            marioAIOptions.setLevelRandSeed(seed++);
+            basicTask.setOptionsAndReset(marioAIOptions);
+            basicTask.runSingleEpisode(1);
+            System.out.println(basicTask.getEnvironment().getEvaluationInfoAsString());
+        } while (basicTask.getEnvironment().getEvaluationInfo().marioStatus != Environment.MARIO_STATUS_WIN);
+    }
+    Runtime rt = Runtime.getRuntime();
+//    try
+//    {
+////            Process proc = rt.exec("/usr/local/bin/mate " + marioTraceFileName);
+//        Process proc = rt.exec("python hello.py");
+//    } catch (IOException e)
+//    {
+//        e.printStackTrace();
+//    }
+    System.exit(0);
 
-    this.x = x;
-    this.y = y;
-    this.world = world;
-    this.mapX = mapX;
-    this.mapY = mapY;
-    yPic = 0;
-    xPic = 0;
 }
-
-public void collideCheck()
-{}
-
-public void move()
-{
-    runTime += 5;
-
-    xPic = (runTime / 20) % 2;
-}
-
-
-
 }

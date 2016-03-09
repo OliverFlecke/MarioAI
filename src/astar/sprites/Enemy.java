@@ -27,11 +27,13 @@
 
 package astar.sprites;
 
+
+
+import java.awt.Graphics;
+
+import astar.LevelScene;
 import ch.idsia.benchmark.mario.engine.Art;
 import ch.idsia.benchmark.mario.engine.GlobalOptions;
-import ch.idsia.benchmark.mario.engine.LevelScene;
-
-import java.awt.*;
 
 
 public class Enemy extends Sprite

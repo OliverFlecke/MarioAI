@@ -1,7 +1,9 @@
 package astar.sprites;
 
+import astar.LevelScene;
 import ch.idsia.benchmark.mario.engine.GlobalOptions;
-import ch.idsia.benchmark.mario.engine.LevelScene;
+
+
 
 /**
  * Created by IntelliJ IDEA.

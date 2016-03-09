@@ -27,8 +27,9 @@
 
 package astar.sprites;
 
+
+import astar.LevelScene;
 import ch.idsia.benchmark.mario.engine.Art;
-import ch.idsia.benchmark.mario.engine.LevelScene;
 
 
 public class Fireball extends Sprite

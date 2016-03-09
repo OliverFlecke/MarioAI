@@ -27,6 +27,7 @@
 
 package astar;
 
+
 import java.awt.Point;
 import java.io.DataInputStream;
 import java.io.FileOutputStream;
@@ -50,15 +51,14 @@ import astar.sprites.Shell;
 import astar.sprites.Sparkle;
 import astar.sprites.Sprite;
 import astar.sprites.SpriteContext;
-//import ch.idsia.benchmark.mario.engine.GlobalOptions;
-//import ch.idsia.benchmark.mario.engine.Replayer;
-//import ch.idsia.benchmark.mario.engine.level.LevelGenerator;
-//import ch.idsia.tools.MarioAIOptions;
+import ch.idsia.benchmark.mario.engine.GlobalOptions;
+import ch.idsia.tools.MarioAIOptions;
 
-public class LevelScene implements SpriteContext
+public final class LevelScene implements SpriteContext
 {
-int debug = 1;
-static final int cellSize = 16;
+
+public static final int cellSize = 16;
+
 public List<Sprite> sprites = new ArrayList<Sprite>();
 private List<Sprite> spritesToAdd = new ArrayList<Sprite>();
 private List<Sprite> spritesToRemove = new ArrayList<Sprite>();
@@ -78,9 +78,9 @@ private static boolean onLadder = false;
 
 private Random randomGen = new Random(0);
 
-final private List<Float> enemiesFloatsList = new ArrayList<Float>();
-final private float[] marioFloatPos = new float[2];
-final private int[] marioState = new int[11];
+private List<Float> enemiesFloatsList = new ArrayList<Float>();
+private float[] marioFloatPos = new float[2];
+private int[] marioState = new int[11];
 private int numberOfHiddenCoinsGained = 0;
 
 private int greenMushroomMode = 0;
@@ -105,8 +105,6 @@ public static int killedCreaturesTotal;
 public static int killedCreaturesByFireBall;
 public static int killedCreaturesByStomp;
 public static int killedCreaturesByShell;
-
-private Replayer replayer;
 
 //    private int[] args; //passed to reset method. ATTENTION: not cloned.
 
@@ -502,113 +500,6 @@ public boolean isMarioOnGround()
 public boolean isMarioAbleToJump()
 { return mario.mayJump(); }
 
-public void resetDefault()
-{
-    // TODO: set values to defaults
-    reset(MarioAIOptions.getDefaultOptions());
-}
-
-public void reset(MarioAIOptions marioAIOptions)
-{
-//        System.out.println("\nLevelScene RESET!");
-//        this.gameViewer = setUpOptions[0] == 1;
-//        System.out.println("this.mario.isMarioInvulnerable = " + this.mario.isMarioInvulnerable);
-//    this.levelDifficulty = marioAIOptions.getLevelDifficulty();
-//        System.out.println("this.levelDifficulty = " + this.levelDifficulty);
-//    this.levelLength = marioAIOptions.getLevelLength();
-//        System.out.println("this.levelLength = " + this.levelLength);
-//    this.levelSeed = marioAIOptions.getLevelRandSeed();
-//        System.out.println("levelSeed = " + levelSeed);
-//    this.levelType = marioAIOptions.getLevelType();
-//        System.out.println("levelType = " + levelType);
-
-
-    GlobalOptions.FPS = marioAIOptions.getFPS();
-//        System.out.println("GlobalOptions.FPS = " + GlobalOptions.FPS);
-    GlobalOptions.isPowerRestoration = marioAIOptions.isPowerRestoration();
-//        System.out.println("GlobalOptions.isPowerRestoration = " + GlobalOptions.isPowerRestoration);
-//    GlobalOptions.isPauseWorld = marioAIOptions.isPauseWorld();
-    GlobalOptions.areFrozenCreatures = marioAIOptions.isFrozenCreatures();
-//        System.out.println("GlobalOptions = " + GlobalOptions.isPauseWorld);
-//        GlobalOptions.isTimer = marioAIOptions.isTimer();
-//        System.out.println("GlobalOptions.isTimer = " + GlobalOptions.isTimer);
-//        isToolsConfigurator = setUpOptions[11] == 1;
-    this.setTimeLimit(marioAIOptions.getTimeLimit());
-//        System.out.println("this.getTimeLimit() = " + this.getTimeLimit());
-//        this.isViewAlwaysOnTop() ? 1 : 0, setUpOptions[13]
-    GlobalOptions.isVisualization = marioAIOptions.isVisualization();
-//        System.out.println("visualization = " + visualization);
-
-    killedCreaturesTotal = 0;
-    killedCreaturesByFireBall = 0;
-    killedCreaturesByStomp = 0;
-    killedCreaturesByShell = 0;
-
-    marioInitialPos = marioAIOptions.getMarioInitialPos();
-    greenMushroomMode = marioAIOptions.getGreenMushroomMode();
-
-    if (replayer != null)
-    {
-        try
-        {
-//            replayer.openNextReplayFile();
-            replayer.openFile("level.lvl");
-            level = (Level) replayer.readObject();
-            level.counters.resetUncountableCounters();
-//            replayer.closeFile();
-//            replayer.closeRecorder();
-        } catch (IOException e)
-        {
-            System.err.println("[Mario AI Exception] : level reading failed");
-            e.printStackTrace();
-        } catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-    } else
-        level = LevelGenerator.createLevel(marioAIOptions);
-
-    String fileName = marioAIOptions.getLevelFileName();
-    if (!fileName.equals(""))
-    {
-        try
-        {
-            Level.save(level, new ObjectOutputStream(new FileOutputStream(fileName)));
-        } catch (IOException e)
-        {
-            System.err.println("[Mario AI Exception] : Cannot write to file " + fileName);
-            e.printStackTrace();
-        }
-    }
-    this.levelSeed = level.randomSeed;
-    this.levelLength = level.length;
-    this.levelHeight = level.height;
-    this.levelType = level.type;
-    this.levelDifficulty = level.difficulty;
-
-    Sprite.spriteContext = this;
-    sprites.clear();
-    this.width = GlobalOptions.VISUAL_COMPONENT_WIDTH;
-    this.height = GlobalOptions.VISUAL_COMPONENT_HEIGHT;
-
-    Sprite.setCreaturesGravity(marioAIOptions.getCreaturesGravity());
-    Sprite.setCreaturesWind(marioAIOptions.getWind());
-    Sprite.setCreaturesIce(marioAIOptions.getIce());
-    Mario.resetStatic(marioAIOptions);
-
-    bonusPoints = -1;
-
-    mario = new Mario(this);
-    //System.out.println("mario = " + mario);
-    memo = "";
-
-    sprites.add(mario);
-    startTime = 1;
-    timeLeft = timeLimit * GlobalOptions.mariosecondMultiplier;
-
-    tickCount = 0;
-}
-
 public float[] getMarioFloatPos()
 {
     marioFloatPos[0] = this.mario.x;
@@ -644,11 +535,6 @@ public void addMemoMessage(final String memoMessage)
 }
 
 public Point getMarioInitialPos() {return marioInitialPos;}
-
-public void setReplayer(Replayer replayer)
-{
-    this.replayer = replayer;
-}
 
 public int getGreenMushroomMode()
 {
