@@ -36,6 +36,7 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.lang.Cloneable;
 
 import astar.level.Level;
 import astar.level.SpriteTemplate;
@@ -54,7 +55,7 @@ import astar.sprites.SpriteContext;
 import ch.idsia.benchmark.mario.engine.GlobalOptions;
 import ch.idsia.tools.MarioAIOptions;
 
-public final class LevelScene implements SpriteContext
+public final class LevelScene implements SpriteContext, Cloneable
 {
 	//debug flags
 	boolean debugAddEnemies=true;
@@ -109,7 +110,13 @@ public final class LevelScene implements SpriteContext
 	public static int killedCreaturesByShell;
 
 
-	public LevelScene(){
+	public LevelScene() 
+	{ 
+		this(null);
+	}
+	
+	public LevelScene(Mario mario)
+	{
 		try
 		{
 			Level.loadBehaviors();
@@ -121,13 +128,14 @@ public final class LevelScene implements SpriteContext
 		}
 		Sprite.spriteContext = this;
 		sprites.clear();
-
-		mario = new Mario(this);
-		sprites.add(mario);
+		
+		// This (last) Mario should be a clone for all the node instances
+		this.mario = (mario == null) ? new Mario(this) : mario;
+		this.mario.levelScene = this;
+		sprites.add(this.mario);
+		
 		startTime = 1;
-
 		timeLeft = 3000;
-
 		tickCount = 1;		
 	}
 	// TODO: !H!: Move to MarioEnvironment !!
@@ -141,22 +149,22 @@ public final class LevelScene implements SpriteContext
 			if (sprite.isDead()) continue;
 			switch (sprite.kind)
 			{
-			case Sprite.KIND_GOOMBA:
-			case Sprite.KIND_BULLET_BILL:
-			case Sprite.KIND_ENEMY_FLOWER:
-			case Sprite.KIND_GOOMBA_WINGED:
-			case Sprite.KIND_GREEN_KOOPA:
-			case Sprite.KIND_GREEN_KOOPA_WINGED:
-			case Sprite.KIND_RED_KOOPA:
-			case Sprite.KIND_RED_KOOPA_WINGED:
-			case Sprite.KIND_SPIKY:
-			case Sprite.KIND_SPIKY_WINGED:
-			case Sprite.KIND_SHELL:
-			{
-				enemiesFloatsList.add((float) sprite.kind);
-				enemiesFloatsList.add(sprite.x - mario.x);
-				enemiesFloatsList.add(sprite.y - mario.y);
-			}
+				case Sprite.KIND_GOOMBA:
+				case Sprite.KIND_BULLET_BILL:
+				case Sprite.KIND_ENEMY_FLOWER:
+				case Sprite.KIND_GOOMBA_WINGED:
+				case Sprite.KIND_GREEN_KOOPA:
+				case Sprite.KIND_GREEN_KOOPA_WINGED:
+				case Sprite.KIND_RED_KOOPA:
+				case Sprite.KIND_RED_KOOPA_WINGED:
+				case Sprite.KIND_SPIKY:
+				case Sprite.KIND_SPIKY_WINGED:
+				case Sprite.KIND_SHELL:
+				{
+					enemiesFloatsList.add((float) sprite.kind);
+					enemiesFloatsList.add(sprite.x - mario.x);
+					enemiesFloatsList.add(sprite.y - mario.y);
+				}
 			}
 		}
 
@@ -356,7 +364,7 @@ public final class LevelScene implements SpriteContext
 		if ((Level.TILE_BEHAVIORS[block & 0xff] & Level.BIT_BUMPABLE) > 0)
 		{
 			if (block == 1)
-				Mario.gainHiddenBlock();
+				this.mario.gainHiddenBlock();
 			bumpInto(x, y - 1);
 			byte blockData = level.getBlockData(x, y);
 			if (blockData < 0)
@@ -388,7 +396,7 @@ public final class LevelScene implements SpriteContext
 				}
 			} else
 			{
-				Mario.gainCoin();
+				this.mario.gainCoin();
 				addSprite(new CoinAnim(x, y));
 			}
 		}
@@ -414,7 +422,7 @@ public final class LevelScene implements SpriteContext
 		byte block = level.getBlock(x, y);
 		if (((Level.TILE_BEHAVIORS[block & 0xff]) & Level.BIT_PICKUPABLE) > 0)
 		{
-			Mario.gainCoin();
+			this.mario.gainCoin();
 			level.setBlock(x, y, (byte) 0);
 			addSprite(new CoinAnim(x, y + 1));
 		}
@@ -588,9 +596,12 @@ public final class LevelScene implements SpriteContext
 		}
 	}
 
+	@Override
+	public Object clone() throws CloneNotSupportedException
+	{
+		LevelScene clone = (LevelScene) super.clone();
+		// Copy mario and other objects
+		
+		return clone;
+	}
 }
-
-//    public void update(boolean[] action)
-//    {
-//        System.arraycopy(action, 0, mario.keys, 0, 6);
-//    }
