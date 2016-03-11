@@ -13,7 +13,7 @@ public class AstarAgent implements Agent {
 	private int jumpRotation = 0;
 	private Environment environment;
 
-	private int zLevelScene=1;
+	private int zLevelScene=0;
 
 	private int zLevelEnemies=0;
 
@@ -39,8 +39,6 @@ public class AstarAgent implements Agent {
 
 	private int getKillsByShell;
 
-	private byte[][] levelScene;
-
 	private byte[][] enemies;
 
 	private byte[][] mergedObservation;
@@ -60,10 +58,11 @@ public class AstarAgent implements Agent {
 	private int marioEgoRow;
 	
 	private String name = "AstarAgent";
+
+	private byte[][] observation;
 	
 	public AstarAgent() 
 	{
-		System.out.println("sup");
 	}
 
 	public void reset()
@@ -75,7 +74,6 @@ public class AstarAgent implements Agent {
 	public boolean[] getAction()
 	{
 		//this.environment = environment;
-		System.out.println("sup2");
 		action[Mario.KEY_RIGHT] = true;
 
 		// Jump logic
@@ -128,32 +126,32 @@ public class AstarAgent implements Agent {
 		
 		printCreatures(simLevelScene);
 		
-		simLevelScene.setup(environment.getLevelSceneObservationZ(1),environment.getEnemiesObservationZ(0));
+		simLevelScene.setup(observation,enemiesFloatPos);
 		
 		printCreatures(simLevelScene);
 		
 		simLevelScene.tick();
+		System.out.println("tick\n" );
 		
 		printCreatures(simLevelScene);
 		
 		
 	}
 	void printCreatures(LevelScene simLevelScene){
-		for(int i=0; i<simLevelScene.getCreaturesFloatPos().length-1; i++){
+		for(int i=0; i<simLevelScene.getCreaturesFloatPos().length-1; i+=2){
 			System.out.println("creature coordinate =(" + simLevelScene.getCreaturesFloatPos()[i] + "," + simLevelScene.getCreaturesFloatPos()[i+1] + ")"); 
-			
 		}		
 	}
 
 	private byte getField(int x, int y)
 	{
 //		return levelScene[marioEgoCol + y][marioEgoRow + x];
-		return mergedObservation[marioEgoCol + y][marioEgoRow + x];
+		return mergedObservation[marioEgoCol + y+1][marioEgoRow + x+1];
 	}
 	public void integrateObservation(Environment environment)
 	{
 		this.environment = environment;
-	    levelScene = environment.getLevelSceneObservationZ(zLevelScene);
+	    observation = environment.getLevelSceneObservationZ(zLevelScene);
 	    enemies = environment.getEnemiesObservationZ(zLevelEnemies);
 	    mergedObservation = environment.getMergedObservationZZ(1, 0);
 

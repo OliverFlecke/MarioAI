@@ -56,6 +56,8 @@ import ch.idsia.tools.MarioAIOptions;
 
 public final class LevelScene implements SpriteContext
 {
+	//debug flags
+	boolean debugAddEnemies=true;
 
 	public static final int cellSize = 16;
 
@@ -561,10 +563,30 @@ public final class LevelScene implements SpriteContext
 	}
 
 	public void setup(byte[][] levelSceneObservationZ,
-			byte[][] enemiesObservationZ) {
-		System.out.println("all good");
+			float[] enemiesFloatPos) {
+		setEnemiesFloatPos(enemiesFloatPos);
 	}
 
+	//adding enemy sprites
+	public void setEnemiesFloatPos(float[] enemiesFloatPos)
+	{
+		Sprite sprite = new Sprite();
+		for(int i=0; i<enemiesFloatPos.length; i+=3){				
+			sprite.x = i+1+mario.x;
+			sprite.y = i+2+mario.y;
+			System.out.println("**"+(int)enemiesFloatPos[i]+"**" );
+			sprite.spriteTemplate =  new SpriteTemplate((int)enemiesFloatPos[i]);
+			sprites.add(sprite);
+
+		}
+		if(debugAddEnemies){
+		System.out.println("-------------\n");
+		for(Sprite s : sprites){
+			System.out.println("kind: " + (int)s.kind+", Coordinate: " + s.x + "," + s.y + "\n ");			
+		}
+		System.out.println("-------------\n");
+		}
+	}
 
 }
 
