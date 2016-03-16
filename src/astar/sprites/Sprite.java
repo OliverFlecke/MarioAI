@@ -35,7 +35,7 @@ import astar.level.SpriteTemplate;
 import ch.idsia.benchmark.mario.engine.GlobalOptions;
 import ch.idsia.benchmark.mario.engine.MarioVisualComponent;
 
-public class Sprite
+public class Sprite implements Cloneable
 {
 	public static final int KIND_NONE = 0;
 	public static final int KIND_MARIO = -31;
