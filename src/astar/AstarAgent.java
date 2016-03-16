@@ -137,6 +137,7 @@ public class AstarAgent implements Agent {
 		
 		
 	}
+	
 	void printCreatures(LevelScene simLevelScene){
 		for(int i=0; i<simLevelScene.getCreaturesFloatPos().length-1; i+=2){
 			System.out.println("creature coordinate =(" + simLevelScene.getCreaturesFloatPos()[i] + "," + simLevelScene.getCreaturesFloatPos()[i+1] + ")"); 

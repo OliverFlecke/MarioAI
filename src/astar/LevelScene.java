@@ -138,7 +138,21 @@ public final class LevelScene implements SpriteContext, Cloneable
 		timeLeft = 3000;
 		tickCount = 1;		
 	}
-	// TODO: !H!: Move to MarioEnvironment !!
+	
+	@Override
+	public Object clone() throws CloneNotSupportedException
+	{
+		LevelScene clone = (LevelScene) super.clone();
+		// Copy mario and other objects
+		clone.mario = (Mario) this.mario.clone();
+		clone.mario.levelScene = clone;
+		clone.level = (Level) this.level.clone();
+		
+		// Clone the list of sprites
+		clone.sprites = new ArrayList<Sprite>();
+		
+		return clone;
+	}
 
 	public float[] getEnemiesFloatPos()
 	{
@@ -594,14 +608,5 @@ public final class LevelScene implements SpriteContext, Cloneable
 		}
 		System.out.println("-------------\n");
 		}
-	}
-
-	@Override
-	public Object clone() throws CloneNotSupportedException
-	{
-		LevelScene clone = (LevelScene) super.clone();
-		// Copy mario and other objects
-		
-		return clone;
 	}
 }

@@ -295,6 +295,7 @@ public class Level implements Serializable
 	{
 		Level clone = (Level) super.clone();
 		// Copy the map
+		clone.map = new byte[this.map.length][this.map[0].length];
 		for (int i = 0; i < this.map.length; i++) 
 			for (int j = 0; j < this.map[0].length; j++) 
 				clone.map[i][j] = this.map[i][j];

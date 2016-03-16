@@ -29,7 +29,7 @@ package astar.sprites;
 
 public interface SpriteContext
 {
-public void addSprite(Sprite sprite);
+	public void addSprite(Sprite sprite);
 
-public void removeSprite(Sprite sprite);
+	public void removeSprite(Sprite sprite);
 }

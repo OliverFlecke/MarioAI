@@ -153,6 +153,7 @@ public final class Mario extends Sprite implements Cloneable
 		// Maybe there is some objects that should be copied as well?
 		Mario clone = (Mario) super.clone();
 		// Important to copy keys, else we will operate on the same array object
+		clone.keys = new boolean[Environment.numberOfKeys];
 		for (int i = 0; i < this.keys.length; i++) {
 			clone.keys[i] = this.keys[i];
 		}
