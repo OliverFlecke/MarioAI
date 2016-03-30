@@ -84,8 +84,8 @@ public final class Mario extends Sprite implements Cloneable
 	private boolean inLadderZone;
 	private boolean onLadder;
 	private boolean onTopOfLadder = false;
-	//    private static float GROUND_INERTIA = 0.89f;
-	//    private static float AIR_INERTIA = 0.89f;
+	private static float GROUND_INERTIA = 0.89f;
+	private static float AIR_INERTIA = 0.89f;
 	
 	public boolean[] keys = new boolean[Environment.numberOfKeys];
 	public boolean[] cheatKeys;
@@ -131,7 +131,6 @@ public final class Mario extends Sprite implements Cloneable
 	public Mario(LevelScene levelScene)
 	{
 		kind = KIND_MARIO;
-		Mario.instance = this;
 		this.levelScene = levelScene;
 		x = levelScene.getMarioInitialPos().x;
 		y = levelScene.getMarioInitialPos().y;
@@ -140,6 +139,10 @@ public final class Mario extends Sprite implements Cloneable
 		
 		facing = 1;
 		setMode(Mario.large, Mario.fire);
+		
+		// Get gravity
+		MarioAIOptions options = MarioAIOptions.getDefaultOptions();
+		marioGravity = options.getMarioGravity();
 		yaa = marioGravity * 3;
 		jT = jumpPower / (marioGravity);
 	}
@@ -272,40 +275,41 @@ public final class Mario extends Sprite implements Cloneable
 
 	public void move()
 	{
-		if (GlobalOptions.isFly)
-		{
-			xa = ya = 0;
-			ya = keys[KEY_DOWN] ? 10 : ya;
-			ya = keys[KEY_UP] ? -10 : ya;
-			xa = keys[KEY_RIGHT] ? 10 : xa;
-			xa = keys[KEY_LEFT] ? -10 : xa;
-		}
+//		if (GlobalOptions.isFly)
+//		{
+//			xa = ya = 0;
+//			ya = keys[KEY_DOWN] ? 10 : ya;
+//			ya = keys[KEY_UP] ? -10 : ya;
+//			xa = keys[KEY_RIGHT] ? 10 : xa;
+//			xa = keys[KEY_LEFT] ? -10 : xa;
+//		}
 
-		if (this.inLadderZone)
-		{
-			if (keys[KEY_UP] && !onLadder)
-			{
-				onLadder = true;
-			}
-
-			if (!keys[KEY_UP] && !keys[KEY_DOWN] && onLadder)
-				ya = 0;
-
-			if (onLadder)
-			{
-				if (!onTopOfLadder)
-				{
-					ya = keys[KEY_UP] ? -10 : ya;
-				} else
-				{
-					ya = 0;
-					ya = keys[KEY_DOWN] ? 10 : ya;
-					if (keys[KEY_DOWN])
-						onTopOfLadder = false;
-				}
-				onGround = true;
-			}
-		}
+//		if (this.inLadderZone)
+//		{
+//			if (keys[KEY_UP] && !onLadder)
+//			{
+//				onLadder = true;
+//			}
+//
+//			if (!keys[KEY_UP] && !keys[KEY_DOWN] && onLadder)
+//				ya = 0;
+//
+//			if (onLadder)
+//			{
+//				if (!onTopOfLadder)
+//				{
+//					ya = keys[KEY_UP] ? -10 : ya;
+//				} else
+//				{
+//					ya = 0;
+//					ya = keys[KEY_DOWN] ? 10 : ya;
+//					if (keys[KEY_DOWN])
+//						onTopOfLadder = false;
+//				}
+//				onGround = true;
+//			}
+//		}
+//		System.out.println("Sim " + this.y + " - " + this.ya);
 
 		if (mapY > -1 && isTrace)
 			++levelScene.level.marioTrace[this.mapX][this.mapY];
@@ -426,18 +430,7 @@ public final class Mario extends Sprite implements Cloneable
 		// Cheats:
 		if (GlobalOptions.isPowerRestoration && keys[KEY_SPEED] && (!Mario.large || !Mario.fire))
 			setMode(true, true);
-		//        if (cheatKeys[KEY_LIFE_UP])
-		//            this.lives++;
 
-		//        if (keys[KEY_DUMP_CURRENT_WORLD])
-		//            try {
-		//                System.out.println("DUMP:");
-		////                levelScene.getObservationStrings(System.out);
-		//                //levelScene.level.save(System.out);
-		//                System.out.println("DUMPED:");
-		//            } catch (IOException e) {
-		//                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-		//            }
 		ableToShoot = !keys[KEY_SPEED];
 
 		mayJump = (onGround || sliding) && !keys[KEY_JUMP];
@@ -475,9 +468,6 @@ public final class Mario extends Sprite implements Cloneable
 			xa = 0;
 		}
 
-		/*if (x > levelScene.level.xExit * LevelScene.cellSize *//*- 8*//* &&
-            x < levelScene.level.xExit * LevelScene.cellSize + 2 * LevelScene.cellSize &&
-            y < levelScene.level.yExit * LevelScene.cellSize)*/
 		if (mapX >= levelScene.level.xExit && mapY <= levelScene.level.yExit)
 		{
 			x = (levelScene.level.xExit + 1) * LevelScene.cellSize;
@@ -498,8 +488,6 @@ public final class Mario extends Sprite implements Cloneable
 		{
 			xa *= (AIR_INERTIA + windScale(windCoeff, facing) + iceScale(iceCoeff));
 		}
-
-		//    if /
 
 		if (!onGround)
 		{
@@ -599,38 +587,41 @@ public final class Mario extends Sprite implements Cloneable
 			ya += 8;
 		}
 
+		int xTest, yTest;
+		xTest = yTest = 11*16;
+				
 		boolean collide = false;
 		if (ya > 0)
 		{
-			if (isBlocking(x + xa - width, y + ya, xa, 0)) collide = true;
-			else if (isBlocking(x + xa + width, y + ya, xa, 0)) collide = true;
-			else if (isBlocking(x + xa - width, y + ya + 1, xa, ya)) collide = true;
-			else if (isBlocking(x + xa + width, y + ya + 1, xa, ya)) collide = true;
+			if (isBlocking(xTest + xa - width, yTest + ya, xa, 0)) collide = true;
+			else if (isBlocking(xTest + xa + width, yTest + ya, xa, 0)) collide = true;
+			else if (isBlocking(xTest + xa - width, yTest + ya + 1, xa, ya)) collide = true;
+			else if (isBlocking(xTest + xa + width, yTest + ya + 1, xa, ya)) collide = true;
 		}
 		if (ya < 0)
 		{
-			if (isBlocking(x + xa, y + ya - height, xa, ya)) collide = true;
-			else if (collide || isBlocking(x + xa - width, y + ya - height, xa, ya)) collide = true;
-			else if (collide || isBlocking(x + xa + width, y + ya - height, xa, ya)) collide = true;
+			if (isBlocking(xTest + xa, yTest + ya - height, xa, ya)) collide = true;
+			else if (collide || isBlocking(xTest + xa - width, yTest + ya - height, xa, ya)) collide = true;
+			else if (collide || isBlocking(xTest + xa + width, yTest + ya - height, xa, ya)) collide = true;
 		}
 		if (xa > 0)
 		{
 			sliding = true;
-			if (isBlocking(x + xa + width, y + ya - height, xa, ya)) collide = true;
+			if (isBlocking(xTest + xa + width, yTest + ya - height, xa, ya)) collide = true;
 			else sliding = false;
-			if (isBlocking(x + xa + width, y + ya - height / 2, xa, ya)) collide = true;
+			if (isBlocking(xTest + xa + width, yTest + ya - height / 2, xa, ya)) collide = true;
 			else sliding = false;
-			if (isBlocking(x + xa + width, y + ya, xa, ya)) collide = true;
+			if (isBlocking(xTest + xa + width, yTest + ya, xa, ya)) collide = true;
 			else sliding = false;
 		}
 		if (xa < 0)
 		{
 			sliding = true;
-			if (isBlocking(x + xa - width, y + ya - height, xa, ya)) collide = true;
+			if (isBlocking(xTest + xa - width, yTest + ya - height, xa, ya)) collide = true;
 			else sliding = false;
-			if (isBlocking(x + xa - width, y + ya - height / 2, xa, ya)) collide = true;
+			if (isBlocking(xTest + xa - width, yTest + ya - height / 2, xa, ya)) collide = true;
 			else sliding = false;
-			if (isBlocking(x + xa - width, y + ya, xa, ya)) collide = true;
+			if (isBlocking(xTest + xa - width, yTest + ya, xa, ya)) collide = true;
 			else sliding = false;
 		}
 
@@ -670,12 +661,16 @@ public final class Mario extends Sprite implements Cloneable
 	{
 		int x = (int) (_x / 16);
 		int y = (int) (_y / 16);
+//		x = y = 9;
+//		System.out.println("Sim: " + x + " - " + y);
 		if (x == (int) (this.x / 16) && y == (int) (this.y / 16)) return false;
 
 		boolean blocking = levelScene.level.isBlocking(x, y, xa, ya);
 
 		byte block = levelScene.level.getBlock(x, y);
-
+//		if (blocking)
+//			System.out.println("Sim " + x + " - " + y + " Block: " + block);
+		
 		if (((Level.TILE_BEHAVIORS[block & 0xff]) & Level.BIT_PICKUPABLE) > 0)
 		{
 			this.gainCoin();
@@ -689,7 +684,7 @@ public final class Mario extends Sprite implements Cloneable
 		{
 			levelScene.bump(x, y, large);
 		}
-
+//		System.out.println(blocking);
 		return blocking;
 	}
 

@@ -1,8 +1,8 @@
 package astar;
 
 import java.util.*;
-import ch.idsia.benchmark.mario.engine.sprites.Mario;
-import ch.idsia.benchmark.mario.engine.sprites.Sprite;
+import astar.sprites.Mario;
+import astar.sprites.Sprite;
 import ch.idsia.benchmark.mario.environments.Environment;
 
 public class Node implements Comparator<Node> {
@@ -33,22 +33,29 @@ public class Node implements Comparator<Node> {
 	public Node(Node parent, Node head, LevelScene levelScene, Mario mario, List<Sprite> enemies, boolean[] action) 
 	{
 		this.parent = parent;
-		this.depth = this.parent.depth + 1;
+		if (this.parent == null)
+		{
+			this.depth = 0;
+		}
+		else
+		{			
+			this.depth = this.parent.depth + 1;
+		}
 		this.head = head;
 		
 		// Copy these elements, don't just save the pointers 
 		this.levelScene = levelScene;
-		this.mario = mario; 
-		this.enemies = enemies;
+		this.mario = levelScene.mario; 
+		this.enemies = levelScene.sprites;
 		
 		this.action = action;
 		
 		// Update Mario
 		this.mario.keys = this.action;
-		this.x = mario.x;
-		this.y = mario.y;
+//		this.x = mario.x;
+//		this.y = mario.y;
 	}
-	
+
 	// The function to evaluate the current frame
 	public void fitnessEval()
 	{

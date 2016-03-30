@@ -140,13 +140,13 @@ private int invulnerableTime = 0;
 public Sprite carried = null;
 	public static Mario instance;
 
-public Mario(LevelScene levelScene)
+public Mario(LevelScene sim)
 {
     kind = KIND_MARIO;
         Mario.instance = this;
-    this.levelScene = levelScene;
-    x = levelScene.getMarioInitialPos().x;
-    y = levelScene.getMarioInitialPos().y;
+    this.levelScene = sim;
+    x = sim.getMarioInitialPos().x;
+    y = sim.getMarioInitialPos().y;
     mapX = (int) (x / 16);
     mapY = (int) (y / 16);
 
@@ -249,6 +249,7 @@ private void savePrevState()
 
 public void move()
 {
+//	System.out.println("Nor " + this.y + " - " + this.ya);
     if (GlobalOptions.isFly)
     {
         xa = ya = 0;
@@ -648,11 +649,13 @@ private boolean isBlocking(final float _x, final float _y, final float xa, final
     int x = (int) (_x / 16);
     int y = (int) (_y / 16);
     if (x == (int) (this.x / 16) && y == (int) (this.y / 16)) return false;
-
+//    System.out.println("norm " + x + " - " + y);
     boolean blocking = levelScene.level.isBlocking(x, y, xa, ya);
 
     byte block = levelScene.level.getBlock(x, y);
-
+//    if (blocking)
+//    	System.out.println("norm " + x + " - " + y + " Block: " + block);
+    
     if (((Level.TILE_BEHAVIORS[block & 0xff]) & Level.BIT_PICKUPABLE) > 0)
     {
         Mario.gainCoin();
@@ -666,7 +669,7 @@ private boolean isBlocking(final float _x, final float _y, final float xa, final
     {
         levelScene.bump(x, y, large);
     }
-
+    
     return blocking;
 }
 

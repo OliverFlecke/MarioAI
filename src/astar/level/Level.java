@@ -197,9 +197,9 @@ public class Level implements Serializable
 	public void tick()
 	{
 		// TODO:!!H! Optimize this!
-		for (int x = 0; x < length; x++)
-			for (int y = 0; y < height; y++)
-				if (data[x][y] > 0) data[x][y]--;
+//		for (int x = 0; x < length; x++)
+//			for (int y = 0; y < height; y++)
+//				if (data[x][y] > 0) data[x][y]--;
 	}
 
 	public byte getBlockCapped(int x, int y)
@@ -220,6 +220,7 @@ public class Level implements Serializable
 		if (y >= height) 
 			y = height - 1;
 		return map[x][y];
+//		return ch.idsia.benchmark.mario.engine.level.Level.GetBlock(x, y);
 	}
 
 	public void setBlock(int x, int y, byte b)

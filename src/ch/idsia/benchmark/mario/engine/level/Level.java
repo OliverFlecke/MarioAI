@@ -121,6 +121,9 @@ public static final int BIT_ANIMATED = 1 << 7;
 public static objCounters counters;
 
 //private final int FILE_HEADER = 0x271c4178;
+public static int Length, Height;
+public static byte[][] Map;
+
 public int length;
 public int height;
 public int randomSeed;
@@ -143,6 +146,8 @@ public Level(int length, int height)
 //        booleans = new Vector();
     this.length = length;
     this.height = height;
+    Length = length;
+    Height = height;
 
     xExit = 50;
     yExit = 10;
@@ -167,6 +172,7 @@ public Level(int length, int height)
 //        System.out.println("spriteTemplates = " + spriteTemplates);
 //        observation = new byte[length][height];
 //        System.out.println("observation = " + observation);
+    Map = map;
 }
 
 public static void loadBehaviors(DataInputStream dis) throws IOException
@@ -219,6 +225,17 @@ public byte getBlock(int x, int y)
     if (y >= height) 
     	y = height - 1;
     return map[x][y];
+}
+
+public static byte GetBlock(int x, int y)
+{
+    if (x < 0) x = 0;
+    if (y < 0) return 0;
+    if (x >= Length) 
+    	x = Length - 1;
+    if (y >= Height) 
+    	y = Height - 1;
+    return Map[x][y];
 }
 
 public void setBlock(int x, int y, byte b)

@@ -139,39 +139,39 @@ public void setName(String name) { Name = name; }
 
 public void keyPressed(KeyEvent e)
 {
-    toggleKey(e.getKeyCode(), true);
+	toggleKey(e.getKeyCode(), true);
 }
 
 public void keyReleased(KeyEvent e)
 {
-    toggleKey(e.getKeyCode(), false);
+	toggleKey(e.getKeyCode(), false);
 }
 
 
 protected void toggleKey(int keyCode, boolean isPressed)
 {
-    switch (keyCode)
-    {
-        case KeyEvent.VK_LEFT:
-            Action[Mario.KEY_LEFT] = isPressed;
-            break;
-        case KeyEvent.VK_RIGHT:
-            Action[Mario.KEY_RIGHT] = isPressed;
-            break;
-        case KeyEvent.VK_DOWN:
-            Action[Mario.KEY_DOWN] = isPressed;
-            break;
-        case KeyEvent.VK_UP:
-            Action[Mario.KEY_UP] = isPressed;
-            break;
+	switch (keyCode)
+	{
+	case KeyEvent.VK_LEFT:
+		Action[Mario.KEY_LEFT] = isPressed;
+		break;
+	case KeyEvent.VK_RIGHT:
+		Action[Mario.KEY_RIGHT] = isPressed;
+		break;
+	case KeyEvent.VK_DOWN:
+		Action[Mario.KEY_DOWN] = isPressed;
+		break;
+	case KeyEvent.VK_UP:
+		Action[Mario.KEY_UP] = isPressed;
+		break;
 
-        case KeyEvent.VK_S:
-            Action[Mario.KEY_JUMP] = isPressed;
-            break;
-        case KeyEvent.VK_A:
-            Action[Mario.KEY_SPEED] = isPressed;
-            break;
-    }
+	case KeyEvent.VK_S:
+		Action[Mario.KEY_JUMP] = isPressed;
+		break;
+	case KeyEvent.VK_A:
+		Action[Mario.KEY_SPEED] = isPressed;
+		break;
+	}
 }
 
 public List<boolean[]> getHistory()
