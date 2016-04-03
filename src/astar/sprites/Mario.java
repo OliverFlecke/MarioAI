@@ -39,6 +39,8 @@ import ch.idsia.tools.MarioAIOptions;
 
 public final class Mario extends Sprite implements Cloneable
 {
+	public static float xSimHead, ySimHead;
+	
 	public static final String[] MODES = new String[]{"small", "Large", "FIRE"};
 
 	//        fire = (mode == MODE.MODE_FIRE);
@@ -90,7 +92,7 @@ public final class Mario extends Sprite implements Cloneable
 	public boolean[] keys = new boolean[Environment.numberOfKeys];
 	public boolean[] cheatKeys;
 	public float runTime;
-	boolean wasOnGround = false;
+	public boolean wasOnGround = false;
 	public boolean onGround = false;
 	public boolean mayJump = false;
 	public boolean ducking = false;
@@ -151,10 +153,16 @@ public final class Mario extends Sprite implements Cloneable
 	 * The levelScene is to be set manually afterwards
 	 */
 	@Override 
-	public Object clone() throws CloneNotSupportedException 
+	public Object clone() 
 	{
 		// Maybe there is some objects that should be copied as well?
-		Mario clone = (Mario) super.clone();
+		Mario clone;
+		try {
+			clone = (Mario) super.clone();
+		} catch (CloneNotSupportedException e) {
+			// TODO Auto-generated catch block
+			clone = new Mario(levelScene);
+		}
 		// Important to copy keys, else we will operate on the same array object
 		clone.keys = new boolean[Environment.numberOfKeys];
 		for (int i = 0; i < this.keys.length; i++) {
@@ -587,41 +595,41 @@ public final class Mario extends Sprite implements Cloneable
 			ya += 8;
 		}
 
-		int xTest, yTest;
-		xTest = yTest = 11*16;
+		float xSimPos = 10*16 + (xSimHead - x);
+		float ySimPos = 10*16 + (ySimHead - y);
 				
 		boolean collide = false;
 		if (ya > 0)
 		{
-			if (isBlocking(xTest + xa - width, yTest + ya, xa, 0)) collide = true;
-			else if (isBlocking(xTest + xa + width, yTest + ya, xa, 0)) collide = true;
-			else if (isBlocking(xTest + xa - width, yTest + ya + 1, xa, ya)) collide = true;
-			else if (isBlocking(xTest + xa + width, yTest + ya + 1, xa, ya)) collide = true;
+			if (isBlocking(xSimPos + xa - width, ySimPos + ya, xa, 0)) collide = true;
+			else if (isBlocking(xSimPos + xa + width, ySimPos + ya, xa, 0)) collide = true;
+			else if (isBlocking(xSimPos + xa - width, ySimPos + ya + 1, xa, ya)) collide = true;
+			else if (isBlocking(xSimPos + xa + width, ySimPos + ya + 1, xa, ya)) collide = true;
 		}
 		if (ya < 0)
 		{
-			if (isBlocking(xTest + xa, yTest + ya - height, xa, ya)) collide = true;
-			else if (collide || isBlocking(xTest + xa - width, yTest + ya - height, xa, ya)) collide = true;
-			else if (collide || isBlocking(xTest + xa + width, yTest + ya - height, xa, ya)) collide = true;
+			if (isBlocking(xSimPos + xa, ySimPos + ya - height, xa, ya)) collide = true;
+			else if (collide || isBlocking(xSimPos + xa - width, ySimPos + ya - height, xa, ya)) collide = true;
+			else if (collide || isBlocking(xSimPos + xa + width, ySimPos + ya - height, xa, ya)) collide = true;
 		}
 		if (xa > 0)
 		{
 			sliding = true;
-			if (isBlocking(xTest + xa + width, yTest + ya - height, xa, ya)) collide = true;
+			if (isBlocking(xSimPos + xa + width, ySimPos + ya - height, xa, ya)) collide = true;
 			else sliding = false;
-			if (isBlocking(xTest + xa + width, yTest + ya - height / 2, xa, ya)) collide = true;
+			if (isBlocking(xSimPos + xa + width, ySimPos + ya - height / 2, xa, ya)) collide = true;
 			else sliding = false;
-			if (isBlocking(xTest + xa + width, yTest + ya, xa, ya)) collide = true;
+			if (isBlocking(xSimPos + xa + width, ySimPos + ya, xa, ya)) collide = true;
 			else sliding = false;
 		}
 		if (xa < 0)
 		{
 			sliding = true;
-			if (isBlocking(xTest + xa - width, yTest + ya - height, xa, ya)) collide = true;
+			if (isBlocking(xSimPos + xa - width, ySimPos + ya - height, xa, ya)) collide = true;
 			else sliding = false;
-			if (isBlocking(xTest + xa - width, yTest + ya - height / 2, xa, ya)) collide = true;
+			if (isBlocking(xSimPos + xa - width, ySimPos + ya - height / 2, xa, ya)) collide = true;
 			else sliding = false;
-			if (isBlocking(xTest + xa - width, yTest + ya, xa, ya)) collide = true;
+			if (isBlocking(xSimPos + xa - width, ySimPos + ya, xa, ya)) collide = true;
 			else sliding = false;
 		}
 
@@ -661,13 +669,12 @@ public final class Mario extends Sprite implements Cloneable
 	{
 		int x = (int) (_x / 16);
 		int y = (int) (_y / 16);
-//		x = y = 9;
-//		System.out.println("Sim: " + x + " - " + y);
 		if (x == (int) (this.x / 16) && y == (int) (this.y / 16)) return false;
 
 		boolean blocking = levelScene.level.isBlocking(x, y, xa, ya);
 
 		byte block = levelScene.level.getBlock(x, y);
+//		System.out.println("Sim: " + x + " - " + y + " Block: " + block);
 //		if (blocking)
 //			System.out.println("Sim " + x + " - " + y + " Block: " + block);
 		

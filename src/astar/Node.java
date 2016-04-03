@@ -5,9 +5,12 @@ import astar.sprites.Mario;
 import astar.sprites.Sprite;
 import ch.idsia.benchmark.mario.environments.Environment;
 
-public class Node implements Comparator<Node> {
+public class Node implements Comparator<Node>, Comparable<Node> {
 	
-	private static float alpha = 1;
+	public static int nodeCount = 0;
+	private static float alpha = 1f;
+	private static float goal = 0;
+	public static PriorityQueue<Node> queue;
 	
 	// Coordinates of the node
 	private float x, y;
@@ -36,12 +39,15 @@ public class Node implements Comparator<Node> {
 		if (this.parent == null)
 		{
 			this.depth = 0;
+			Mario.xSimHead = mario.x;
+			Mario.ySimHead = mario.y;
 		}
 		else
 		{			
 			this.depth = this.parent.depth + 1;
 		}
-		this.head = head;
+		if (head == null) this.head = this;
+		else this.head = head;
 		
 		// Copy these elements, don't just save the pointers 
 		this.levelScene = levelScene;
@@ -52,27 +58,62 @@ public class Node implements Comparator<Node> {
 		
 		// Update Mario
 		this.mario.keys = this.action;
-//		this.x = mario.x;
-//		this.y = mario.y;
+		this.x = mario.x;
+		this.y = mario.y;
+		
+		Node.nodeCount++;
 	}
 
-	// The function to evaluate the current frame
+	/**
+	 *  The function to evaluate the current frame
+	 */
 	public void fitnessEval()
 	{
-		float g = this.head.x;
-		float toGoal = alpha * ((head.x + 150f) - this.x);
+		// Evalf the simulation
+		this.tick();
+		
+		float g = Math.abs(this.x - this.head.x);
+		float toGoal = Math.abs(alpha * (goal - this.x));
 		float h = 0;
 		if (mario.isDead()) 
 		{
-			this.fitness = Integer.MAX_VALUE;
+			h = Integer.MAX_VALUE;
 		}
 		else 
 		{
 			h = toGoal;
-			this.fitness = (int) (g + h);
+//			h = toGoal + this.y;
 		}
+//		System.out.println("Fitness: g " + g + " h: " + h);
+		this.fitness = (int) (g + h);
 	}
 	
+	/**
+	 * 
+	 */
+	private void tick() {
+//		this.levelScene.tick();
+		this.mario.tick();
+//		if ((parent.jumpTime < 6) || (mario.isOnGround()))
+//		{
+//			marioCanJump = true;
+//			this.jumpTime = parent.jumpTime + 1;
+//		}
+//		else
+//		{
+//			marioCanJump = false;
+//			this.jumpTime = 0;
+//		}
+		
+		if (levelScene.isMarioAbleToJump() || (!levelScene.isMarioOnGround()))
+			marioCanJump = true;
+		else 
+			marioCanJump = false;
+	}
+	
+	private boolean marioCanJump = true;
+	public int jumpTime = 0;
+
 	// The main search function to find the optimal path
 	// Should return the best option found 
 	public Node searchChildren()
@@ -113,16 +154,52 @@ public class Node implements Comparator<Node> {
 	}
 	
 	/**
+	 * 
+	 * @return
+	 */
+	public LinkedList<boolean[]> searchForPath()
+	{
+		queue = new PriorityQueue<Node>();
+		generateNewNodes();
+		// Chose to use this, if we find a solution, but want to continue our search
+		Node current = queue.remove();
+		Node best = current; 
+		
+		while ((!current.atGoal() && current.depth < 40))
+		{
+			current.generateNewNodes();
+			current = queue.remove();
+			
+//			// When the best option in the queue is worse than the best, stop
+//			if (current.fitness < best.fitness)
+//				break;
+
+//			System.out.println(current.fitness);
+//			System.out.println(current.depth);
+			
+			// Update the best node
+			if (best.fitness >= current.fitness)
+				best = current;
+		}
+		
+//		System.out.println("Depth: " + best.depth);
+		
+//		System.out.println(Node.nodeCount);
+		Node.nodeCount = 0;
+		return best.getActionPath();
+	}
+	
+	/**
 	 * Generate all the new nodes which Mario can move to from this
 	 * 
 	 * Should maybe take a queue and insert the new nodes 
 	 */
-	public void generateNewNodes(PriorityQueue<Node> queue)
+	public void generateNewNodes()
 	{
 		// TODO Clone the objects
-		LevelScene newScene = null;
+		LevelScene newScene = this.levelScene;
 		// Not sure if mario should be cloned here or in the Node constructor 
-		Mario newMario = null;		
+		Mario newMario = (Mario) this.mario.clone();		
 		
 		// Compute all the new positions for the enemies
 		List<Sprite> newEnemies = new ArrayList<Sprite>();
@@ -138,10 +215,10 @@ public class Node implements Comparator<Node> {
 		// Create new nodes with actions 
 		// TODO Should every node have a clone of the levelScene, Mario, and enemies?
 		// Action: Nothing
-		node = new Node(this, this.head, newScene, newMario, newEnemies, Node.createAction(false, false, false, false, false, false));
-		node.fitnessEval();
-		queue.add(node);
-		
+//		node = new Node(this, this.head, newScene, newMario, newEnemies, Node.createAction(false, false, false, false, false, false));
+//		node.fitnessEval();
+//		queue.add(node);
+//		
 		// Action: Move right
 		node = new Node(this, this.head, newScene, newMario, newEnemies, Node.createAction(true, false, false, false, false, false));
 		node.fitnessEval();
@@ -151,22 +228,22 @@ public class Node implements Comparator<Node> {
 		node.fitnessEval();
 		queue.add(node);
 	
-		// Action: Move left
-		node = new Node(this, this.head, newScene, newMario, newEnemies, Node.createAction(false, true, false, false, false, false));
-		node.fitnessEval();
-		queue.add(node);
-		// Action: Move left with speed
-		node = new Node(this, this.head, newScene, newMario, newEnemies, Node.createAction(false, true, false, true, false, false));
-		node.fitnessEval();
-		queue.add(node);
-	
+//		// Action: Move left
+//		node = new Node(this, this.head, newScene, newMario, newEnemies, Node.createAction(false, true, false, false, false, false));
+//		node.fitnessEval();
+//		queue.add(node);
+//		// Action: Move left with speed
+//		node = new Node(this, this.head, newScene, newMario, newEnemies, Node.createAction(false, true, false, true, false, false));
+//		node.fitnessEval();
+//		queue.add(node);
+//	
 		// Check if pressing the jump key makes a differers, and generate nodes if it does
-		if (mario.jumpTime >= 0)
+		if (this.marioCanJump)
 		{
-			// Action: Jump
-			node = new Node(this, this.head, newScene, newMario, newEnemies, Node.createAction(false, false, true, false, false, false));
-			node.fitnessEval();
-			queue.add(node);
+//			// Action: Jump
+//			node = new Node(this, this.head, newScene, newMario, newEnemies, Node.createAction(false, false, true, false, false, false));
+//			node.fitnessEval();
+//			queue.add(node);
 			// Action: Jump and move right
 			node = new Node(this, this.head, newScene, newMario, newEnemies, Node.createAction(true, false, true, false, false, false));
 			node.fitnessEval();
@@ -176,14 +253,14 @@ public class Node implements Comparator<Node> {
 			node.fitnessEval();
 			queue.add(node);
 			
-			// Action: Jump and left
-			node = new Node(this, this.head, newScene, newMario, newEnemies, Node.createAction(false, true, true, false, false, false));
-			node.fitnessEval();
-			queue.add(node);
-			// Action: Jump, left and speed
-			node = new Node(this, this.head, newScene, newMario, newEnemies, Node.createAction(false, true, true, true, false, false));
-			node.fitnessEval();
-			queue.add(node);
+//			// Action: Jump and left
+//			node = new Node(this, this.head, newScene, newMario, newEnemies, Node.createAction(false, true, true, false, false, false));
+//			node.fitnessEval();
+//			queue.add(node);
+//			// Action: Jump, left and speed
+//			node = new Node(this, this.head, newScene, newMario, newEnemies, Node.createAction(false, true, true, true, false, false));
+//			node.fitnessEval();
+//			queue.add(node);
 		}
 	
 		// Is mario able to shoot?
@@ -227,4 +304,28 @@ public class Node implements Comparator<Node> {
 	public int compare(Node a, Node b) {
 		return (a.fitness - b.fitness);
 	}
+	
+	@Override
+	public int compareTo(Node other) {
+		return (this.fitness - other.fitness);
+	}
+
+	/**
+	 * Test to see if this node is at the goal
+	 * @return True, if this node is at the goal line
+	 */
+	public boolean atGoal()
+	{
+		return this.x >= Node.goal;
+	}
+	
+	/**
+	 * Set the goal for the current simulation
+	 * @param goal Value of the goal
+	 */
+	public static void setGoal(float goal)
+	{
+		Node.goal = goal;
+	}
+
 }

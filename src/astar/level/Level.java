@@ -220,7 +220,6 @@ public class Level implements Serializable
 		if (y >= height) 
 			y = height - 1;
 		return map[x][y];
-//		return ch.idsia.benchmark.mario.engine.level.Level.GetBlock(x, y);
 	}
 
 	public void setBlock(int x, int y, byte b)

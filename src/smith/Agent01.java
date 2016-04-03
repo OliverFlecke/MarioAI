@@ -27,46 +27,50 @@ public class Agent01 extends BasicMarioAIAgent implements Agent {
 	
 	public boolean[] getAction()
 	{
-		action[Mario.KEY_RIGHT] = true;
+//		action[Mario.KEY_RIGHT] = true;
 
-		// Jump logic
-		boolean jump = false;
-//		jump = (getField(1, 0) != 0) || (getField(2, 0) != 0); 
-		int jumpHeight = (jump = (getField(1, 0) != 0) && (getField(1, -1) == 0)) ? 1 : 6;
-		if (!jump) 
-		{
-			jump = getField(1, 0) != 0 && getField(1, -1) != 0;
-		}
-		
-		// Check for holes
-		if (getField(1, 1) == 0)
-		{	
-			jump = true;
-			for (int i = 1; i < 9; i++)
-			{
-				jump &= (getField(1, i) == 0);
-			}
-		}
-		
-		if (jump && (isMarioAbleToJump || (!isMarioOnGround && action[Mario.KEY_JUMP])) && jumpRotation == 0)
-		{
-			action[Mario.KEY_JUMP] = true;
-			jumpCounter++;
-		} else if (jumpRotation == 1){
-			action[Mario.KEY_JUMP] = false;
-			jumpRotation = 0;
-		}
-		if (jumpCounter > jumpHeight){
-			jumpCounter = 0;
-			jumpRotation = 1; 
-		}
-		
+//		// Jump logic
+//		boolean jump = false;
+////		jump = (getField(1, 0) != 0) || (getField(2, 0) != 0); 
+//		int jumpHeight = (jump = (getField(1, 0) != 0) && (getField(1, -1) == 0)) ? 1 : 6;
+//		if (!jump) 
+//		{
+//			jump = getField(1, 0) != 0 && getField(1, -1) != 0;
+//		}
+//		
+//		// Check for holes
+//		if (getField(1, 1) == 0)
+//		{	
+//			jump = true;
+//			for (int i = 1; i < 9; i++)
+//			{
+//				jump &= (getField(1, i) == 0);
+//			}
+//		}
+//		
+//		if (jump && (isMarioAbleToJump || (!isMarioOnGround && action[Mario.KEY_JUMP])) && jumpRotation == 0)
+//		{
+//			action[Mario.KEY_JUMP] = true;
+//			jumpCounter++;
+//		} else if (jumpRotation == 1){
+//			action[Mario.KEY_JUMP] = false;
+//			jumpRotation = 0;
+//		}
+//		if (jumpCounter > jumpHeight){
+//			jumpCounter = 0;
+//			jumpRotation = 1; 
+//		}
+//		
 //		if (jump && isMarioAbleToJump || (!isMarioOnGround && action[Mario.KEY_JUMP]))
 //			action[Mario.KEY_JUMP] = true;
 //		else 
 //		{			
 //			action[Mario.KEY_JUMP] = false;
 //		}
+		if (isMarioAbleToJump || (!isMarioOnGround ))
+			action[Mario.KEY_JUMP] = true;
+		else 
+			action[Mario.KEY_JUMP] = false;
 		return action;
 	}
 	
