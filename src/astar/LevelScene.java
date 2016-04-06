@@ -42,6 +42,7 @@ import astar.level.Level;
 import astar.level.SpriteTemplate;
 import astar.sprites.BulletBill;
 import astar.sprites.CoinAnim;
+import astar.sprites.Enemy;
 import astar.sprites.FireFlower;
 import astar.sprites.Fireball;
 import astar.sprites.GreenMushroom;
@@ -115,7 +116,7 @@ public final class LevelScene implements SpriteContext, Cloneable
 	{ 
 		this(null);
 	}
-	
+
 	public LevelScene(Mario mario)
 	{
 		try
@@ -129,16 +130,16 @@ public final class LevelScene implements SpriteContext, Cloneable
 		}
 		Sprite.spriteContext = this;
 		sprites.clear();
-		
+
 		// This (last) Mario should be a clone for all the node instances
 		this.mario = (mario == null) ? new Mario(this) : mario;
 		this.mario.levelScene = this;
-		
+
 		startTime = 1;
 		timeLeft = 3000;
 		tickCount = 1;		
 	}
-	
+
 	@Override
 	public Object clone() throws CloneNotSupportedException
 	{
@@ -147,10 +148,10 @@ public final class LevelScene implements SpriteContext, Cloneable
 		clone.mario = (Mario) this.mario.clone();
 		clone.mario.levelScene = clone;
 		clone.level = (Level) this.level.clone();
-		
+
 		// Clone the list of sprites
 		clone.sprites = new ArrayList<Sprite>();
-		
+
 		return clone;
 	}
 
@@ -163,22 +164,22 @@ public final class LevelScene implements SpriteContext, Cloneable
 			if (sprite.isDead()) continue;
 			switch (sprite.kind)
 			{
-				case Sprite.KIND_GOOMBA:
-				case Sprite.KIND_BULLET_BILL:
-				case Sprite.KIND_ENEMY_FLOWER:
-				case Sprite.KIND_GOOMBA_WINGED:
-				case Sprite.KIND_GREEN_KOOPA:
-				case Sprite.KIND_GREEN_KOOPA_WINGED:
-				case Sprite.KIND_RED_KOOPA:
-				case Sprite.KIND_RED_KOOPA_WINGED:
-				case Sprite.KIND_SPIKY:
-				case Sprite.KIND_SPIKY_WINGED:
-				case Sprite.KIND_SHELL:
-				{
-					enemiesFloatsList.add((float) sprite.kind);
-					enemiesFloatsList.add(sprite.x - mario.x);
-					enemiesFloatsList.add(sprite.y - mario.y);
-				}
+			case Sprite.KIND_GOOMBA:
+			case Sprite.KIND_BULLET_BILL:
+			case Sprite.KIND_ENEMY_FLOWER:
+			case Sprite.KIND_GOOMBA_WINGED:
+			case Sprite.KIND_GREEN_KOOPA:
+			case Sprite.KIND_GREEN_KOOPA_WINGED:
+			case Sprite.KIND_RED_KOOPA:
+			case Sprite.KIND_RED_KOOPA_WINGED:
+			case Sprite.KIND_SPIKY:
+			case Sprite.KIND_SPIKY_WINGED:
+			case Sprite.KIND_SHELL:
+			{
+				enemiesFloatsList.add((float) sprite.kind);
+				enemiesFloatsList.add(sprite.x - mario.x);
+				enemiesFloatsList.add(sprite.y - mario.y);
+			}
 			}
 		}
 
@@ -587,136 +588,172 @@ public final class LevelScene implements SpriteContext, Cloneable
 
 	public void setup(byte[][] levelSceneObservationZ, float[] enemiesFloatPos) {
 		this.level.map = levelSceneObservationZ;
-//		setEnemiesFloatPos(enemiesFloatPos);
+		setEnemiesFloatPos(enemiesFloatPos);
 	}
 
-	//adding enemy sprites
+	//adding enemy sprites and fireballs etc
 	public void setEnemiesFloatPos(float[] enemiesFloatPos)
 	{
-		Sprite sprite = new Sprite();
-		for(int i=0; i<enemiesFloatPos.length; i+=3){				
-			sprite.x = i+1+mario.x;
-			sprite.y = i+2+mario.y;
-			System.out.println("**"+(int)enemiesFloatPos[i]+"**" );
-			sprite.spriteTemplate =  new SpriteTemplate((int)enemiesFloatPos[i]);
+		for(int i=0; i<enemiesFloatPos.length; i+=3){
+
+			int kind = (int)enemiesFloatPos[i];
+			float x = enemiesFloatPos[i+1];
+			float y = enemiesFloatPos[i+2];
+
+			int type = -1;
+			boolean winged = false;
+
+			switch (kind) {
+			case(Sprite.KIND_BULLET_BILL): type = -2;
+			break;
+			case(Sprite.KIND_SHELL): type = Enemy.KIND_SHELL;
+			break;
+			case(Sprite.KIND_GOOMBA): type = Enemy.ENEMY_GOOMBA;
+			break;
+			case(Sprite.KIND_GOOMBA_WINGED): type = Enemy.ENEMY_GOOMBA; winged = true;
+			break;
+			case(Sprite.KIND_GREEN_KOOPA): type = Enemy.ENEMY_GREEN_KOOPA;
+			break;
+			case(Sprite.KIND_GREEN_KOOPA_WINGED): type = Enemy.ENEMY_GREEN_KOOPA; winged = true;
+			break;
+			case(Sprite.KIND_RED_KOOPA): type = Enemy.ENEMY_RED_KOOPA;
+			break;
+			case(Sprite.KIND_RED_KOOPA_WINGED): type = Enemy.ENEMY_RED_KOOPA; winged = true;
+			break;
+			case(Sprite.KIND_SPIKY): type = Enemy.ENEMY_SPIKY;
+			break;
+			case(Sprite.KIND_SPIKY_WINGED): type = Enemy.ENEMY_SPIKY; winged = true;
+			break;
+			default : type=-1;
+			break;
+			}
+			if(type==-1){
+				System.out.println("oh shit type -1");
+			}
+			else{
+				sprite = new Enemy(this, x, y, -1, type, winged, (int) x/16, (int) y/16);
+			}
+
+			sprite.spriteTemplate =  new SpriteTemplate(type, winged);
 			sprites.add(sprite);
 
 		}
+
 		if(debugAddEnemies){
-		System.out.println("-------------\n");
-		for(Sprite s : sprites){
-			System.out.println("kind: " + (int)s.kind+", Coordinate: " + s.x + "," + s.y + "\n ");			
-		}
-		System.out.println("-------------\n");
+			System.out.println("-------------\n");
+			for(Sprite s : sprites){
+				System.out.println("kind: " + (int)s.kind+", Coordinate: " + s.x + "," + s.y + "\n ");			
+			}
+			System.out.println("-------------\n");
 		}
 	}
-	
+
 
 	public void resetDefault()
 	{
-	    // TODO: set values to defaults
-	    reset(MarioAIOptions.getDefaultOptions());
+		// TODO: set values to defaults
+		reset(MarioAIOptions.getDefaultOptions());
 	}
-	
+
 	public void reset(MarioAIOptions marioAIOptions)
 	{
-	//        System.out.println("\nLevelScene RESET!");
-	//        this.gameViewer = setUpOptions[0] == 1;
-	//        System.out.println("this.mario.isMarioInvulnerable = " + this.mario.isMarioInvulnerable);
-	//    this.levelDifficulty = marioAIOptions.getLevelDifficulty();
-	//        System.out.println("this.levelDifficulty = " + this.levelDifficulty);
-	//    this.levelLength = marioAIOptions.getLevelLength();
-	//        System.out.println("this.levelLength = " + this.levelLength);
-	//    this.levelSeed = marioAIOptions.getLevelRandSeed();
-	//        System.out.println("levelSeed = " + levelSeed);
-	//    this.levelType = marioAIOptions.getLevelType();
-	//        System.out.println("levelType = " + levelType);
-	
-	
-	    GlobalOptions.FPS = marioAIOptions.getFPS();
-	//        System.out.println("GlobalOptions.FPS = " + GlobalOptions.FPS);
-	    GlobalOptions.isPowerRestoration = marioAIOptions.isPowerRestoration();
-	//        System.out.println("GlobalOptions.isPowerRestoration = " + GlobalOptions.isPowerRestoration);
-	//    GlobalOptions.isPauseWorld = marioAIOptions.isPauseWorld();
-	    GlobalOptions.areFrozenCreatures = marioAIOptions.isFrozenCreatures();
-	//        System.out.println("GlobalOptions = " + GlobalOptions.isPauseWorld);
-	//        GlobalOptions.isTimer = marioAIOptions.isTimer();
-	//        System.out.println("GlobalOptions.isTimer = " + GlobalOptions.isTimer);
-	//        isToolsConfigurator = setUpOptions[11] == 1;
-	    this.setTimeLimit(marioAIOptions.getTimeLimit());
-	//        System.out.println("this.getTimeLimit() = " + this.getTimeLimit());
-	//        this.isViewAlwaysOnTop() ? 1 : 0, setUpOptions[13]
-	    GlobalOptions.isVisualization = marioAIOptions.isVisualization();
-	//        System.out.println("visualization = " + visualization);
-	
-	    killedCreaturesTotal = 0;
-	    killedCreaturesByFireBall = 0;
-	    killedCreaturesByStomp = 0;
-	    killedCreaturesByShell = 0;
-	
-	    marioInitialPos = marioAIOptions.getMarioInitialPos();
-	    greenMushroomMode = marioAIOptions.getGreenMushroomMode();
-	
-//	    if (replayer != null)
-//	    {
-//	        try
-//	        {
-//	//            replayer.openNextReplayFile();
-//	            replayer.openFile("level.lvl");
-//	            level = (Level) replayer.readObject();
-//	            level.counters.resetUncountableCounters();
-//	//            replayer.closeFile();
-//	//            replayer.closeRecorder();
-//	        } catch (IOException e)
-//	        {
-//	            System.err.println("[Mario AI Exception] : level reading failed");
-//	            e.printStackTrace();
-//	        } catch (Exception e)
-//	        {
-//	            e.printStackTrace();
-//	        }
-//	    } else
-//	        level = LevelGenerator.createLevel(marioAIOptions);
-	
-	    String fileName = marioAIOptions.getLevelFileName();
-	    if (!fileName.equals(""))
-	    {
-	        try
-	        {
-	            Level.save(level, new ObjectOutputStream(new FileOutputStream(fileName)));
-	        } catch (IOException e)
-	        {
-	            System.err.println("[Mario AI Exception] : Cannot write to file " + fileName);
-	            e.printStackTrace();
-	        }
-	    }
-	    this.levelSeed = level.randomSeed;
-	    this.levelLength = level.length;
-	    this.levelHeight = level.height;
-	    this.levelType = level.type;
-	    this.levelDifficulty = level.difficulty;
-	
-	    Sprite.spriteContext = this;
-	    sprites.clear();
-	    this.width = GlobalOptions.VISUAL_COMPONENT_WIDTH;
-	    this.height = GlobalOptions.VISUAL_COMPONENT_HEIGHT;
-	
-	    Sprite.setCreaturesGravity(marioAIOptions.getCreaturesGravity());
-	    Sprite.setCreaturesWind(marioAIOptions.getWind());
-	    Sprite.setCreaturesIce(marioAIOptions.getIce());
-	    Mario.resetStatic(marioAIOptions);
-	
-	    bonusPoints = -1;
-	
-	    mario = new Mario(this);
-	    //System.out.println("mario = " + mario);
-	    memo = "";
-	
-	    sprites.add(mario);
-	    startTime = 1;
-	    timeLeft = timeLimit * GlobalOptions.mariosecondMultiplier;
-	
-	    tickCount = 0;
+		//        System.out.println("\nLevelScene RESET!");
+		//        this.gameViewer = setUpOptions[0] == 1;
+		//        System.out.println("this.mario.isMarioInvulnerable = " + this.mario.isMarioInvulnerable);
+		//    this.levelDifficulty = marioAIOptions.getLevelDifficulty();
+		//        System.out.println("this.levelDifficulty = " + this.levelDifficulty);
+		//    this.levelLength = marioAIOptions.getLevelLength();
+		//        System.out.println("this.levelLength = " + this.levelLength);
+		//    this.levelSeed = marioAIOptions.getLevelRandSeed();
+		//        System.out.println("levelSeed = " + levelSeed);
+		//    this.levelType = marioAIOptions.getLevelType();
+		//        System.out.println("levelType = " + levelType);
+
+
+		GlobalOptions.FPS = marioAIOptions.getFPS();
+		//        System.out.println("GlobalOptions.FPS = " + GlobalOptions.FPS);
+		GlobalOptions.isPowerRestoration = marioAIOptions.isPowerRestoration();
+		//        System.out.println("GlobalOptions.isPowerRestoration = " + GlobalOptions.isPowerRestoration);
+		//    GlobalOptions.isPauseWorld = marioAIOptions.isPauseWorld();
+		GlobalOptions.areFrozenCreatures = marioAIOptions.isFrozenCreatures();
+		//        System.out.println("GlobalOptions = " + GlobalOptions.isPauseWorld);
+		//        GlobalOptions.isTimer = marioAIOptions.isTimer();
+		//        System.out.println("GlobalOptions.isTimer = " + GlobalOptions.isTimer);
+		//        isToolsConfigurator = setUpOptions[11] == 1;
+		this.setTimeLimit(marioAIOptions.getTimeLimit());
+		//        System.out.println("this.getTimeLimit() = " + this.getTimeLimit());
+		//        this.isViewAlwaysOnTop() ? 1 : 0, setUpOptions[13]
+		GlobalOptions.isVisualization = marioAIOptions.isVisualization();
+		//        System.out.println("visualization = " + visualization);
+
+		killedCreaturesTotal = 0;
+		killedCreaturesByFireBall = 0;
+		killedCreaturesByStomp = 0;
+		killedCreaturesByShell = 0;
+
+		marioInitialPos = marioAIOptions.getMarioInitialPos();
+		greenMushroomMode = marioAIOptions.getGreenMushroomMode();
+
+		//	    if (replayer != null)
+		//	    {
+		//	        try
+		//	        {
+		//	//            replayer.openNextReplayFile();
+		//	            replayer.openFile("level.lvl");
+		//	            level = (Level) replayer.readObject();
+		//	            level.counters.resetUncountableCounters();
+		//	//            replayer.closeFile();
+		//	//            replayer.closeRecorder();
+		//	        } catch (IOException e)
+		//	        {
+		//	            System.err.println("[Mario AI Exception] : level reading failed");
+		//	            e.printStackTrace();
+		//	        } catch (Exception e)
+		//	        {
+		//	            e.printStackTrace();
+		//	        }
+		//	    } else
+		//	        level = LevelGenerator.createLevel(marioAIOptions);
+
+		String fileName = marioAIOptions.getLevelFileName();
+		if (!fileName.equals(""))
+		{
+			try
+			{
+				Level.save(level, new ObjectOutputStream(new FileOutputStream(fileName)));
+			} catch (IOException e)
+			{
+				System.err.println("[Mario AI Exception] : Cannot write to file " + fileName);
+				e.printStackTrace();
+			}
+		}
+		this.levelSeed = level.randomSeed;
+		this.levelLength = level.length;
+		this.levelHeight = level.height;
+		this.levelType = level.type;
+		this.levelDifficulty = level.difficulty;
+
+		Sprite.spriteContext = this;
+		sprites.clear();
+		this.width = GlobalOptions.VISUAL_COMPONENT_WIDTH;
+		this.height = GlobalOptions.VISUAL_COMPONENT_HEIGHT;
+
+		Sprite.setCreaturesGravity(marioAIOptions.getCreaturesGravity());
+		Sprite.setCreaturesWind(marioAIOptions.getWind());
+		Sprite.setCreaturesIce(marioAIOptions.getIce());
+		Mario.resetStatic(marioAIOptions);
+
+		bonusPoints = -1;
+
+		mario = new Mario(this);
+		//System.out.println("mario = " + mario);
+		memo = "";
+
+		sprites.add(mario);
+		startTime = 1;
+		timeLeft = timeLimit * GlobalOptions.mariosecondMultiplier;
+
+		tickCount = 0;
 	}
 
 }
