@@ -67,6 +67,11 @@ public class Agent01 extends BasicMarioAIAgent implements Agent {
 //		{			
 //			action[Mario.KEY_JUMP] = false;
 //		}
+		if (isMarioAbleToJump)
+			System.out.println("Jump");
+		if (!isMarioOnGround)
+			System.out.println("Not on ground");
+			
 		if (isMarioAbleToJump || (!isMarioOnGround ))
 			action[Mario.KEY_JUMP] = true;
 		else 

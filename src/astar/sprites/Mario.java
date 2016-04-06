@@ -168,6 +168,10 @@ public final class Mario extends Sprite implements Cloneable
 		for (int i = 0; i < this.keys.length; i++) {
 			clone.keys[i] = this.keys[i];
 		}
+		
+		clone.canJump = this.canJump;
+		clone.mayJump = this.mayJump;
+		clone.onGround = this.onGround;
 		return clone;
 	}
 
@@ -517,7 +521,7 @@ public final class Mario extends Sprite implements Cloneable
 			//            System.out.println("sideWaysSpeed = " + sideWaysSpeed);
 		}
 	}
-
+	
 	private void calcPic()
 	{
 		int runFrame;
@@ -597,7 +601,9 @@ public final class Mario extends Sprite implements Cloneable
 
 		float xSimPos = 10*16 + (xSimHead - x);
 		float ySimPos = 10*16 + (ySimHead - y);
-				
+//		xSimPos = x;
+//		ySimPos = y;
+		
 		boolean collide = false;
 		if (ya > 0)
 		{
@@ -691,7 +697,7 @@ public final class Mario extends Sprite implements Cloneable
 		{
 			levelScene.bump(x, y, large);
 		}
-//		System.out.println(blocking);
+		
 		return blocking;
 	}
 

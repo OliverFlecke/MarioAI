@@ -125,37 +125,43 @@ public class AstarAgent extends KeyAdapter implements Agent {
 		if (runSimulation)
 			runSim();
 		
-		// If we have no more actions left in the list, compute new actions
-		if (actionPath.isEmpty() || actionCount <= 0)
+		if (runAstar)
 		{
-			actionCount = MAXCOUNT;
-			// Create a new simulation for the AStar 
-			Node.queue = new PriorityQueue<Node>();
-			
-			sim = new LevelScene();
-			sim.level = new Level(19, 19);
-			sim.setup(this.observation, enemiesFloatPos);
-			mario = new Mario(sim);
-			sim.mario = mario;
-			sim.addSprite(mario);	
-			
-			mario.x = marioFloatPos[0];
-			mario.y = marioFloatPos[1];
-			mario.xa = (marioFloatPos[0] - lastX) * 0.89f;
-			if (Math.abs(mario.y - marioFloatPos[1]) > 0.1f)
-				mario.ya = (marioFloatPos[1] - lastY) * 0.89f;
-			
-			head = new Node(null, null, sim, mario, null, currentAction);	
-			Node.setGoal(marioFloatPos[0] + 250);
-//			System.out.println("Next goal: " + (marioFloatPos[0] + 250));
-			
-			// Search for the best path
-			actionPath = head.searchForPath();
-		}
-		else
-		{
-			action = actionPath.removeFirst();
-			actionCount--;
+			// If we have no more actions left in the list, compute new actions
+			if (actionPath.isEmpty() || actionCount <= 0)
+			{
+				actionCount = MAXCOUNT;
+				// Create a new simulation for the AStar 
+				Node.queue = new PriorityQueue<Node>();
+				
+				levelScene = new LevelScene();
+				levelScene.level = new Level(19, 19);
+				levelScene.setup(this.observation, enemiesFloatPos);
+				mario = new Mario(levelScene);
+				levelScene.mario = mario;
+				levelScene.addSprite(mario);	
+				
+				mario.x = marioFloatPos[0];
+				mario.y = marioFloatPos[1];
+				mario.xa = (marioFloatPos[0] - lastX) * 0.89f;
+				if (Math.abs(mario.y - marioFloatPos[1]) > 0.1f)
+					mario.ya = (marioFloatPos[1] - lastY) * 0.89f;
+				
+				mario.mayJump = isMarioAbleToJump;
+				mario.onGround = isMarioOnGround;
+				
+				head = new Node(null, null, levelScene, mario, null, currentAction);	
+				Node.setGoal(marioFloatPos[0] + 250f);
+				Node.setStartTime(System.currentTimeMillis());
+				
+				// Search for the best path
+				actionPath = head.searchForPath();
+			}
+			else
+			{
+				action = actionPath.removeFirst();
+				actionCount--;
+			}			
 		}
 		
 		lastX = marioFloatPos[0];
@@ -165,35 +171,34 @@ public class AstarAgent extends KeyAdapter implements Agent {
 		return action;
 	}
 	
-	private final int MAXCOUNT = 100;
+	private final int MAXCOUNT = 2;
 	private int actionCount = MAXCOUNT;
 	private LinkedList<boolean[]> actionPath = new LinkedList<boolean[]>();
 	Node head = null;
-	LevelScene sim = null;
+	LevelScene levelScene = null;
 	Mario mario;
 	boolean[] currentAction = new boolean[Environment.numberOfKeys];
 	boolean runSimulation = false;
-//	boolean runSimulation = true;
-	
+	private boolean runAstar = true;
 	private float lastX = 0, lastY = 0;
 	
 	private void runSim() 
 	{
 		if (head == null) 
 		{
-			currentAction[Mario.KEY_RIGHT] = true;
-			sim = new LevelScene();
-			sim.level = new Level(19, 19);
-			sim.setup(this.observation, enemiesFloatPos);
-			mario = new Mario(sim);
-			sim.mario = mario;
-			sim.addSprite(mario);
+			currentAction[Mario.KEY_JUMP] = true;
+			levelScene = new LevelScene();
+			levelScene.level = new Level(19, 19);
+			levelScene.setup(this.observation, enemiesFloatPos);
+			mario = new Mario(levelScene);
+			levelScene.mario = mario;
+			levelScene.addSprite(mario);
 			
-			head = new Node(null, null, sim, mario, null, currentAction);
+			head = new Node(null, null, levelScene, mario, null, currentAction);
 		}
 		else
 		{
-			sim.level.map = this.observation;
+			levelScene.level.map = this.observation;
 //			for (int i = 0; i < observation.length; i++) {
 //				sim.level.map[10][i] = -60;
 //			}
@@ -205,18 +210,8 @@ public class AstarAgent extends KeyAdapter implements Agent {
 		if (Math.abs(mario.y - marioFloatPos[1]) > 0.1f)
 			mario.ya = (marioFloatPos[1] - lastY) * 0.89f;
 		
-//		if (sim == null)
-//		{			
-//			sim = new LevelScene();		
-//			sim.level = new Level(1500,15);	
-//			printCreatures(sim);			
-//			sim.setup(this.observation, this.enemiesFloatPos);
-//			sim.mario.keys = new boolean[Environment.numberOfKeys];
-//			sim.mario.keys[Mario.KEY_RIGHT] = true;
-//		}		
-//		printCreatures(head.levelScene);
-		
 		head.levelScene.tick();
+		System.out.println("Jump time: " + mario.yaa);
 //		printMario();
 //		printLevelGrid();
 
@@ -316,7 +311,7 @@ public class AstarAgent extends KeyAdapter implements Agent {
 			break;
 
 		case KeyEvent.VK_S:
-			action[Mario.KEY_JUMP] = isPressed;
+			action[Mario.KEY_JUMP] = !action[Mario.KEY_JUMP];
 			break;
 		case KeyEvent.VK_A:
 			action[Mario.KEY_SPEED] = isPressed;
@@ -335,6 +330,9 @@ public class AstarAgent extends KeyAdapter implements Agent {
 			break;
 		case KeyEvent.VK_7:
 			runSimulation = true;
+			break;
+		case KeyEvent.VK_6:
+			System.out.println("Next goal: " + Node.goal + "\tMario X pos: " + marioFloatPos[0]);
 			break;
 		}
 	}
