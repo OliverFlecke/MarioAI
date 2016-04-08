@@ -282,6 +282,7 @@ public class Sprite implements Cloneable
 	public Object clone() throws CloneNotSupportedException
 	{
 		Sprite clone = (Sprite) super.clone();
+		
 		if (this.spriteTemplate != null)
 		{
 			clone.spriteTemplate = (SpriteTemplate) this.spriteTemplate.clone();

@@ -588,59 +588,48 @@ public final class LevelScene implements SpriteContext, Cloneable
 
 	public void setup(byte[][] levelSceneObservationZ, float[] enemiesFloatPos) {
 		this.level.map = levelSceneObservationZ;
-		setEnemiesFloatPos(enemiesFloatPos);
+		setSpritesFloatPos(enemiesFloatPos);
 	}
 
 	//adding enemy sprites and fireballs etc
-	public void setEnemiesFloatPos(float[] enemiesFloatPos)
+	public void setSpritesFloatPos(float[] enemiesFloatPos)
 	{
 		for(int i=0; i<enemiesFloatPos.length; i+=3){
 
 			int kind = (int)enemiesFloatPos[i];
 			float x = enemiesFloatPos[i+1];
 			float y = enemiesFloatPos[i+2];
-
 			int type = -1;
 			boolean winged = false;
+			boolean isExist = false;
 
-			switch (kind) {
-			case(Sprite.KIND_BULLET_BILL): type = -2;
-			break;
-			case(Sprite.KIND_SHELL): type = Enemy.KIND_SHELL;
-			break;
-			case(Sprite.KIND_GOOMBA): type = Enemy.ENEMY_GOOMBA;
-			break;
-			case(Sprite.KIND_GOOMBA_WINGED): type = Enemy.ENEMY_GOOMBA; winged = true;
-			break;
-			case(Sprite.KIND_GREEN_KOOPA): type = Enemy.ENEMY_GREEN_KOOPA;
-			break;
-			case(Sprite.KIND_GREEN_KOOPA_WINGED): type = Enemy.ENEMY_GREEN_KOOPA; winged = true;
-			break;
-			case(Sprite.KIND_RED_KOOPA): type = Enemy.ENEMY_RED_KOOPA;
-			break;
-			case(Sprite.KIND_RED_KOOPA_WINGED): type = Enemy.ENEMY_RED_KOOPA; winged = true;
-			break;
-			case(Sprite.KIND_SPIKY): type = Enemy.ENEMY_SPIKY;
-			break;
-			case(Sprite.KIND_SPIKY_WINGED): type = Enemy.ENEMY_SPIKY; winged = true;
-			break;
-			default : type=-1;
-			break;
-			}
-			if(type==-1){
-				System.out.println("oh shit type -1");
-			}
-			else{
-				sprite = new Enemy(this, x, y, -1, type, winged, (int) x/16, (int) y/16);
+			//check if enemy exists
+			for(Sprite sprite : sprites){
+				if(sprite.x==x && sprite.y==y)
+					isExist=true;
 			}
 
-			sprite.spriteTemplate =  new SpriteTemplate(type, winged);
-			sprites.add(sprite);
-
+			if(!isExist){
+				Sprite sprite = new Sprite();
+				switch (kind) {
+				case(Sprite.KIND_GOOMBA): type = Sprite.KIND_GOOMBA;
+				break;
+				default : type=-1;
+				break;
+				}
+				if(type==-1){
+					System.out.println("unknown creature type");	
+					continue;				
+				}
+				else{
+					sprite = new Enemy(this, x, y, -1, type, winged, (int) x/16, (int) y/16);
+				}
+				sprites.add(sprite);
+			}
 		}
-
+		sprites.add(mario);
+		
 		if(debugAddEnemies){
-			System.out.println("-------------\n");
 			for(Sprite s : sprites){
 				System.out.println("kind: " + (int)s.kind+", Coordinate: " + s.x + "," + s.y + "\n ");			
 			}
