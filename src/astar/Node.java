@@ -1,6 +1,7 @@
 package astar;
 
 import java.util.*;
+
 import astar.sprites.Mario;
 import astar.sprites.Sprite;
 import ch.idsia.benchmark.mario.environments.Environment;
@@ -199,14 +200,20 @@ public class Node implements Comparator<Node>, Comparable<Node> {
 		// TODO Clone the objects
 		LevelScene newScene = this.levelScene;
 		// Not sure if mario should be cloned here or in the Node constructor 
-		Mario newMario = (Mario) this.mario.clone();		
+		Mario newMario = (Mario) this.mario.clone();
 		
 		// Compute all the new positions for the enemies
 		List<Sprite> newEnemies = new ArrayList<Sprite>();
 		for (Sprite enemy : this.enemies)
 		{
 			// TODO Clone the current enemy
-			Sprite newEnemy = null; 
+			Sprite newEnemy = null;
+			try {
+				newEnemy = (Sprite) enemy.clone();
+			} catch (CloneNotSupportedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
 			newEnemy.tick();
 			newEnemies.add(newEnemy);
 		}

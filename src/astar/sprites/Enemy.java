@@ -32,7 +32,6 @@ package astar.sprites;
 import java.awt.Graphics;
 
 import astar.LevelScene;
-import ch.idsia.benchmark.mario.engine.Art;
 import ch.idsia.benchmark.mario.engine.GlobalOptions;
 
 
@@ -75,7 +74,6 @@ public Enemy(LevelScene levelScene, float x, float y, int dir, int type, boolean
 {
 	//modified above
     kind = (byte) type;
-    sheet = Art.enemies;
     this.winged = winged;
 
     this.x = x;

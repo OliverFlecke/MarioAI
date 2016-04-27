@@ -28,7 +28,6 @@
 package astar.sprites;
 
 import astar.LevelScene;
-import ch.idsia.benchmark.mario.engine.Art;
 
 
 
@@ -50,7 +49,6 @@ private int deadTime = 0;
 public BulletBill(LevelScene world, float x, float y, int dir)
 {
     kind = KIND_BULLET_BILL;
-    sheet = Art.enemies;
 
     this.x = x;
     this.y = y;

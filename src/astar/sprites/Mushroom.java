@@ -28,7 +28,6 @@
 package astar.sprites;
 
 import astar.LevelScene;
-import ch.idsia.benchmark.mario.engine.Art;
 
 
 
@@ -56,7 +55,6 @@ private int life;
 public Mushroom(LevelScene world, int x, int y)
 {
     kind = KIND_MUSHROOM;
-    sheet = Art.items;
 
     this.x = x;
     this.y = y;

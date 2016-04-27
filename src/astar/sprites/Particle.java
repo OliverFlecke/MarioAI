@@ -27,7 +27,6 @@
 
 package astar.sprites;
 
-import ch.idsia.benchmark.mario.engine.Art;
 
 public class Particle extends Sprite
 {
@@ -41,7 +40,6 @@ public Particle(int x, int y, float xa, float ya)
 public Particle(int x, int y, float xa, float ya, int xPic, int yPic)
 {
     kind = KIND_PARTICLE;
-    sheet = Art.particles;
     this.x = x;
     this.y = y;
     this.xa = xa;

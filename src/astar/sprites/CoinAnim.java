@@ -27,9 +27,6 @@
 
 package astar.sprites;
 
-import ch.idsia.benchmark.mario.engine.Art;
-
-
 public class CoinAnim extends Sprite
 {
 private int life = 16;
@@ -37,7 +34,6 @@ private int life = 16;
 public CoinAnim(int xTile, int yTile)
 {
     kind = KIND_COIN_ANIM;
-    sheet = Art.level;
     wPic = hPic = 16;
 
     x = xTile * 16;

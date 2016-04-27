@@ -28,7 +28,6 @@
 package astar.sprites;
 
 import astar.LevelScene;
-import ch.idsia.benchmark.mario.engine.Art;
 
 
 public class GreenMushroom extends Sprite 
@@ -55,7 +54,6 @@ private int life;
 public GreenMushroom(LevelScene world, int x, int y)
 {
     kind = KIND_GREEN_MUSHROOM;
-    sheet = Art.items;
 
     this.x = x;
     this.y = y;
