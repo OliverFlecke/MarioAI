@@ -95,7 +95,6 @@ public class AstarAgent extends KeyAdapter implements Agent {
 				actionCount = MAXCOUNT;
 				// Create a new simulation for the AStar 
 				Node.queue = new PriorityQueue<Node>();
-				
 				levelScene = new LevelScene();
 				levelScene.level = new Level(1500, 15);
 				levelScene.setup(this.observation, enemiesFloatPos);
@@ -111,17 +110,14 @@ public class AstarAgent extends KeyAdapter implements Agent {
 				// Calculate the current velocity
 				mario.xa = (marioFloatPos[0] - lastX) * 0.89f;
 				// As the speed is going towards zero, 
-				if (Math.abs(marioFloatPos[1] - lastY) > 0.1f)
-					mario.ya = (marioFloatPos[1] - lastY) * 0.89f;
-				System.out.println("MarioX " + marioFloatPos[0] + 
-						" LastX " + lastX + " xa " + mario.xa);
-				System.out.println("MarioY " + marioFloatPos[1] +
-						" LastY " + lastY + " ya " + mario.ya);
+//				if (Math.abs(marioFloatPos[1] - lastY) > 0.1f)
+				mario.ya = (marioFloatPos[1] - lastY) * 0.89f;
+				System.out.println("MarioX " + marioFloatPos[0] + " LastX " + lastX + " xa " + mario.xa);
+				System.out.println("MarioY " + marioFloatPos[1] + " LastY " + lastY + " ya " + mario.ya);
 				
 				mario.mayJump = isMarioAbleToJump;
 				mario.canJump = isMarioAbleToJump;
 				mario.onGround = isMarioOnGround;
-				
 				
 				// Create graph
 				head = new Node(null, levelScene, mario, null, currentAction);
@@ -130,9 +126,11 @@ public class AstarAgent extends KeyAdapter implements Agent {
 				Node.setStartTime(System.currentTimeMillis());
 				
 				// Search for the best path
-				actionPath = head.searchForPath();
+				actionPath = head.searchForPath(new PriorityQueue<Node>());
 			}
 			
+			// If the action path found by the algorithm is not empty, 
+			// it uses the first action in the list
 			if (!actionPath.isEmpty())
 			{
 				action = actionPath.removeFirst();
@@ -162,6 +160,10 @@ public class AstarAgent extends KeyAdapter implements Agent {
 	private boolean runAstar = true;
 	private float lastX = 0, lastY = 0;
 	
+	/**
+	 * This function is used to test a simulation of Mario running 
+	 * along with the real game. 
+	 */
 	private void runSim() 
 	{
 		if (head == null) 
@@ -333,37 +335,18 @@ public class AstarAgent extends KeyAdapter implements Agent {
 		}
 	}
 
+	/**
+	 * Output the level grid currently visible
+	 */
 	public void printLevelGrid()
 	{
-//		for (int i = 0; i < observation.length; i++) {
-//			for (int j = 0; j < observation[0].length; j++) {
-//				if (observation[i][j] != 0)
-//					System.out.format("%5d ", observation[i][j]);
-//				else 
-//				{					
-//					System.out.format("%2d-", i);
-//					System.out.format("%2d ", j);
-//				}
-//			}
-//			System.out.println();
-//		}
-//		System.out.println("------------------------------------");
 		for (int i = 0; i <  head.levelScene.level.map.length; i++) {
 			for (int j = 0; j <  head.levelScene.level.map[0].length; j++) {
-//				if (head.levelScene.level.getBlock(i, j) != 0)
-//				if (i == 9 && j == 9)
-//					System.out.format("%5d ", 99);
-//				else
 					System.out.format("%5d ", head.levelScene.level.getBlock(i, j));
-//				else 
-//				{					
-//					System.out.format("%2d-", i);
-//					System.out.format("%2d ", j);
-//				}
 			}
 			System.out.println();
 		}
-//		System.out.println("------------------------------------");
+		System.out.println("------------------------------------");
 	}
 	
 	public void printMario() 

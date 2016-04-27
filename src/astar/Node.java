@@ -130,8 +130,8 @@ public class Node implements Comparable<Node> {
 
 		if (debug)
 		{			
-			System.out.print("X: " + this.x + " \tY: " + this.y + " \tYa: " + mario.ya);
-			printAction(action);
+			System.out.print("X: " + this.x + " \tY: " + this.y + " \tYa: " + mario.ya + "\t");
+			System.out.print(printAction(action));
 			System.out.println(" Depth: " + this.depth + " F: " + fitness + " g " + g + " h: " + h);
 		}
 	}
@@ -140,13 +140,13 @@ public class Node implements Comparable<Node> {
 	 * 
 	 * @return
 	 */
-	public LinkedList<boolean[]> searchForPath()
+	public LinkedList<boolean[]> searchForPath(PriorityQueue<Node> queue)
 	{
 		Node.nodeCount = 0;
 		System.out.println("Head: X: " + head.x + " Y: " + head.y + " Goal: " + goal);
 		
 		queue = new PriorityQueue<Node>();
-		generateNewNodes();
+		generateNewNodes(queue);
 		// Choose to use this, if we find a solution, but want to continue our search
 		Node current = queue.remove();
 		Node best = current; 
@@ -159,7 +159,7 @@ public class Node implements Comparable<Node> {
 				System.out.println("Out of time!");
 				break;
 			}
-			current.generateNewNodes();
+			current.generateNewNodes(queue);
 			current = queue.remove();
 						
 			// Update the best node
@@ -177,10 +177,8 @@ public class Node implements Comparable<Node> {
 	
 	/**
 	 * Generate all the new nodes which Mario can move to from this
-	 * 
-	 * Should maybe take a queue and insert the new nodes 
 	 */
-	public void generateNewNodes()
+	public void generateNewNodes(PriorityQueue<Node> queue)
 	{
 		// Compute all the new positions for the enemies
 		List<Sprite> newEnemies = new ArrayList<Sprite>();
@@ -194,7 +192,6 @@ public class Node implements Comparable<Node> {
 		Node node;
 		
 		// Create new nodes with actions 
-		// TODO Should every node have a clone of the levelScene, Mario, and enemies?
 		// Action: Nothing
 //		node = createNode(Node.createAction(false, false, false, false, false, false), newEnemies);
 //		node.fitnessEval();
@@ -253,6 +250,14 @@ public class Node implements Comparable<Node> {
 //		}
 	}
 	
+	/**
+	 * Creates a new node with clones of the level scene and mario,
+	 * as well as the passed enemies and action array. The current
+	 * node is passed as the parent node
+	 * @param actions the new node should simulate
+	 * @param enemies which should be passed into the levelscene
+	 * @return A node with cloned objects
+	 */
 	private Node createNode(boolean[] actions, List<Sprite> enemies)
 	{
 		return new Node(this, (LevelScene) levelScene, (Mario) mario.clone(), enemies, actions);
@@ -266,7 +271,7 @@ public class Node implements Comparable<Node> {
 	 * @param speed
 	 * @param up
 	 * @param down
-	 * @return An action
+	 * @return An action with the passed values
 	 */
 	public static boolean[] createAction(boolean right, boolean left, boolean jump, boolean speed, boolean up, boolean down)
 	{
@@ -303,12 +308,13 @@ public class Node implements Comparable<Node> {
 		Node.goal = goal;
 	}
 	
-	public static void printAction(boolean[] action)
+	public static String printAction(boolean[] action)
 	{
-		System.out.print(" R: " + ((action[Mario.KEY_RIGHT]) ? "t" : "f"));
-		System.out.print(" L: " + ((action[Mario.KEY_LEFT]) ? "t" : "f"));
-		System.out.print(" J: " + ((action[Mario.KEY_JUMP]) ? "t" : "f"));
-		System.out.print(" S: " + ((action[Mario.KEY_SPEED]) ? "t" : "f"));
+		String output = "R: " + ((action[Mario.KEY_RIGHT]) ? "t" : "f") +
+				" \tL: " + ((action[Mario.KEY_LEFT]) ? "t" : "f") +
+				" \tJ: " + ((action[Mario.KEY_JUMP]) ? "t" : "f") +
+				" \tS: " + ((action[Mario.KEY_SPEED]) ? "t" : "f");
+		return output;
 	}
 
 	/**
@@ -317,6 +323,14 @@ public class Node implements Comparable<Node> {
 	 */
 	public static void setStartTime(long currentTimeMillis) {
 		Node.startTime  = currentTimeMillis;
+	}
+	
+	/**
+	 * Get the start time of the latest search
+	 * @return The start time of the latest search
+	 */
+	public static long getStartTime() {
+		return Node.startTime;
 	}
 
 	/**
@@ -345,16 +359,20 @@ public class Node implements Comparable<Node> {
 		return list;
 	}
 	
-	// The main search function to find the optimal path
-	// Should return the best option found 
-	public Node searchChildren()
+	/**
+	 * Not in use!
+	 * The main search function to find the optimal path
+	 * @param searchNode node to start searching from
+	 * @return Should return the best child option
+	 */
+	public static Node searchChildren(Node searchNode)
 	{
 		// Base case: If no children, return this node's actions 
-		if (children == null) return this;
+		if (searchNode.children == null) return searchNode;
 		
 		int min = Integer.MAX_VALUE;
 		Node bestNode = null;
-		for (Node node : children) 
+		for (Node node : searchNode.children) 
 		{
 			if (node.fitness < min)
 			{
