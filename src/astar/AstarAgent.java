@@ -80,51 +80,13 @@ public class AstarAgent extends KeyAdapter implements Agent {
 	
 	public boolean[] getAction()
 	{
-		//this.environment = environment;
-//		action[Mario.KEY_RIGHT] = true;
-//		action[Mario.KEY_SPEED] = true;
-
-//		// Jump logic
-//		boolean jump = false;
-////		jump = (getField(1, 0) != 0) || (getField(2, 0) != 0); 
-//		int jumpHeight = (jump = (getField(1, 0) != 0) && (getField(1, -1) == 0)) ? 1 : 6;
-//		if (!jump) 
-//		{
-//			jump = getField(1, 0) != 0 && getField(1, -1) != 0;
-//		}
-//		
-//		// Check for holes
-//		if (getField(1, 1) == 0)
-//		{	
-//			jump = true;
-//			for (int i = 1; i < 9; i++)
-//			{
-//				jump &= (getField(1, i) == 0);
-//			}
-//		}
-//		
-//		if (jump && (isMarioAbleToJump || (!isMarioOnGround && action[Mario.KEY_JUMP])) && jumpRotation == 0)
-//		{
-//			action[Mario.KEY_JUMP] = true;
-//			jumpCounter++;
-//		} else if (jumpRotation == 1){
-//			action[Mario.KEY_JUMP] = false;
-//			jumpRotation = 0;
-//		}
-//		if (jumpCounter > jumpHeight){
-//			jumpCounter = 0;
-//			jumpRotation = 1; 
-//		}
-//		
-//		if (jump && isMarioAbleToJump || (!isMarioOnGround && action[Mario.KEY_JUMP]))
-//			action[Mario.KEY_JUMP] = true;
-//		else 
-//		{			
-//			action[Mario.KEY_JUMP] = false;
-//		}
 		if (runSimulation)
+		{
 			runSim();
+			action = Node.createAction(true, false, false, true, false, false);
+		}
 		
+//		printMario();
 		if (runAstar)
 		{
 			// If we have no more actions left in the list, compute new actions
@@ -135,50 +97,68 @@ public class AstarAgent extends KeyAdapter implements Agent {
 				Node.queue = new PriorityQueue<Node>();
 				
 				levelScene = new LevelScene();
-				levelScene.level = new Level(19, 19);
+				levelScene.level = new Level(1500, 15);
 				levelScene.setup(this.observation, enemiesFloatPos);
+				levelScene.setLevelScene(this.observation);
 				mario = new Mario(levelScene);
 				levelScene.mario = mario;
 				levelScene.addSprite(mario);	
 				
 				mario.x = marioFloatPos[0];
 				mario.y = marioFloatPos[1];
+//				System.out.println("Mario: x: " + mario.x + " y: " + mario.y);
+				
+				// Calculate the current velocity
 				mario.xa = (marioFloatPos[0] - lastX) * 0.89f;
-				if (Math.abs(mario.y - marioFloatPos[1]) > 0.1f)
+				// As the speed is going towards zero, 
+				if (Math.abs(marioFloatPos[1] - lastY) > 0.1f)
 					mario.ya = (marioFloatPos[1] - lastY) * 0.89f;
+				System.out.println("MarioX " + marioFloatPos[0] + 
+						" LastX " + lastX + " xa " + mario.xa);
+				System.out.println("MarioY " + marioFloatPos[1] +
+						" LastY " + lastY + " ya " + mario.ya);
 				
 				mario.mayJump = isMarioAbleToJump;
+				mario.canJump = isMarioAbleToJump;
 				mario.onGround = isMarioOnGround;
 				
-				head = new Node(null, null, levelScene, mario, null, currentAction);	
+				
+				// Create graph
+				head = new Node(null, levelScene, mario, null, currentAction);
+				Node.setHead(head);
 				Node.setGoal(marioFloatPos[0] + 250f);
 				Node.setStartTime(System.currentTimeMillis());
 				
 				// Search for the best path
 				actionPath = head.searchForPath();
 			}
-			else
+			
+			if (!actionPath.isEmpty())
 			{
 				action = actionPath.removeFirst();
 				actionCount--;
-			}			
+			}		
+			else
+			{
+				action = Node.createAction(true, false, false, true, false, false);
+			}
 		}
 		
+		// Save the position of mario for next calculation
 		lastX = marioFloatPos[0];
-		lastX = marioFloatPos[1];
-//		printMario();
-//		System.out.println(actionPath.size());
+		lastY = marioFloatPos[1];
+		
 		return action;
 	}
 	
-	private final int MAXCOUNT = 2;
+	private final int MAXCOUNT = 5;
 	private int actionCount = MAXCOUNT;
 	private LinkedList<boolean[]> actionPath = new LinkedList<boolean[]>();
 	Node head = null;
 	LevelScene levelScene = null;
 	Mario mario;
 	boolean[] currentAction = new boolean[Environment.numberOfKeys];
-	boolean runSimulation = false;
+	private boolean runSimulation = false;
 	private boolean runAstar = true;
 	private float lastX = 0, lastY = 0;
 	
@@ -187,38 +167,40 @@ public class AstarAgent extends KeyAdapter implements Agent {
 		if (head == null) 
 		{
 			currentAction[Mario.KEY_JUMP] = true;
+			currentAction[Mario.KEY_SPEED] = true;
 			levelScene = new LevelScene();
-			levelScene.level = new Level(19, 19);
+			levelScene.level = new Level(1500, 15);
 			levelScene.setup(this.observation, enemiesFloatPos);
-			mario = new Mario(levelScene);
-			levelScene.mario = mario;
-			levelScene.addSprite(mario);
+			mario = levelScene.mario;	
+			levelScene.addSprite(mario);			
 			
-			head = new Node(null, null, levelScene, mario, null, currentAction);
+			mario.x = marioFloatPos[0];
+			mario.y = marioFloatPos[1];
+			head = new Node(null, levelScene, mario, null, currentAction);
 		}
 		else
 		{
 			levelScene.level.map = this.observation;
-//			for (int i = 0; i < observation.length; i++) {
-//				sim.level.map[10][i] = -60;
-//			}
 		}
 		
-		mario.x = marioFloatPos[0];
-		mario.y = marioFloatPos[1];
-		mario.xa = (marioFloatPos[0] - lastX) * 0.89f;
-		if (Math.abs(mario.y - marioFloatPos[1]) > 0.1f)
-			mario.ya = (marioFloatPos[1] - lastY) * 0.89f;
-		
+//		mario.x = marioFloatPos[0];
+//		mario.y = marioFloatPos[1];
+//		mario.xa = (marioFloatPos[0] - lastX) * 0.89f;
+//		if (Math.abs(mario.y - marioFloatPos[1]) > 0.1f)
+//			mario.ya = (marioFloatPos[1] - lastY) * 0.89f;
 		head.levelScene.tick();
-		System.out.println("Jump time: " + mario.yaa);
-//		printMario();
+//		System.out.println("Jump time: " + mario.yaa);
+		printMario();
 //		printLevelGrid();
 
 //		System.out.println("tick\n" );
 //		printCreatures(head.levelScene);
 	}
 	
+	/**
+	 * Print all the position of the creatures to the console
+	 * @param simLevelScene with the creatures to output
+	 */
 	void printCreatures(LevelScene simLevelScene){
 		for(int i = 0; i < simLevelScene.getCreaturesFloatPos().length-1; i += 2){
 			System.out.println("creature coordinate =(" + simLevelScene.getCreaturesFloatPos()[i] + "," + simLevelScene.getCreaturesFloatPos()[i+1] + ")"); 
@@ -231,7 +213,9 @@ public class AstarAgent extends KeyAdapter implements Agent {
 		return mergedObservation[marioEgoCol + y+1][marioEgoRow + x+1];
 	}
 	
-	
+	/**
+	 * Get the information from the environment into the local fields
+	 */
 	public void integrateObservation(Environment environment)
 	{
 		this.environment = environment;
@@ -271,11 +255,17 @@ public class AstarAgent extends KeyAdapter implements Agent {
 		// TODO Auto-generated method stub
 	}
 
+	/**
+	 * Get the name of the agent
+	 */
 	@Override
 	public String getName() {
 		return name;
 	}
 
+	/**
+	 * Set the name of the agent
+	 */
 	@Override
 	public void setName(String name) {
 		this.name = name;
@@ -293,6 +283,12 @@ public class AstarAgent extends KeyAdapter implements Agent {
 	}
 
 
+	/**
+	 * Set actions by the user, and to define other keys to 
+	 * output useful information in runtime
+	 * @param keyCode
+	 * @param isPressed
+	 */
 	protected void toggleKey(int keyCode, boolean isPressed)
 	{
 		switch (keyCode)
@@ -352,12 +348,12 @@ public class AstarAgent extends KeyAdapter implements Agent {
 //			System.out.println();
 //		}
 //		System.out.println("------------------------------------");
-		for (int i = 0; i < observation.length; i++) {
-			for (int j = 0; j < observation[0].length; j++) {
+		for (int i = 0; i <  head.levelScene.level.map.length; i++) {
+			for (int j = 0; j <  head.levelScene.level.map[0].length; j++) {
 //				if (head.levelScene.level.getBlock(i, j) != 0)
-				if (i == 9 && j == 9)
-					System.out.format("%5d ", 99);
-				else
+//				if (i == 9 && j == 9)
+//					System.out.format("%5d ", 99);
+//				else
 					System.out.format("%5d ", head.levelScene.level.getBlock(i, j));
 //				else 
 //				{					
@@ -367,12 +363,12 @@ public class AstarAgent extends KeyAdapter implements Agent {
 			}
 			System.out.println();
 		}
-		System.out.println("------------------------------------");
+//		System.out.println("------------------------------------");
 	}
 	
 	public void printMario() 
 	{
-		System.out.println("Nor - X = " + (marioFloatPos[0] + 250) + " \tY = " + marioFloatPos[1]);
+		System.out.println("Nor - X = " + (marioFloatPos[0]) + " \tY = " + marioFloatPos[1]);
 //		System.out.println("Sim - X = " + head.mario.x + "  \tY = " + head.mario.y);
 	}
 }

@@ -5,17 +5,21 @@ import astar.sprites.Mario;
 import astar.sprites.Sprite;
 import ch.idsia.benchmark.mario.environments.Environment;
 
-public class Node implements Comparator<Node>, Comparable<Node> {
+public class Node implements Comparable<Node> {
+	private static boolean debug = true;
 	
-	private static int timeLimit = 40;
+	private static int timeLimit = 36;
 	public static int nodeCount = 0;
-	private static float alpha = 1f;
+
+	private static long startTime;
 	public static float goal = 0;
 	public static PriorityQueue<Node> queue;
-	private static long startTime;
 	
 	// Coordinates of the node
 	private float x, y;
+	
+	private boolean marioCanJump = true;
+	public int jumpTime = 0;
 	
 	public int fitness = 0;				// Overall rating of this option 
 	public int depth;					// Depth of the current node
@@ -28,14 +32,18 @@ public class Node implements Comparator<Node>, Comparable<Node> {
 	// Enemies 
 	public List<Sprite> enemies;
 	
-	LevelScene levelScene;
+	public LevelScene levelScene;
 	
 	// Graph pointers 
-	public Node parent, head;
+	public Node parent;
+	public static Node head;
 	public List<Node> children = new ArrayList<Node>();
+	private int maxDepth = 5;
+	
+	
 	
 	// Should have everything needed to compute next frame
-	public Node(Node parent, Node head, LevelScene levelScene, Mario mario, List<Sprite> enemies, boolean[] action) 
+	public Node(Node parent, LevelScene levelScene, Mario mario, List<Sprite> enemies, boolean[] action) 
 	{
 		this.parent = parent;
 		if (this.parent == null)
@@ -48,11 +56,9 @@ public class Node implements Comparator<Node>, Comparable<Node> {
 		{			
 			this.depth = this.parent.depth + 1;
 		}
-		if (head == null) this.head = this;
-		else this.head = head;
 		
 		// Copy these elements, don't just save the pointers 
-		this.mario = (Mario) mario.clone(); 
+		this.mario = mario; 
 		this.levelScene = levelScene;
 		this.levelScene.mario = this.mario;
 		this.mario.levelScene = this.levelScene;
@@ -68,33 +74,6 @@ public class Node implements Comparator<Node>, Comparable<Node> {
 		Node.nodeCount++;
 	}
 
-	/**
-	 *  The function to evaluate the current frame
-	 */
-	public void fitnessEval()
-	{
-		// Evalf the simulation
-		this.tick();
-		
-		float g = Math.abs(this.x - this.head.x);
-		float toGoal = Math.abs(alpha * (goal - this.x));
-		float h = 0;
-		if (mario.isDead()) 
-		{
-			h = Integer.MAX_VALUE;
-		}
-		else 
-		{
-			h = toGoal;
-//			h = toGoal + this.y;
-		}
-		this.fitness = (int) (g + h);
-		
-		System.out.println();
-		System.out.println("X: " + this.x + " \tY: " + this.y);
-		System.out.println("F: " + fitness + " g " + g + " h: " + h);
-//		printAction(action);
-	}
 	
 	/**
 	 * 
@@ -102,6 +81,9 @@ public class Node implements Comparator<Node>, Comparable<Node> {
 	private void tick() {
 //		this.levelScene.tick();
 		this.mario.tick();
+		
+//		System.out.println("Depth: " + depth + " \tX: " + x + " \tY: " + y);
+		
 //		System.out.println("Mario ya: " + mario.yAcc);
 //		System.out.println("Mario jump: " + (parent.mario.y - mario.y));
 //
@@ -111,53 +93,47 @@ public class Node implements Comparator<Node>, Comparable<Node> {
 //			System.out.println("Can jump!");
 		if (mario.mayJump() || (!mario.isOnGround() && action[Mario.KEY_JUMP]))
 			marioCanJump = true;
-		else marioCanJump = false;
+//		else marioCanJump = false;
 //		else if (mario.ya < parent.mario.ya)
 //			marioCanJump = true;
 //		else if (mario.ya >= -2 && mario.ya < 0)
 //			marioCanJump = false;
 	}
 	
-	private boolean marioCanJump = false;
-	public int jumpTime = 0;
-
-	// The main search function to find the optimal path
-	// Should return the best option found 
-	public Node searchChildren()
-	{
-		// Base case: If no children, return this node's actions 
-		if (children == null) return this;
-		
-		int min = Integer.MAX_VALUE;
-		Node bestNode = null;
-		for (Node node : children) 
-		{
-			if (node.fitness < min)
-			{
-				min = node.fitness;
-				bestNode = node;
-			}
-		}
-		
-		return bestNode;
-	}
 	
+	private static float alpha = 0.8f;
+	private static float scalar = 1f;
 	/**
-	 * Get a path of actions to the node
-	 * @return A LinkedList with a path representing the actions to get to that node/position 
+	 *  The function to evaluate the current frame
 	 */
-	public LinkedList<boolean[]> getActionPath()
+	public void fitnessEval()
 	{
-		// We only want the path from the node AFTER the root. The root does not have any actions
-		if (this.parent.depth == 0) 
+		// Evalf the simulation
+		this.tick();
+		
+		this.x = mario.x;
+		this.y = mario.y;
+		
+		float g = scalar * (this.x - head.x);
+		float toGoal = scalar * Math.abs(alpha * (goal - this.x));
+		float h = 0;
+		if (mario.isDead() || this.y > 223f || mario.ya > 11f) 
 		{
-			LinkedList<boolean[]> list = new LinkedList<boolean[]>();
-			list.add(this.action);
-			return list;
+			h = Integer.MAX_VALUE;
 		}
-		LinkedList<boolean[]> list = this.parent.getActionPath();
-		list.add(this.action);
-		return list;
+		else 
+		{
+//			h = toGoal - (this.y * 0.1f);
+			h = toGoal;
+		}
+		this.fitness = Math.round(g + h);
+
+		if (debug)
+		{			
+			System.out.print("X: " + this.x + " \tY: " + this.y + " \tYa: " + mario.ya);
+			printAction(action);
+			System.out.println(" Depth: " + this.depth + " F: " + fitness + " g " + g + " h: " + h);
+		}
 	}
 	
 	/**
@@ -166,33 +142,37 @@ public class Node implements Comparator<Node>, Comparable<Node> {
 	 */
 	public LinkedList<boolean[]> searchForPath()
 	{
+		Node.nodeCount = 0;
+		System.out.println("Head: X: " + head.x + " Y: " + head.y + " Goal: " + goal);
+		
 		queue = new PriorityQueue<Node>();
 		generateNewNodes();
-		// Chose to use this, if we find a solution, but want to continue our search
+		// Choose to use this, if we find a solution, but want to continue our search
 		Node current = queue.remove();
 		Node best = current; 
 		
-		while ((!current.atGoal() && current.depth < 40))
+		while ((!current.atGoal() && current.depth < maxDepth))
 		{
+//			System.out.println(System.currentTimeMillis() - startTime);
 			if ((System.currentTimeMillis() - startTime) > timeLimit)
 			{
+				System.out.println("Out of time!");
 				break;
 			}
 			current.generateNewNodes();
 			current = queue.remove();
-			
-//			System.out.println(current.fitness);
-			
+						
 			// Update the best node
 			if (best.fitness >= current.fitness)
 				best = current;
 		}
 		
-//		System.out.println("Depth: " + best.depth);
-		
-//		System.out.println(Node.nodeCount);
-		Node.nodeCount = 0;
-		return best.getActionPath();
+		if (debug)
+		{			
+			System.out.println("Depth: " + best.depth + " Fitness: " + best.fitness);
+			System.out.println(Node.nodeCount);
+		}
+		return getActionPath(best);
 	}
 	
 	/**
@@ -204,13 +184,13 @@ public class Node implements Comparator<Node>, Comparable<Node> {
 	{
 		// Compute all the new positions for the enemies
 		List<Sprite> newEnemies = new ArrayList<Sprite>();
-		for (Sprite enemy : this.enemies)
-		{
-			// TODO Clone the current enemy
-			Sprite newEnemy = null; 
-			newEnemy.tick();
-			newEnemies.add(newEnemy);
-		}
+//		for (Sprite enemy : this.enemies)
+//		{
+//			// TODO Clone the current enemy
+//			Sprite newEnemy = null; 
+//			newEnemy.tick();
+//			newEnemies.add(newEnemy);
+//		}
 		Node node;
 		
 		// Create new nodes with actions 
@@ -228,13 +208,13 @@ public class Node implements Comparator<Node>, Comparable<Node> {
 		node = createNode(Node.createAction(true, false, false, true, false, false), newEnemies);
 		node.fitnessEval();
 		queue.add(node);
-	
-//		// Action: Move left
-//		node = new Node(this, this.head, newScene, newMario, newEnemies, Node.createAction(false, true, false, false, false, false));
+
+		// Action: Move left
+//		node = createNode(Node.createAction(false, true, false, false, false, false), newEnemies);
 //		node.fitnessEval();
 //		queue.add(node);
 //		// Action: Move left with speed
-//		node = new Node(this, this.head, newScene, newMario, newEnemies, Node.createAction(false, true, false, true, false, false));
+//		node = createNode(Node.createAction(false, true, false, true, false, false), newEnemies);
 //		node.fitnessEval();
 //		queue.add(node);
 	
@@ -242,9 +222,9 @@ public class Node implements Comparator<Node>, Comparable<Node> {
 		if (this.marioCanJump)
 		{
 			// Action: Jump
-//			node = createNode(Node.createAction(false, false, true, false, false, false), newEnemies);
-//			node.fitnessEval();
-//			queue.add(node);
+			node = createNode(Node.createAction(false, false, true, false, false, false), newEnemies);
+			node.fitnessEval();
+			queue.add(node);
 			// Action: Jump and move right
 			node = createNode(Node.createAction(true, false, true, false, false, false), newEnemies);
 			node.fitnessEval();
@@ -254,12 +234,12 @@ public class Node implements Comparator<Node>, Comparable<Node> {
 			node.fitnessEval();
 			queue.add(node);
 			
-//			// Action: Jump and left
-//			node = new Node(this, this.head, newScene, newMario, newEnemies, Node.createAction(false, true, true, false, false, false));
+			// Action: Jump and left
+//			node = createNode(Node.createAction(false, true, true, false, false, false), newEnemies);
 //			node.fitnessEval();
 //			queue.add(node);
 //			// Action: Jump, left and speed
-//			node = new Node(this, this.head, newScene, newMario, newEnemies, Node.createAction(false, true, true, true, false, false));
+//			node = createNode(Node.createAction(false, true, true, true, false, false), newEnemies);
 //			node.fitnessEval();
 //			queue.add(node);
 		}
@@ -275,7 +255,7 @@ public class Node implements Comparator<Node>, Comparable<Node> {
 	
 	private Node createNode(boolean[] actions, List<Sprite> enemies)
 	{
-		return new Node(this, head, levelScene, mario, enemies, actions);
+		return new Node(this, (LevelScene) levelScene, (Mario) mario.clone(), enemies, actions);
 	}
 	
 	/**
@@ -288,7 +268,7 @@ public class Node implements Comparator<Node>, Comparable<Node> {
 	 * @param down
 	 * @return An action
 	 */
-	private static boolean[] createAction(boolean right, boolean left, boolean jump, boolean speed, boolean up, boolean down)
+	public static boolean[] createAction(boolean right, boolean left, boolean jump, boolean speed, boolean up, boolean down)
 	{
 		boolean[] action = new boolean[Environment.numberOfKeys];
 		action[Mario.KEY_RIGHT] = right;
@@ -300,20 +280,9 @@ public class Node implements Comparator<Node>, Comparable<Node> {
 		return action;
 	}
 	
-	/**
-	 * Compare the two nodes based on their fitness
-	 * @param a
-	 * @param b
-	 * @return A positive number, if a is larger
-	 */
-	@Override
-	public int compare(Node a, Node b) {
-		return (a.fitness - b.fitness);
-	}
-	
 	@Override
 	public int compareTo(Node other) {
-		return (this.fitness - other.fitness);
+		return (other.fitness - this.fitness);
 	}
 
 	/**
@@ -336,10 +305,10 @@ public class Node implements Comparator<Node>, Comparable<Node> {
 	
 	public static void printAction(boolean[] action)
 	{
-		System.out.println("Right: " + action[Mario.KEY_RIGHT]);
-		System.out.println("Left:  " + action[Mario.KEY_LEFT]);
-		System.out.println("Jump:  " + action[Mario.KEY_JUMP]);
-		System.out.println("Speed: " + action[Mario.KEY_SPEED]);
+		System.out.print(" R: " + ((action[Mario.KEY_RIGHT]) ? "t" : "f"));
+		System.out.print(" L: " + ((action[Mario.KEY_LEFT]) ? "t" : "f"));
+		System.out.print(" J: " + ((action[Mario.KEY_JUMP]) ? "t" : "f"));
+		System.out.print(" S: " + ((action[Mario.KEY_SPEED]) ? "t" : "f"));
 	}
 
 	/**
@@ -350,4 +319,50 @@ public class Node implements Comparator<Node>, Comparable<Node> {
 		Node.startTime  = currentTimeMillis;
 	}
 
+	/**
+	 * Set the head/starting point of the graph.
+	 * @param head
+	 */
+	public static void setHead(Node head) {
+		Node.head = head;
+	}
+
+	/**
+	 * Get a path of actions to the node
+	 * @return A LinkedList with a path representing the actions to get to that node/position 
+	 */
+	public static LinkedList<boolean[]> getActionPath(Node node)
+	{
+		// We only want the path from the node AFTER the root. The root does not have any actions
+		if (node.parent.depth == 0) 
+		{
+			LinkedList<boolean[]> list = new LinkedList<boolean[]>();
+			list.add(node.action);
+			return list;
+		}
+		LinkedList<boolean[]> list = getActionPath(node.parent);
+		list.add(node.action);
+		return list;
+	}
+	
+	// The main search function to find the optimal path
+	// Should return the best option found 
+	public Node searchChildren()
+	{
+		// Base case: If no children, return this node's actions 
+		if (children == null) return this;
+		
+		int min = Integer.MAX_VALUE;
+		Node bestNode = null;
+		for (Node node : children) 
+		{
+			if (node.fitness < min)
+			{
+				min = node.fitness;
+				bestNode = node;
+			}
+		}
+		
+		return bestNode;
+	}
 }

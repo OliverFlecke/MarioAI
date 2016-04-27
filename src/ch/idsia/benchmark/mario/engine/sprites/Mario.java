@@ -154,6 +154,13 @@ public Mario(LevelScene sim)
     setMode(Mario.large, Mario.fire);
     yaa = marioGravity * 3;
     jT = jumpPower / (marioGravity);
+    
+//    for (int x = 0; x < levelScene.level.map.length; x++) {
+//		for (int y = 0; y < levelScene.level.map[0].length; y++) {
+//			System.out.format("%d05 ", levelScene.level.map[x][y]);
+//		}
+//		System.out.println();
+//	}
 }
 
 public float jT;

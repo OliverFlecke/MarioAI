@@ -68,7 +68,7 @@ public final class LevelScene implements SpriteContext, Cloneable
 	private List<Sprite> spritesToAdd = new ArrayList<Sprite>();
 	private List<Sprite> spritesToRemove = new ArrayList<Sprite>();
 
-	public Level level;
+	public static Level level;
 	public Mario mario;
 	public float xCam, yCam, xCamO, yCamO;
 
@@ -112,12 +112,8 @@ public final class LevelScene implements SpriteContext, Cloneable
 	public static int killedCreaturesByShell;
 
 
-	public LevelScene() 
-	{ 
-		this(null);
-	}
 
-	public LevelScene(Mario mario)
+	public LevelScene()
 	{
 		try
 		{
@@ -132,7 +128,7 @@ public final class LevelScene implements SpriteContext, Cloneable
 		sprites.clear();
 
 		// This (last) Mario should be a clone for all the node instances
-		this.mario = (mario == null) ? new Mario(this) : mario;
+		this.mario = new Mario(this);
 		this.mario.levelScene = this;
 
 		startTime = 1;
@@ -147,7 +143,6 @@ public final class LevelScene implements SpriteContext, Cloneable
 		// Copy mario and other objects
 		clone.mario = (Mario) this.mario.clone();
 		clone.mario.levelScene = clone;
-		clone.level = (Level) this.level.clone();
 
 		// Clone the list of sprites
 		clone.sprites = new ArrayList<Sprite>();
@@ -587,7 +582,8 @@ public final class LevelScene implements SpriteContext, Cloneable
 	}
 
 	public void setup(byte[][] levelSceneObservationZ, float[] enemiesFloatPos) {
-		this.level.map = levelSceneObservationZ;
+//		this.level.map = levelSceneObservationZ;
+		this.setLevelScene(levelSceneObservationZ);
 		setEnemiesFloatPos(enemiesFloatPos);
 	}
 
@@ -603,39 +599,39 @@ public final class LevelScene implements SpriteContext, Cloneable
 			int type = -1;
 			boolean winged = false;
 
-			switch (kind) {
-			case(Sprite.KIND_BULLET_BILL): type = -2;
-			break;
-			case(Sprite.KIND_SHELL): type = Enemy.KIND_SHELL;
-			break;
-			case(Sprite.KIND_GOOMBA): type = Enemy.ENEMY_GOOMBA;
-			break;
-			case(Sprite.KIND_GOOMBA_WINGED): type = Enemy.ENEMY_GOOMBA; winged = true;
-			break;
-			case(Sprite.KIND_GREEN_KOOPA): type = Enemy.ENEMY_GREEN_KOOPA;
-			break;
-			case(Sprite.KIND_GREEN_KOOPA_WINGED): type = Enemy.ENEMY_GREEN_KOOPA; winged = true;
-			break;
-			case(Sprite.KIND_RED_KOOPA): type = Enemy.ENEMY_RED_KOOPA;
-			break;
-			case(Sprite.KIND_RED_KOOPA_WINGED): type = Enemy.ENEMY_RED_KOOPA; winged = true;
-			break;
-			case(Sprite.KIND_SPIKY): type = Enemy.ENEMY_SPIKY;
-			break;
-			case(Sprite.KIND_SPIKY_WINGED): type = Enemy.ENEMY_SPIKY; winged = true;
-			break;
-			default : type=-1;
-			break;
-			}
-			if(type==-1){
-				System.out.println("oh shit type -1");
-			}
-			else{
-				sprite = new Enemy(this, x, y, -1, type, winged, (int) x/16, (int) y/16);
-			}
-
-			sprite.spriteTemplate =  new SpriteTemplate(type, winged);
-			sprites.add(sprite);
+//			switch (kind) {
+//			case(Sprite.KIND_BULLET_BILL): type = -2;
+//			break;
+//			case(Sprite.KIND_SHELL): type = Enemy.KIND_SHELL;
+//			break;
+//			case(Sprite.KIND_GOOMBA): type = Enemy.ENEMY_GOOMBA;
+//			break;
+//			case(Sprite.KIND_GOOMBA_WINGED): type = Enemy.ENEMY_GOOMBA; winged = true;
+//			break;
+//			case(Sprite.KIND_GREEN_KOOPA): type = Enemy.ENEMY_GREEN_KOOPA;
+//			break;
+//			case(Sprite.KIND_GREEN_KOOPA_WINGED): type = Enemy.ENEMY_GREEN_KOOPA; winged = true;
+//			break;
+//			case(Sprite.KIND_RED_KOOPA): type = Enemy.ENEMY_RED_KOOPA;
+//			break;
+//			case(Sprite.KIND_RED_KOOPA_WINGED): type = Enemy.ENEMY_RED_KOOPA; winged = true;
+//			break;
+//			case(Sprite.KIND_SPIKY): type = Enemy.ENEMY_SPIKY;
+//			break;
+//			case(Sprite.KIND_SPIKY_WINGED): type = Enemy.ENEMY_SPIKY; winged = true;
+//			break;
+//			default : type=-1;
+//			break;
+//			}
+//			if(type==-1){
+//				System.out.println("oh shit type -1");
+//			}
+//			else{
+//				sprite = new Enemy(this, x, y, -1, type, winged, (int) x/16, (int) y/16);
+//			}
+//
+//			sprite.spriteTemplate =  new SpriteTemplate(type, winged);
+//			sprites.add(sprite);
 
 		}
 
@@ -756,4 +752,103 @@ public final class LevelScene implements SpriteContext, Cloneable
 		tickCount = 0;
 	}
 
+    // Update internal level representation to what we get from the API.
+    // includes some gap detection code
+    public boolean setLevelScene(byte[][] data)
+    {
+        int HalfObsWidth = 9;
+        int HalfObsHeight = 9;
+        int MarioXInMap = (int)mario.x/16;
+        int MarioYInMap = (int)mario.y/16;
+        boolean gapAtLast = true;
+        boolean gapAtSecondLast = true;
+        int lastEventX = 0;
+        int[] heights = new int[19];
+        for(int i = 0; i < heights.length; i++)
+        	heights[i] = 0;
+        
+        int gapBorderHeight = 0;
+        int gapBorderMinusOneHeight = 0;
+        int gapBorderMinusTwoHeight = 0;
+        
+        for (int y = MarioYInMap - HalfObsHeight, obsX = 0; y < MarioYInMap + HalfObsHeight; y++, obsX++)
+        {
+            for (int x = MarioXInMap - HalfObsWidth, obsY = 0; x < MarioXInMap + HalfObsWidth; x++, obsY++)
+            {
+                if (x >=0 && x <= level.xExit && y >= 0 && y < level.height)
+                {
+                	byte datum = data[obsX][obsY];
+                	
+                 	if (datum != 0 && datum != -10 && datum != 1 && obsY > lastEventX)
+                	{
+                 		lastEventX = obsY;
+                	}
+                 	if (datum != 0 && datum != 1)
+                	{
+                		if (heights[obsY] == 0)
+                		{
+                			heights[obsY] = y;
+                		}
+                	}
+                 	
+                	// cannon detection: if there's a one-block long hill, it's a cannon!
+                 	// i think this is not required anymore, because we get the cannon data straight from the API.
+                	if (x == MarioXInMap + HalfObsWidth - 3 &&
+                			datum != 0 && y > 5)
+                	{
+
+                		if (gapBorderMinusTwoHeight == 0)
+                			gapBorderMinusTwoHeight = y;
+                	}
+                	if (x == MarioXInMap + HalfObsWidth - 2 &&
+                			datum != 0 && y > 5)
+                	{
+                		if (gapBorderMinusOneHeight == 0)
+                			gapBorderMinusOneHeight = y;
+                		gapAtSecondLast = false;
+                	}
+                	if (x == MarioXInMap + HalfObsWidth - 1 &&
+                			datum != 0 && y > 5)
+                	{
+
+                		if (gapBorderHeight == 0)
+                			gapBorderHeight = y;
+                		gapAtLast = false;
+                	}
+                	
+                    if (datum != 1 && level.getBlock(x, y) != 14) 
+                    	level.setBlock(x, y, datum);
+                }
+            }
+        }
+        if (gapBorderHeight == gapBorderMinusTwoHeight && gapBorderMinusOneHeight < gapBorderHeight)
+        {
+        	// found a cannon!
+        	//System.out.println("Got a cannon!");
+        	level.setBlock(MarioXInMap + HalfObsWidth - 2,gapBorderMinusOneHeight, (byte)14);
+        }
+//        if (gapAtLast && !gapAtSecondLast)
+//        {
+//        	// found a gap. 
+//        	int holeWidth = 3;
+//
+//    		// make the gap wider before we see the end to allow ample time for the 
+//        	// planner to jump over.
+//        	for(int i = 0; i < holeWidth; i++)
+//        	{
+//            	for(int j = 0; j < 15; j++)
+//            	{
+//            		level.setBlock(MarioXInMap + HalfObsWidth + i, j, (byte) 0);
+//            	}
+//            	level.isGap[MarioXInMap + HalfObsWidth + i] = true;
+//            	level.gapHeight[MarioXInMap + HalfObsWidth + i] = gapBorderMinusOneHeight;
+//        	}
+//        	for(int j = gapBorderMinusOneHeight; j < 16; j++)
+//        	{
+//        		level.setBlock(MarioXInMap + HalfObsWidth + holeWidth, gapBorderMinusOneHeight, (byte) 4);
+//        	}
+//        	return true;
+//        }
+    	return false;
+    }
 }

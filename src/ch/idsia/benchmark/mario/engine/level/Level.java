@@ -210,8 +210,25 @@ public byte getBlockCapped(int x, int y)
     return map[x][y];
 }
 
+public static byte[][] Map;
+public static int Length;
+public static int Height;
+
+public static byte GetBlock(int x, int y)
+{
+	if (x < 0) x = 0;
+	if (y < 0) return 0;
+	if (x >= Length) x = Length - 1;
+	if (y >= Height) y = Height - 1;	
+	return Map[x][y];
+}
+
 public byte getBlock(int x, int y)
 {
+	Map = map;
+	Length = length;
+	Height = height;
+	
     if (x < 0) x = 0;
     if (y < 0) return 0;
     if (x >= length) 
@@ -247,6 +264,18 @@ public byte getBlockData(int x, int y)
     if (y >= height) return 0;
     return data[x][y];
 }
+
+
+public static boolean IsBlocking(int x, int y, float xa, float ya)
+{
+    byte block = GetBlock(x, y);
+    boolean blocking = ((TILE_BEHAVIORS[block & 0xff]) & BIT_BLOCK_ALL) > 0;
+    blocking |= (ya > 0) && ((TILE_BEHAVIORS[block & 0xff]) & BIT_BLOCK_UPPER) > 0;
+    blocking |= (ya < 0) && ((TILE_BEHAVIORS[block & 0xff]) & BIT_BLOCK_LOWER) > 0;
+
+    return blocking;
+}
+
 
 public boolean isBlocking(int x, int y, float xa, float ya)
 {
@@ -289,62 +318,3 @@ private void writeObject(ObjectOutputStream aOutputStream) throws IOException
     aOutputStream.writeObject(counters);
 }
 }
-
-
-//    public void ASCIIToOutputStream(OutputStream os) throws IOException {
-//        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
-//        bw.write("\nlength = " + length);
-//        bw.write("\nheight = " + height);
-//        bw.write("\nMap:\n");
-//        for (int y = 0; y < height; y++)
-//
-//        {
-//                for (int x = 0; x < length; x++)
-//
-//            {
-//                bw.write(map[x][y] + "\t");
-//            }
-//            bw.newLine();
-//        }
-//        bw.write("\nData: \n");
-//
-//        for (int y = 0; y < height; y++)
-//
-//        {
-//                for (int x = 0; x < length; x++)
-//
-//            {
-//                bw.write(data[x][y] + "\t");
-//            }
-//            bw.newLine();
-//        }
-//
-//        bw.write("\nspriteTemplates: \n");
-//        for (int y = 0; y < height; y++)
-//
-//        {
-//                for (int x = 0; x < length; x++)
-//
-//            {
-//                if                  (spriteTemplates[x][y] != null)
-//                    bw.write(spriteTemplates[x][y].getType() + "\t");
-//                else
-//                    bw.write("_\t");
-//
-//            }
-//            bw.newLine();
-//        }
-//
-//        bw.write("\n==================\nAll objects: (Map[x,y], Data[x,y], Sprite[x,y])\n");
-//        for (int y = 0; y < height; y++)
-//        {
-//                for (int x = 0; x < length; x++)
-//
-//            {
-//                bw.write("(" + map[x][y] + "," + data[x][y] + ", " + ((spriteTemplates[x][y] == null) ? "_" : spriteTemplates[x][y].getType()) + ")\t");
-//            }
-//            bw.newLine();
-//        }
-//
-////        bw.close();
-//    }

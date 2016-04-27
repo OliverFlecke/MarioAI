@@ -1,30 +1,3 @@
-/*
- * Copyright (c) 2009-2010, Sergey Karakovskiy and Julian Togelius
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *  Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *  Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- *  Neither the name of the Mario AI nor the
- * names of its contributors may be used to endorse or promote products
- * derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- */
-
 package astar.sprites;
 
 import astar.LevelScene;
@@ -172,6 +145,12 @@ public final class Mario extends Sprite implements Cloneable
 		clone.canJump = this.canJump;
 		clone.mayJump = this.mayJump;
 		clone.onGround = this.onGround;
+		
+		clone.xa = this.xa;
+		clone.ya = this.ya;
+		clone.yaa = this.yaa;
+		clone.x = this.x;
+		clone.y = this.y;
 		return clone;
 	}
 
@@ -287,42 +266,6 @@ public final class Mario extends Sprite implements Cloneable
 
 	public void move()
 	{
-//		if (GlobalOptions.isFly)
-//		{
-//			xa = ya = 0;
-//			ya = keys[KEY_DOWN] ? 10 : ya;
-//			ya = keys[KEY_UP] ? -10 : ya;
-//			xa = keys[KEY_RIGHT] ? 10 : xa;
-//			xa = keys[KEY_LEFT] ? -10 : xa;
-//		}
-
-//		if (this.inLadderZone)
-//		{
-//			if (keys[KEY_UP] && !onLadder)
-//			{
-//				onLadder = true;
-//			}
-//
-//			if (!keys[KEY_UP] && !keys[KEY_DOWN] && onLadder)
-//				ya = 0;
-//
-//			if (onLadder)
-//			{
-//				if (!onTopOfLadder)
-//				{
-//					ya = keys[KEY_UP] ? -10 : ya;
-//				} else
-//				{
-//					ya = 0;
-//					ya = keys[KEY_DOWN] ? 10 : ya;
-//					if (keys[KEY_DOWN])
-//						onTopOfLadder = false;
-//				}
-//				onGround = true;
-//			}
-//		}
-//		System.out.println("Sim " + this.y + " - " + this.ya);
-
 		if (mapY > -1 && isTrace)
 			++levelScene.level.marioTrace[this.mapX][this.mapY];
 
@@ -601,8 +544,8 @@ public final class Mario extends Sprite implements Cloneable
 
 		float xSimPos = 10*16 + (xSimHead - x);
 		float ySimPos = 10*16 + (ySimHead - y);
-//		xSimPos = x;
-//		ySimPos = y;
+		xSimPos = x;
+		ySimPos = y;
 		
 		boolean collide = false;
 		if (ya > 0)
@@ -677,9 +620,13 @@ public final class Mario extends Sprite implements Cloneable
 		int y = (int) (_y / 16);
 		if (x == (int) (this.x / 16) && y == (int) (this.y / 16)) return false;
 
-		boolean blocking = levelScene.level.isBlocking(x, y, xa, ya);
+		boolean blocking = ch.idsia.benchmark.mario.engine.level.Level.IsBlocking(x, y, xa, ya);
 
-		byte block = levelScene.level.getBlock(x, y);
+//		byte block = levelScene.level.getBlock(x, y);
+		byte block = ch.idsia.benchmark.mario.engine.level.Level.GetBlock(x, y);
+		
+		
+		
 //		System.out.println("Sim: " + x + " - " + y + " Block: " + block);
 //		if (blocking)
 //			System.out.println("Sim " + x + " - " + y + " Block: " + block);
