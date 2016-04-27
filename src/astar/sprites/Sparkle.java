@@ -27,8 +27,6 @@
 
 package astar.sprites;
 
-import ch.idsia.benchmark.mario.engine.Art;
-
 public class Sparkle extends Sprite
 {
 public int life;
@@ -42,7 +40,6 @@ public Sparkle(int x, int y, float xa, float ya)
 public Sparkle(int x, int y, float xa, float ya, int xPic, int yPic, int timeSpan)
 {
     kind = KIND_SPARCLE;
-    sheet = Art.particles;
     this.x = x;
     this.y = y;
     this.xa = xa;

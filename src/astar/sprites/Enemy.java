@@ -32,7 +32,6 @@ package astar.sprites;
 import java.awt.Graphics;
 
 import astar.LevelScene;
-import ch.idsia.benchmark.mario.engine.Art;
 import ch.idsia.benchmark.mario.engine.GlobalOptions;
 
 
@@ -71,10 +70,10 @@ public float yaw = 1;
 
 public boolean noFireballDeath;
 
-public Enemy(LevelScene levelScene, int x, int y, int dir, int type, boolean winged, int mapX, int mapY)
+public Enemy(LevelScene levelScene, float x, float y, int dir, int type, boolean winged, int mapX, int mapY)
 {
+	//modified above
     kind = (byte) type;
-    sheet = Art.enemies;
     this.winged = winged;
 
     this.x = x;
@@ -435,6 +434,8 @@ public void bumpCheck(int xTile, int yTile)
     }
 }
 
+/*
+ * Used for graphics rendering
 public void render(Graphics og)
 {
     if (winged)
@@ -473,5 +474,5 @@ public void render(Graphics og)
             og.drawImage(sheet[wingTime / 4 % 2][4], xPixel + (xFlipPic ? wPic : 0) + (xFlipPic ? 10 : -10), yPixel + (yFlipPic ? hPic : 0) - 8, xFlipPic ? -wPic : wPic, yFlipPic ? -hPic : hPic, null);
         }
     }
-}
+}*/
 }

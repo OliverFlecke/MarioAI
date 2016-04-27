@@ -26,14 +26,7 @@
  */
 
 package astar.sprites;
-
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Image;
-
 import astar.level.SpriteTemplate;
-import ch.idsia.benchmark.mario.engine.GlobalOptions;
-import ch.idsia.benchmark.mario.engine.MarioVisualComponent;
 
 public class Sprite implements Cloneable
 {
@@ -78,9 +71,7 @@ public class Sprite implements Cloneable
 	public int xPicO, yPicO;
 	public boolean xFlipPic = false;
 	public boolean yFlipPic = false;
-	public Image[][] sheet;
-	public Image[][] prevSheet;
-
+	
 	public boolean visible = true;
 
 	public int layer = 1;
@@ -163,69 +154,6 @@ public class Sprite implements Cloneable
 		y += ya;
 	}
 
-	public void render(final Graphics og)
-	{
-		if (!visible) return;
-
-		//        int xPixel = (int)(xOld+(x-xOld)*cameraOffSet)-xPicO;
-		//        int yPixel = (int)(yOld+(y-yOld)*cameraOffSet)-yPicO;
-
-		int xPixel = (int) x - xPicO;
-		int yPixel = (int) y - yPicO;
-
-		//        System.out.print("xPic = " + xPic);
-		//        System.out.print(", yPic = " + yPic);
-		//        System.out.println(", kind = " + this.kind);
-
-		try
-		{
-			og.drawImage(sheet[xPic][yPic],
-					xPixel + (xFlipPic ? wPic : 0),
-					yPixel + (yFlipPic ? hPic : 0),
-					xFlipPic ? -wPic : wPic,
-							yFlipPic ? -hPic : hPic, null);
-		} catch (ArrayIndexOutOfBoundsException ex)
-		{
-			//        System.err.println("ok:" + this.kind + ", " + xPic);
-		}
-		// Labels
-		if (GlobalOptions.areLabels)
-			og.drawString("" + xPixel + "," + yPixel, xPixel, yPixel);
-
-		// Mario Grid Visualization Enable
-		if (GlobalOptions.isShowReceptiveField)
-		{
-			if (this.kind == KIND_MARIO)
-			{
-				//                og.drawString("M", (int) x, (int) y);
-				og.drawString("Matrix View", xPixel - 40, yPixel - 20);
-				int width = GlobalOptions.receptiveFieldWidth;// * 16;
-				int height = GlobalOptions.receptiveFieldHeight;// * 16;
-
-				int rows = GlobalOptions.receptiveFieldHeight;
-				int columns = GlobalOptions.receptiveFieldWidth;
-
-				int marioCol = GlobalOptions.marioEgoCol;
-				int marioRow = GlobalOptions.marioEgoRow;
-
-				int htOfRow = 16;//height / (columns);
-				int k;
-				// horizontal lines
-				og.setColor(Color.BLACK);
-				for (k = -marioRow - 1 /*-rows / 2 - 1*/; k < rows - marioRow/*rows / 2*/; k++)
-					og.drawLine((int) x - marioCol * htOfRow - 8/*width / 2*/, (int) (y + k * htOfRow), (int) x + (columns - marioCol) * htOfRow - 8 /*(x + width / 2)*/, (int) (y + k * htOfRow));
-
-				//                og.setColor(Color.RED);
-				// vertical lines
-				int wdOfRow = 16;// length / (rows);
-				for (k = -marioCol - 1 /*-columns / 2 - 1*/; k < columns - marioCol /*columns / 2 + 1*/; k++)
-					og.drawLine((int) (x + k * wdOfRow + 8), (int) y - marioRow * htOfRow - 16/*height / 2 - 8*/, (int) (x + k * wdOfRow + 8), (int) y + (height - marioRow) * htOfRow - 16 /*(y + height / 2 - 8)*/);
-			}
-			og.setColor(Color.GREEN);
-			MarioVisualComponent.drawString(og, String.valueOf(this.kind), (int) x - 4, (int) y - 8, 2);
-		}
-	}
-
 	public final void tick()
 	{
 		xOld = x;
@@ -282,6 +210,7 @@ public class Sprite implements Cloneable
 	public Object clone() throws CloneNotSupportedException
 	{
 		Sprite clone = (Sprite) super.clone();
+		
 		if (this.spriteTemplate != null)
 		{
 			clone.spriteTemplate = (SpriteTemplate) this.spriteTemplate.clone();

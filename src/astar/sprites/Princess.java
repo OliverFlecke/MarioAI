@@ -28,7 +28,6 @@
 package astar.sprites;
 
 import astar.LevelScene;
-import ch.idsia.benchmark.mario.engine.Art;
 
 
 public class Princess extends Sprite
@@ -39,7 +38,6 @@ private int runTime = 0;
 public Princess(LevelScene world, int x, int y, int mapX, int mapY)
 {
     kind = KIND_PRINCESS;
-    sheet = Art.princess;
 
     this.x = x;
     this.y = y;

@@ -29,7 +29,6 @@ package astar.sprites;
 
 
 import astar.LevelScene;
-import ch.idsia.benchmark.mario.engine.Art;
 
 
 public class Fireball extends Sprite
@@ -55,7 +54,6 @@ private int deadTime = 0;
 public Fireball(LevelScene world, float x, float y, int facing)
 {
     kind = KIND_FIREBALL;
-    sheet = Art.particles;
 
     this.x = x;
     this.y = y;

@@ -2,7 +2,6 @@ package astar.sprites;
 
 import astar.LevelScene;
 import astar.level.Level;
-import ch.idsia.benchmark.mario.engine.Art;
 import ch.idsia.benchmark.mario.engine.GlobalOptions;
 import ch.idsia.benchmark.mario.environments.Environment;
 import ch.idsia.benchmark.mario.environments.MarioEnvironment;
@@ -141,7 +140,6 @@ public final class Mario extends Sprite implements Cloneable
 		for (int i = 0; i < this.keys.length; i++) {
 			clone.keys[i] = this.keys[i];
 		}
-		
 		clone.canJump = this.canJump;
 		clone.mayJump = this.mayJump;
 		clone.onGround = this.onGround;
@@ -151,6 +149,7 @@ public final class Mario extends Sprite implements Cloneable
 		clone.yaa = this.yaa;
 		clone.x = this.x;
 		clone.y = this.y;
+
 		return clone;
 	}
 
@@ -185,27 +184,6 @@ public final class Mario extends Sprite implements Cloneable
 	{
 		Mario.large = on ? newLarge : lastLarge;
 		Mario.fire = on ? newFire : lastFire;
-
-		//        System.out.println("on = " + on);
-		if (large)
-		{
-			sheet = Art.mario;
-			if (fire)
-				sheet = Art.fireMario;
-
-			xPicO = 16;
-			yPicO = 31;
-			wPic = hPic = 32;
-		} else
-		{
-			sheet = Art.smallMario;
-
-			xPicO = 8;
-			yPicO = 15;
-			wPic = hPic = 16;
-		}
-		savePrevState();
-		calcPic();
 	}
 
 	void setMode(boolean large, boolean fire)
@@ -228,40 +206,7 @@ public final class Mario extends Sprite implements Cloneable
 
 	public void setRacoon(boolean isRacoon)
 	{
-		//        if (true)
-		//        return;
 		this.isRacoon = isRacoon;
-		//        this.setMode(isRacoon, false);
-		//        System.out.println("isRacoon = " + isRacoon);
-		//        System.out.println("Art.racoonmario.length = " + Art.racoonmario.length);
-		//        System.out.println("Art.racoonmario[0].length = " + Art.racoonmario[0].length);
-		if (isRacoon)
-		{
-			savePrevState();
-
-			xPicO = 16;
-			yPicO = 31;
-			wPic = hPic = 32;
-			this.sheet = Art.racoonmario;
-		} else
-		{
-
-			this.sheet = prevSheet;
-			this.xPicO = this.prevxPicO;
-			this.yPicO = this.prevyPicO;
-			wPic = prevWPic;
-			hPic = prevHPic;
-			//            blink(false);
-		}
-	}
-
-	private void savePrevState()
-	{
-		this.prevSheet = this.sheet;
-		prevWPic = wPic;
-		prevHPic = hPic;
-		this.prevxPicO = xPicO;
-		this.prevyPicO = yPicO;
 	}
 
 	public void move()
@@ -464,7 +409,7 @@ public final class Mario extends Sprite implements Cloneable
 			//            System.out.println("sideWaysSpeed = " + sideWaysSpeed);
 		}
 	}
-	
+
 	private void calcPic()
 	{
 		int runFrame;
@@ -544,9 +489,10 @@ public final class Mario extends Sprite implements Cloneable
 
 		float xSimPos = 10*16 + (xSimHead - x);
 		float ySimPos = 10*16 + (ySimHead - y);
+
 		xSimPos = x;
 		ySimPos = y;
-		
+
 		boolean collide = false;
 		if (ya > 0)
 		{
@@ -644,7 +590,7 @@ public final class Mario extends Sprite implements Cloneable
 		{
 			levelScene.bump(x, y, large);
 		}
-		
+//		System.out.println(blocking);
 		return blocking;
 	}
 

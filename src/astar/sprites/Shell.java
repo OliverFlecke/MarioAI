@@ -28,7 +28,6 @@
 package astar.sprites;
 
 import astar.LevelScene;
-import ch.idsia.benchmark.mario.engine.Art;
 
 
 
@@ -57,7 +56,6 @@ public boolean carried;
 public Shell(LevelScene world, float x, float y, int type)
 {
     kind = KIND_SHELL;
-    sheet = Art.enemies;
 
     this.x = x;
     this.y = y;
