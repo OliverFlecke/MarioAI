@@ -10,9 +10,7 @@ import ch.idsia.tools.MarioAIOptions;
 
 
 public final class Mario extends Sprite implements Cloneable
-{
-	public static float xSimHead, ySimHead;
-	
+{	
 	public static final String[] MODES = new String[]{"small", "Large", "FIRE"};
 
 	//        fire = (mode == MODE.MODE_FIRE);
@@ -487,44 +485,38 @@ public final class Mario extends Sprite implements Cloneable
 			ya += 8;
 		}
 
-		float xSimPos = 10*16 + (xSimHead - x);
-		float ySimPos = 10*16 + (ySimHead - y);
-
-		xSimPos = x;
-		ySimPos = y;
-
 		boolean collide = false;
 		if (ya > 0)
 		{
-			if (isBlocking(xSimPos + xa - width, ySimPos + ya, xa, 0)) collide = true;
-			else if (isBlocking(xSimPos + xa + width, ySimPos + ya, xa, 0)) collide = true;
-			else if (isBlocking(xSimPos + xa - width, ySimPos + ya + 1, xa, ya)) collide = true;
-			else if (isBlocking(xSimPos + xa + width, ySimPos + ya + 1, xa, ya)) collide = true;
+			if (isBlocking(x + xa - width, y + ya, xa, 0)) collide = true;
+			else if (isBlocking(x + xa + width, y + ya, xa, 0)) collide = true;
+			else if (isBlocking(x + xa - width, y + ya + 1, xa, ya)) collide = true;
+			else if (isBlocking(x + xa + width, y + ya + 1, xa, ya)) collide = true;
 		}
 		if (ya < 0)
 		{
-			if (isBlocking(xSimPos + xa, ySimPos + ya - height, xa, ya)) collide = true;
-			else if (collide || isBlocking(xSimPos + xa - width, ySimPos + ya - height, xa, ya)) collide = true;
-			else if (collide || isBlocking(xSimPos + xa + width, ySimPos + ya - height, xa, ya)) collide = true;
+			if (isBlocking(x + xa, y + ya - height, xa, ya)) collide = true;
+			else if (collide || isBlocking(x + xa - width, y + ya - height, xa, ya)) collide = true;
+			else if (collide || isBlocking(x + xa + width, y + ya - height, xa, ya)) collide = true;
 		}
 		if (xa > 0)
 		{
 			sliding = true;
-			if (isBlocking(xSimPos + xa + width, ySimPos + ya - height, xa, ya)) collide = true;
+			if (isBlocking(x + xa + width, y + ya - height, xa, ya)) collide = true;
 			else sliding = false;
-			if (isBlocking(xSimPos + xa + width, ySimPos + ya - height / 2, xa, ya)) collide = true;
+			if (isBlocking(x + xa + width, y + ya - height / 2, xa, ya)) collide = true;
 			else sliding = false;
-			if (isBlocking(xSimPos + xa + width, ySimPos + ya, xa, ya)) collide = true;
+			if (isBlocking(x + xa + width, y + ya, xa, ya)) collide = true;
 			else sliding = false;
 		}
 		if (xa < 0)
 		{
 			sliding = true;
-			if (isBlocking(xSimPos + xa - width, ySimPos + ya - height, xa, ya)) collide = true;
+			if (isBlocking(x + xa - width, y + ya - height, xa, ya)) collide = true;
 			else sliding = false;
-			if (isBlocking(xSimPos + xa - width, ySimPos + ya - height / 2, xa, ya)) collide = true;
+			if (isBlocking(x + xa - width, y + ya - height / 2, xa, ya)) collide = true;
 			else sliding = false;
-			if (isBlocking(xSimPos + xa - width, ySimPos + ya, xa, ya)) collide = true;
+			if (isBlocking(x + xa - width, y + ya, xa, ya)) collide = true;
 			else sliding = false;
 		}
 

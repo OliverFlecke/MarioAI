@@ -126,7 +126,7 @@ public class AstarAgent extends KeyAdapter implements Agent {
 				Node.setStartTime(System.currentTimeMillis());
 				
 				// Search for the best path
-				actionPath = head.searchForPath(new PriorityQueue<Node>());
+				actionPath = Node.searchForPath(head, new PriorityQueue<Node>());
 			}
 			
 			// If the action path found by the algorithm is not empty, 

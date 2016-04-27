@@ -38,24 +38,23 @@ public class Node implements Comparable<Node> {
 	public Node parent;
 	public static Node head;
 	public List<Node> children = new ArrayList<Node>();
-	private int maxDepth = 5;
+	private static int maxDepth = 40;
 	
 	
 	
-	// Should have everything needed to compute next frame
+	/**
+	 * Create a new node, which should have everything needed to compute next frame
+	 * @param parent of the current node
+	 * @param levelScene
+	 * @param mario
+	 * @param enemies
+	 * @param action
+	 */
 	public Node(Node parent, LevelScene levelScene, Mario mario, List<Sprite> enemies, boolean[] action) 
 	{
 		this.parent = parent;
-		if (this.parent == null)
-		{
-			this.depth = 0;
-			Mario.xSimHead = mario.x;
-			Mario.ySimHead = mario.y;
-		}
-		else
-		{			
-			this.depth = this.parent.depth + 1;
-		}
+		if (this.parent == null) this.depth = 0;
+		else this.depth = this.parent.depth + 1;
 		
 		// Copy these elements, don't just save the pointers 
 		this.mario = mario; 
@@ -137,26 +136,26 @@ public class Node implements Comparable<Node> {
 	}
 	
 	/**
-	 * 
-	 * @return
+	 * Search for a path from a 
+	 * @param head The node to search from
+	 * @return A list of action, which contains the optimal path through the world
 	 */
-	public LinkedList<boolean[]> searchForPath(PriorityQueue<Node> queue)
+	public static LinkedList<boolean[]> searchForPath(Node head, PriorityQueue<Node> queue)
 	{
-		Node.nodeCount = 0;
-		System.out.println("Head: X: " + head.x + " Y: " + head.y + " Goal: " + goal);
+		if (debug) System.out.println("Head: X: " + head.x + " Y: " + head.y + " Goal: " + goal);
 		
-		queue = new PriorityQueue<Node>();
-		generateNewNodes(queue);
+		Node.nodeCount = 0;
+		head.generateNewNodes(queue);
+		
 		// Choose to use this, if we find a solution, but want to continue our search
 		Node current = queue.remove();
 		Node best = current; 
 		
 		while ((!current.atGoal() && current.depth < maxDepth))
 		{
-//			System.out.println(System.currentTimeMillis() - startTime);
 			if ((System.currentTimeMillis() - startTime) > timeLimit)
 			{
-				System.out.println("Out of time!");
+				if (debug) System.out.println("Out of time!");
 				break;
 			}
 			current.generateNewNodes(queue);
