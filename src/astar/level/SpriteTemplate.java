@@ -103,10 +103,7 @@ public class SpriteTemplate implements Serializable, Cloneable
 		} else if (type == Sprite.KIND_WAVE_GOOMBA)
 		{
 			sprite = new WaveGoomba(levelScene, x * 16 + 8, y * 16 + 15 - 3 * 16, dir, x, y);
-		} else if (type == Sprite.KIND_PRINCESS)
-		{
-			sprite = new Princess(levelScene, x * 16 - 16, y * 16 - 15, x, y);
-		} else
+		}else
 		{
 			//            sprite = new Enemy(levelScene, x*16+8, y*16+15, dir, type, winged);
 			sprite = new Enemy(levelScene, x * 16 + 8, y * 16 + 15, dir, type, winged, x, y);

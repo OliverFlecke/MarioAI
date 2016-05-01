@@ -41,14 +41,12 @@ import java.lang.Cloneable;
 import astar.level.Level;
 import astar.level.SpriteTemplate;
 import astar.sprites.BulletBill;
-import astar.sprites.CoinAnim;
 import astar.sprites.Enemy;
 import astar.sprites.FireFlower;
 import astar.sprites.Fireball;
 import astar.sprites.GreenMushroom;
 import astar.sprites.Mario;
 import astar.sprites.Mushroom;
-import astar.sprites.Particle;
 import astar.sprites.Shell;
 import astar.sprites.Sprite;
 import astar.sprites.SpriteContext;
@@ -402,7 +400,6 @@ public final class LevelScene implements SpriteContext, Cloneable
 			} else
 			{
 				this.mario.gainCoin();
-				addSprite(new CoinAnim(x, y));
 			}
 		}
 
@@ -412,9 +409,7 @@ public final class LevelScene implements SpriteContext, Cloneable
 			if (canBreakBricks)
 			{
 				level.setBlock(x, y, (byte) 0);
-				for (int xx = 0; xx < 2; xx++)
-					for (int yy = 0; yy < 2; yy++)
-						addSprite(new Particle(x * cellSize + xx * 8 + 4, y * cellSize + yy * 8 + 4, (xx * 2 - 1) * 4, (yy * 2 - 1) * 4 - 8));
+							
 			} else
 			{
 				level.setBlockData(x, y, (byte) 4);
@@ -429,7 +424,6 @@ public final class LevelScene implements SpriteContext, Cloneable
 		{
 			this.mario.gainCoin();
 			level.setBlock(x, y, (byte) 0);
-			addSprite(new CoinAnim(x, y + 1));
 		}
 
 		for (Sprite sprite : sprites)
