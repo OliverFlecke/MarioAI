@@ -633,15 +633,6 @@ public final class Mario extends Sprite implements Cloneable
 		levelScene.appendBonusPoints(MarioEnvironment.IntermediateRewardsSystemOfValues.mushroom);
 	}
 
-	public void devourGreenMushroom(final int mushroomMode)
-	{
-		++greenMushroomsDevoured;
-		if (mushroomMode == 0)
-			getHurt(Sprite.KIND_GREEN_MUSHROOM);
-		else
-			die("Collision with a creature [" + Sprite.getNameByKind(Sprite.KIND_GREEN_MUSHROOM) + "]");
-	}
-
 	public void kick(final Shell shell)
 	{
 		//        if (deathTime > 0 || levelScene.paused) return;

@@ -50,7 +50,6 @@ import astar.sprites.Shell;
 import astar.sprites.Sprite;
 import astar.sprites.SpriteContext;
 import ch.idsia.benchmark.mario.engine.GlobalOptions;
-import ch.idsia.benchmark.mario.engine.level.LevelGenerator;
 import ch.idsia.tools.MarioAIOptions;
 
 public final class LevelScene implements SpriteContext, Cloneable
