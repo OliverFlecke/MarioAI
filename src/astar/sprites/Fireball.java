@@ -92,6 +92,8 @@ public void move()
 
     runTime += (Math.abs(xa)) + 5;
 
+
+
     if (!move(xa, 0))
     {
         die();

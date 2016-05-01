@@ -41,10 +41,6 @@ public final class Mario extends Sprite implements Cloneable
 
 	private int status = STATUS_RUNNING;
 	// for racoon when carrying the shell
-	private int prevWPic;
-	private int prevxPicO;
-	private int prevyPicO;
-	private int prevHPic;
 
 	private boolean isRacoon;
 	public float yaa = 1;
