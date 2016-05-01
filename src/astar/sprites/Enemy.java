@@ -29,10 +29,7 @@ package astar.sprites;
 
 
 
-import java.awt.Graphics;
-
 import astar.LevelScene;
-import ch.idsia.benchmark.mario.engine.GlobalOptions;
 
 
 public class Enemy extends Sprite
@@ -336,8 +333,6 @@ public boolean move(float xa, float ya)
         return false;
     } else
     {
-        if (GlobalOptions.areFrozenCreatures)
-            return true;
 
         x += xa;
         y += ya;

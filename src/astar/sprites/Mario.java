@@ -2,7 +2,6 @@ package astar.sprites;
 
 import astar.LevelScene;
 import astar.level.Level;
-import ch.idsia.benchmark.mario.engine.GlobalOptions;
 import ch.idsia.benchmark.mario.environments.Environment;
 import ch.idsia.benchmark.mario.environments.MarioEnvironment;
 import ch.idsia.tools.MarioAIOptions;
@@ -325,9 +324,6 @@ public final class Mario extends Sprite implements Cloneable
 		{
 			levelScene.addSprite(new Fireball(levelScene, x + facing * 6, y - 20, facing));
 		}
-		// Cheats:
-		if (GlobalOptions.isPowerRestoration && keys[KEY_SPEED] && (!Mario.large || !Mario.fire))
-			setMode(true, true);
 
 		ableToShoot = !keys[KEY_SPEED];
 

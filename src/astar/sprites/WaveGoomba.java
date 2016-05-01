@@ -1,9 +1,6 @@
 package astar.sprites;
 
 import astar.LevelScene;
-import ch.idsia.benchmark.mario.engine.GlobalOptions;
-
-
 
 /**
  * Created by IntelliJ IDEA.
@@ -31,10 +28,6 @@ public WaveGoomba(LevelScene world, int x, int y, int dir, int mapX, int mapY)
 
 public void move()
 {
-    if (GlobalOptions.areFrozenCreatures == true)
-    {
-        return;
-    }
     wingTime++;
     if (deadTime > 0)
     {

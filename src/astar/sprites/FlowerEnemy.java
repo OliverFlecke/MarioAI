@@ -28,7 +28,6 @@
 package astar.sprites;
 
 import astar.LevelScene;
-import ch.idsia.benchmark.mario.engine.GlobalOptions;
 
 
 public class FlowerEnemy extends Enemy
@@ -65,10 +64,6 @@ public FlowerEnemy(LevelScene world, int x, int y, int mapX, int mapY)
 public void move()
 {
     //TODO:|L| check this
-    if (GlobalOptions.areFrozenCreatures == true)
-    {
-        return;
-    }
     if (deadTime > 0)
     {
         deadTime--;
