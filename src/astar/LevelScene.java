@@ -44,7 +44,6 @@ import astar.sprites.BulletBill;
 import astar.sprites.Enemy;
 import astar.sprites.FireFlower;
 import astar.sprites.Fireball;
-import astar.sprites.GreenMushroom;
 import astar.sprites.Mario;
 import astar.sprites.Mushroom;
 import astar.sprites.Shell;
@@ -381,11 +380,6 @@ public final class LevelScene implements SpriteContext, Cloneable
 
 			if (((Level.TILE_BEHAVIORS[block & 0xff]) & Level.BIT_SPECIAL) > 0)
 			{
-				if (randomGen.nextInt(5) == 0 && level.difficulty > 4)
-				{
-					addSprite(new GreenMushroom(this, x * cellSize + 8, y * cellSize + 8));
-					++level.counters.greenMushrooms;
-				} else
 				{
 					if (!Mario.large)
 					{
