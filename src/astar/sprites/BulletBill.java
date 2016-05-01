@@ -53,15 +53,10 @@ public BulletBill(LevelScene world, float x, float y, int dir)
     this.x = x;
     this.y = y;
     this.world = world;
-    xPicO = 8;
-    yPicO = 31;
 
     height = 12;
     facing = 0;
-    wPic = 16;
-    yPic = 5;
 
-    xPic = 0;
     ya = -5;
     this.facing = dir;
 }
@@ -104,10 +99,6 @@ public void move()
         if (deadTime == 0)
         {
             deadTime = 1;
-            for (int i = 0; i < 8; i++)
-            {
-                world.addSprite(new Sparkle((int) (x + Math.random() * 16 - 8) + 4, (int) (y - Math.random() * 8) + 4, (float) (Math.random() * 2 - 1), (float) Math.random() * -1, 0, 1, 5));
-            }
             spriteContext.removeSprite(this);
         }
 
@@ -122,7 +113,6 @@ public void move()
     float sideWaysSpeed = 4f;
 
     xa = facing * sideWaysSpeed;
-    xFlipPic = facing == -1;
     move(xa, 0);
 }
 

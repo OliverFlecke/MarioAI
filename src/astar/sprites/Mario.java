@@ -329,8 +329,6 @@ public final class Mario extends Sprite implements Cloneable
 
 		mayJump = (onGround || sliding) && !keys[KEY_JUMP];
 
-		xFlipPic = facing == -1;
-
 		runTime += (Math.abs(xa)) + 5;
 		if (Math.abs(xa) < 0.5f)
 		{
@@ -342,10 +340,6 @@ public final class Mario extends Sprite implements Cloneable
 
 		if (sliding)
 		{
-			for (int i = 0; i < 1; i++)
-			{
-				levelScene.addSprite(new Sparkle((int) (x + Math.random() * 4 - 2) + facing * 8, (int) (y + Math.random() * 4) - 24, (float) (Math.random() * 2 - 1), (float) Math.random() * 1, 0, 1, 5));
-			}
 			ya *= 0.5f;
 		}
 
@@ -437,13 +431,6 @@ public final class Mario extends Sprite implements Cloneable
 		{
 			if (xa > 1 || xa < -1) runFrame = large ? 9 : 7;
 
-			if (xa > 3 || xa < -3)
-			{
-				for (int i = 0; i < 3; i++)
-				{
-					levelScene.addSprite(new Sparkle((int) (x + Math.random() * 8 - 4), (int) (y + Math.random() * 4), (float) (Math.random() * 2 - 1), (float) Math.random() * -1, 0, 1, 5));
-				}
-			}
 		}
 
 		if (large)
@@ -454,8 +441,6 @@ public final class Mario extends Sprite implements Cloneable
 		{
 			height = 12;
 		}
-
-		xPic = runFrame;
 	}
 
 	private boolean move(float xa, float ya)
@@ -568,10 +553,7 @@ public final class Mario extends Sprite implements Cloneable
 		if (((Level.TILE_BEHAVIORS[block & 0xff]) & Level.BIT_PICKUPABLE) > 0)
 		{
 			this.gainCoin();
-			levelScene.level.setBlock(x, y, (byte) 0);
-			for (int xx = 0; xx < 2; xx++)
-				for (int yy = 0; yy < 2; yy++)
-					levelScene.addSprite(new Sparkle(x * 16 + xx * 8 + (int) (Math.random() * 8), y * 16 + yy * 8 + (int) (Math.random() * 8), 0, 0, 0, 2, 5));
+			levelScene.level.setBlock(x, y, (byte) 0);	
 		}
 
 		if (blocking && ya < 0)

@@ -27,10 +27,7 @@
 
 package astar.sprites;
 
-
-
 import astar.LevelScene;
-
 
 public class Enemy extends Sprite
 {
@@ -79,8 +76,6 @@ public Enemy(LevelScene levelScene, float x, float y, int dir, int type, boolean
     this.mapY = mapY;
 
     this.levelScene = levelScene;
-    xPicO = 8;
-    yPicO = 31;
 
     yaa = creaturesGravity * 2;
     yaw = creaturesGravity == 1 ? 1 : 0.3f * creaturesGravity;
@@ -89,35 +84,27 @@ public Enemy(LevelScene levelScene, float x, float y, int dir, int type, boolean
     {
         case KIND_GOOMBA:
         case KIND_GOOMBA_WINGED:
-            yPic = IN_FILE_POS_GOOMBA;
             break;
         case KIND_RED_KOOPA:
         case KIND_RED_KOOPA_WINGED:
-            yPic = IN_FILE_POS_RED_KOOPA;
             break;
         case KIND_GREEN_KOOPA:
         case KIND_GREEN_KOOPA_WINGED:
-            yPic = IN_FILE_POS_GREEN_KOOPA;
             break;
         case KIND_SPIKY:
         case KIND_SPIKY_WINGED:
-            yPic = IN_FILE_POS_SPIKY;
             break;
         case KIND_ENEMY_FLOWER:
-            yPic = IN_FILE_POS_FLOWER;
             break;
         case KIND_WAVE_GOOMBA:
-            yPic = POSITION_WAVE_GOOMBA;
             break;
     }
 
     avoidCliffs = kind == KIND_RED_KOOPA;
 
     noFireballDeath = (kind == KIND_SPIKY || kind == KIND_SPIKY_WINGED);
-    if (yPic > 1) height = 12;
     facing = dir;
     if (facing == 0) facing = 1;
-    this.wPic = 16;
 }
 
 public void collideCheck()
@@ -143,8 +130,6 @@ public void collideCheck()
                     ya = 0;
                 } else
                 {
-                    this.yPicO = 31 - (32 - 8);
-                    hPic = 8;
                     if (spriteTemplate != null) spriteTemplate.isDead = true;
                     deadTime = 10;
                     winged = false;
@@ -177,10 +162,7 @@ public void move()
         if (deadTime == 0)
         {
             deadTime = 1;
-            for (int i = 0; i < 8; i++)
-            {
-                levelScene.addSprite(new Sparkle((int) (x + Math.random() * 16 - 8) + 4, (int) (y - Math.random() * 8) + 4, (float) (Math.random() * 2 - 1), (float) Math.random() * -1, 0, 1, 5));
-            }
+           
             spriteContext.removeSprite(this);
         }
 
@@ -206,7 +188,6 @@ public void move()
 //    xa += facing == 1 ? -wind : wind;
 //        mayJump = (onGround);
 
-    xFlipPic = facing == -1;
 
     runTime += (Math.abs(xa)) + 5;
 
@@ -246,7 +227,6 @@ public void move()
 
     if (winged) runFrame = wingTime / 4 % 2;
 
-    xPic = runFrame;
 }
 
 public boolean move(float xa, float ya)
@@ -370,8 +350,6 @@ public boolean shellCollideCheck(Shell shell)
             if (spriteTemplate != null) spriteTemplate.isDead = true;
             deadTime = 100;
             winged = false;
-            hPic = -hPic;
-            yPicO = -yPicO + 16;
 //                System.out.println("shellCollideCheck");
             ++LevelScene.killedCreaturesTotal;
             ++LevelScene.killedCreaturesByShell;
@@ -400,8 +378,6 @@ public boolean fireballCollideCheck(Fireball fireball)
             if (spriteTemplate != null) spriteTemplate.isDead = true;
             deadTime = 100;
             winged = false;
-            hPic = -hPic;
-            yPicO = -yPicO + 16;
 //                System.out.println("fireballCollideCheck");
             ++LevelScene.killedCreaturesTotal;
             ++LevelScene.killedCreaturesByFireBall;
@@ -423,51 +399,7 @@ public void bumpCheck(int xTile, int yTile)
         if (spriteTemplate != null) spriteTemplate.isDead = true;
         deadTime = 100;
         winged = false;
-        hPic = -hPic;
-        yPicO = -yPicO + 16;
 //            System.out.println("bumpCheck: mostelikely shell killed other creature");
     }
 }
-
-/*
- * Used for graphics rendering
-public void render(Graphics og)
-{
-    if (winged)
-    {
-        int xPixel = (int) (xOld + (x - xOld)) - xPicO;
-        int yPixel = (int) (yOld + (y - yOld)) - yPicO;
-
-        if (kind == KIND_GREEN_KOOPA ||
-                kind == KIND_RED_KOOPA ||
-                kind == KIND_GREEN_KOOPA_WINGED ||
-                kind == KIND_RED_KOOPA_WINGED)
-        {
-        } else
-        {
-            xFlipPic = !xFlipPic;
-            og.drawImage(sheet[wingTime / 4 % 2][4], xPixel + (xFlipPic ? wPic : 0) + (xFlipPic ? 10 : -10), yPixel + (yFlipPic ? hPic : 0) - 8, xFlipPic ? -wPic : wPic, yFlipPic ? -hPic : hPic, null);
-            xFlipPic = !xFlipPic;
-        }
-    }
-
-    super.render(og);
-
-    if (winged)
-    {
-        int xPixel = (int) (xOld + (x - xOld)) - xPicO;
-        int yPixel = (int) (yOld + (y - yOld)) - yPicO;
-
-        if (kind == KIND_GREEN_KOOPA ||
-                kind == KIND_RED_KOOPA ||
-                kind == KIND_GREEN_KOOPA_WINGED ||
-                kind == KIND_RED_KOOPA_WINGED)
-        {
-            og.drawImage(sheet[wingTime / 4 % 2][4], xPixel + (xFlipPic ? wPic : 0) + (xFlipPic ? 10 : -10), yPixel + (yFlipPic ? hPic : 0) - 10, xFlipPic ? -wPic : wPic, yFlipPic ? -hPic : hPic, null);
-        } else
-        {
-            og.drawImage(sheet[wingTime / 4 % 2][4], xPixel + (xFlipPic ? wPic : 0) + (xFlipPic ? 10 : -10), yPixel + (yFlipPic ? hPic : 0) - 8, xFlipPic ? -wPic : wPic, yFlipPic ? -hPic : hPic, null);
-        }
-    }
-}*/
 }

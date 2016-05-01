@@ -49,14 +49,8 @@ public FireFlower(LevelScene world, int x, int y)
     this.x = x;
     this.y = y;
     this.world = world;
-    xPicO = 8;
-    yPicO = 15;
-
-    xPic = 1;
-    yPic = 0;
     height = 12;
     facing = 1;
-    wPic = hPic = 16;
     life = 0;
 }
 

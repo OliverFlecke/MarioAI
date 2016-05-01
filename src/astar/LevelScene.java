@@ -50,7 +50,6 @@ import astar.sprites.Mario;
 import astar.sprites.Mushroom;
 import astar.sprites.Particle;
 import astar.sprites.Shell;
-import astar.sprites.Sparkle;
 import astar.sprites.Sprite;
 import astar.sprites.SpriteContext;
 import ch.idsia.benchmark.mario.engine.GlobalOptions;
@@ -288,10 +287,6 @@ public final class LevelScene implements SpriteContext, Cloneable
 							if ((tickCount - x * 2) % 100 == 0)
 							{
 								//                                    xCannon = x;
-								for (int i = 0; i < 8; i++)
-								{
-									addSprite(new Sparkle(x * cellSize + 8, y * cellSize + (int) (Math.random() * cellSize), (float) Math.random() * dir, 0, 0, 1, 5));
-								}
 								addSprite(new BulletBill(this, x * cellSize + 8 + dir * 8, y * cellSize + 15, dir));
 
 								//                                    hasShotCannon = true;

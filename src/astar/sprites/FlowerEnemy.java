@@ -42,9 +42,6 @@ public FlowerEnemy(LevelScene world, int x, int y, int mapX, int mapY)
     super(world, x, y, 1, Sprite.KIND_ENEMY_FLOWER, false, mapX, mapY);
     noFireballDeath = false;
     this.world = world;
-    this.xPic = 0;
-    this.yPic = 6;
-    this.yPicO = 24;
     this.height = 12;
     this.width = 2;
 
@@ -71,10 +68,6 @@ public void move()
         if (deadTime == 0)
         {
             deadTime = 1;
-            for (int i = 0; i < 8; i++)
-            {
-                world.addSprite(new Sparkle((int) (x + Math.random() * 16 - 8) + 4, (int) (y - Math.random() * 8) + 4, (float) (Math.random() * 2 - 1), (float) Math.random() * -1, 0, 1, 5));
-            }
             spriteContext.removeSprite(this);
         }
 
@@ -110,7 +103,6 @@ public void move()
     ya *= 0.9;
     ya += 0.1f;
 
-    xPic = ((tick / 2) & 1) * 2 + ((tick / 6) & 1);
 }
 /*    public void render(Graphics og, float alpha)
     {

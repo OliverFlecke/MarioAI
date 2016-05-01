@@ -58,16 +58,8 @@ public Fireball(LevelScene world, float x, float y, int facing)
     this.x = x;
     this.y = y;
     this.world = world;
-    xPicO = 4;
-    yPicO = 4;
-
-    yPic = 3;
     height = 8;
     this.facing = facing;
-    wPic = 8;
-    hPic = 8;
-
-    xPic = 4;
     ya = 4;
 }
 
@@ -75,10 +67,6 @@ public void move()
 {
     if (deadTime > 0)
     {
-        for (int i = 0; i < 8; i++)
-        {
-            world.addSprite(new Sparkle((int) (x + Math.random() * 8 - 4) + 4, (int) (y + Math.random() * 8 - 4) + 2, (float) Math.random() * 2 - 1 - facing, (float) Math.random() * 2 - 1, 0, 1, 5));
-        }
         spriteContext.removeSprite(this);
 
         return;
@@ -102,12 +90,7 @@ public void move()
 
     world.checkFireballCollide(this);
 
-    xFlipPic = facing == -1;
-
     runTime += (Math.abs(xa)) + 5;
-
-    xPic = (anim) % 4;
-
 
     if (!move(xa, 0))
     {

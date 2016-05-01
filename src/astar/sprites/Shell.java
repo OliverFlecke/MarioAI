@@ -60,15 +60,9 @@ public Shell(LevelScene world, float x, float y, int type)
     this.x = x;
     this.y = y;
     this.world = world;
-    xPicO = 8;
-    yPicO = 31;
 
-    yPic = type;
     height = 12;
     facing = 0;
-    wPic = 16;
-
-    xPic = 4;
     ya = -5;
 
     yaa = creaturesGravity * 2;
@@ -91,8 +85,6 @@ public boolean fireballCollideCheck(Fireball fireball)
             ya = -5;
             if (spriteTemplate != null) spriteTemplate.isDead = true;
             deadTime = 100;
-            hPic = -hPic;
-            yPicO = -yPicO + 16;
             return true;
         }
     }
@@ -151,10 +143,6 @@ public void move()
         if (deadTime == 0)
         {
             deadTime = 1;
-            for (int i = 0; i < 8; i++)
-            {
-                world.addSprite(new Sparkle((int) (x + Math.random() * 16 - 8) + 4, (int) (y - Math.random() * 8) + 4, (float) (Math.random() * 2 - 1), (float) Math.random() * -1, 0, 1, 5));
-            }
             spriteContext.removeSprite(this);
         }
 
@@ -187,11 +175,7 @@ public void move()
         world.checkShellCollide(this);
     }
 
-    xFlipPic = facing == -1;
-
 //        runTime += (Math.abs(xa)) + 5;
-
-    xPic = (anim / 2) % 4 + 3;
 
 
     if (!move(xa, 0))

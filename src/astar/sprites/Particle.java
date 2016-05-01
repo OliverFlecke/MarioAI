@@ -44,13 +44,6 @@ public Particle(int x, int y, float xa, float ya, int xPic, int yPic)
     this.y = y;
     this.xa = xa;
     this.ya = ya;
-    this.xPic = xPic;
-    this.yPic = yPic;
-    this.xPicO = 4;
-    this.yPicO = 4;
-
-    wPic = 8;
-    hPic = 8;
     life = 10;
 }
 

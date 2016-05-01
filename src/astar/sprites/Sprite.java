@@ -64,13 +64,6 @@ public class Sprite implements Cloneable
 
 	public float xOld, yOld, x, y, xa, ya;
 	public int mapX, mapY;
-
-	public int xPic, yPic;
-	public int wPic = 32;
-	public int hPic = 32;
-	public int xPicO, yPicO;
-	public boolean xFlipPic = false;
-	public boolean yFlipPic = false;
 	
 	public boolean visible = true;
 

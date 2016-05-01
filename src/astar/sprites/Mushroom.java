@@ -59,13 +59,11 @@ public Mushroom(LevelScene world, int x, int y)
     this.x = x;
     this.y = y;
     this.world = world;
-    xPicO = 8;
-    yPicO = 15;
 
-    yPic = 0;
+
+
     height = 12;
     facing = 1;
-    wPic = hPic = 16;
     life = 0;
 }
 
@@ -109,8 +107,6 @@ public void move()
     xa = facing * sideWaysSpeed;
 
     mayJump = (onGround);
-
-    xFlipPic = facing == -1;
 
     runTime += (Math.abs(xa)) + 5;
 

@@ -44,8 +44,6 @@ public Princess(LevelScene world, int x, int y, int mapX, int mapY)
     this.world = world;
     this.mapX = mapX;
     this.mapY = mapY;
-    yPic = 0;
-    xPic = 0;
 }
 
 public void collideCheck()
@@ -55,7 +53,6 @@ public void move()
 {
     runTime += 5;
 
-    xPic = (runTime / 20) % 2;
 }
 
 
