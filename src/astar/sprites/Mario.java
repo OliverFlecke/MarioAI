@@ -332,8 +332,6 @@ public final class Mario extends Sprite implements Cloneable
 			xa = 0;
 		}
 
-		calcPic();
-
 		if (sliding)
 		{
 			ya *= 0.5f;
@@ -394,51 +392,7 @@ public final class Mario extends Sprite implements Cloneable
 		}
 	}
 
-	private void calcPic()
-	{
-		int runFrame;
-
-		if (large || isRacoon)
-		{
-			runFrame = ((int) (runTime / 20)) % 4;
-			if (runFrame == 3) runFrame = 1;
-			if (carried == null && Math.abs(xa) > 10) runFrame += 3;
-			if (carried != null) runFrame += 10;
-			if (!onGround)
-			{
-				if (carried != null) runFrame = 12;
-				else if (Math.abs(xa) > 10) runFrame = 7;
-				else runFrame = 6;
-			}
-		} else
-		{
-			runFrame = ((int) (runTime / 20)) % 2;
-			if (carried == null && Math.abs(xa) > 10) runFrame += 2;
-			if (carried != null) runFrame += 8;
-			if (!onGround)
-			{
-				if (carried != null) runFrame = 9;
-				else if (Math.abs(xa) > 10) runFrame = 5;
-				else runFrame = 4;
-			}
-		}
-
-		if (onGround && ((facing == -1 && xa > 0) || (facing == 1 && xa < 0)))
-		{
-			if (xa > 1 || xa < -1) runFrame = large ? 9 : 7;
-
-		}
-
-		if (large)
-		{
-			if (ducking) runFrame = 14;
-			height = ducking ? 12 : 24;
-		} else
-		{
-			height = 12;
-		}
-	}
-
+	
 	private boolean move(float xa, float ya)
 	{
 		while (xa > 8)
