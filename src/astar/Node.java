@@ -145,20 +145,26 @@ public class Node implements Comparable<Node> {
 		if (debug) System.out.println("Head: X: " + head.x + " Y: " + head.y + " Goal: " + goal);
 		
 		Node.nodeCount = 0;
-		head.generateNewNodes(queue);
+		generateNodes(head, queue);
 		
 		// Choose to use this, if we find a solution, but want to continue our search
 		Node current = queue.remove();
 		Node best = current; 
 		
-		while ((!current.atGoal() && current.depth < maxDepth))
+		// Set the start time of the search
+		setStartTime(System.currentTimeMillis());
+		
+		while (!current.atGoal())
 		{
-			if ((System.currentTimeMillis() - startTime) > timeLimit)
+			// Used when testing. Insuring that the graph does not search to far
+			if (current.depth > maxDepth) continue;
+						
+			if ((System.currentTimeMillis() - getStartTime()) > timeLimit)
 			{
 				if (debug) System.out.println("Out of time!");
 				break;
 			}
-			current.generateNewNodes(queue);
+			generateNodes(current, queue);
 			current = queue.remove();
 						
 			// Update the best node
@@ -177,7 +183,7 @@ public class Node implements Comparable<Node> {
 	/**
 	 * Generate all the new nodes which Mario can move to from this
 	 */
-	public void generateNewNodes(PriorityQueue<Node> queue)
+	public static void generateNodes(Node current, PriorityQueue<Node> queue)
 	{
 		// Compute all the new positions for the enemies
 		List<Sprite> newEnemies = new ArrayList<Sprite>();
@@ -192,50 +198,50 @@ public class Node implements Comparable<Node> {
 		
 		// Create new nodes with actions 
 		// Action: Nothing
-//		node = createNode(Node.createAction(false, false, false, false, false, false), newEnemies);
+//		node = createNode(current, Node.createAction(false, false, false, false, false, false), newEnemies);
 //		node.fitnessEval();
 //		queue.add(node);
 		
 		// Action: Move right
-		node = createNode(Node.createAction(true, false, false, false, false, false), newEnemies);
+		node = createNode(current, Node.createAction(true, false, false, false, false, false), newEnemies);
 		node.fitnessEval();
 		queue.add(node);
 		// Action: Move right with speed
-		node = createNode(Node.createAction(true, false, false, true, false, false), newEnemies);
+		node = createNode(current, Node.createAction(true, false, false, true, false, false), newEnemies);
 		node.fitnessEval();
 		queue.add(node);
 
 		// Action: Move left
-//		node = createNode(Node.createAction(false, true, false, false, false, false), newEnemies);
+//		node = createNode(current, Node.createAction(false, true, false, false, false, false), newEnemies);
 //		node.fitnessEval();
 //		queue.add(node);
 //		// Action: Move left with speed
-//		node = createNode(Node.createAction(false, true, false, true, false, false), newEnemies);
+//		node = createNode(current, Node.createAction(false, true, false, true, false, false), newEnemies);
 //		node.fitnessEval();
 //		queue.add(node);
 	
 		// Check if pressing the jump key makes a differers, and generate nodes if it does
-		if (this.marioCanJump)
+		if (current.marioCanJump)
 		{
 			// Action: Jump
-			node = createNode(Node.createAction(false, false, true, false, false, false), newEnemies);
+			node = createNode(current, Node.createAction(false, false, true, false, false, false), newEnemies);
 			node.fitnessEval();
 			queue.add(node);
 			// Action: Jump and move right
-			node = createNode(Node.createAction(true, false, true, false, false, false), newEnemies);
+			node = createNode(current, Node.createAction(true, false, true, false, false, false), newEnemies);
 			node.fitnessEval();
 			queue.add(node);
 			// Action: Jump, right and speed
-			node = createNode(Node.createAction(true, false, true, true, false, false), newEnemies);
+			node = createNode(current, Node.createAction(true, false, true, true, false, false), newEnemies);
 			node.fitnessEval();
 			queue.add(node);
 			
 			// Action: Jump and left
-//			node = createNode(Node.createAction(false, true, true, false, false, false), newEnemies);
+//			node = createNode(current, Node.createAction(false, true, true, false, false, false), newEnemies);
 //			node.fitnessEval();
 //			queue.add(node);
 //			// Action: Jump, left and speed
-//			node = createNode(Node.createAction(false, true, true, true, false, false), newEnemies);
+//			node = createNode(current, Node.createAction(false, true, true, true, false, false), newEnemies);
 //			node.fitnessEval();
 //			queue.add(node);
 		}
@@ -257,9 +263,9 @@ public class Node implements Comparable<Node> {
 	 * @param enemies which should be passed into the levelscene
 	 * @return A node with cloned objects
 	 */
-	private Node createNode(boolean[] actions, List<Sprite> enemies)
+	private static Node createNode(Node parent, boolean[] actions, List<Sprite> enemies)
 	{
-		return new Node(this, (LevelScene) levelScene, (Mario) mario.clone(), enemies, actions);
+		return new Node(parent, (LevelScene) parent.levelScene, (Mario) parent.mario.clone(), enemies, actions);
 	}
 	
 	/**

@@ -123,7 +123,6 @@ public class AstarAgent extends KeyAdapter implements Agent {
 				head = new Node(null, levelScene, mario, null, currentAction);
 				Node.setHead(head);
 				Node.setGoal(marioFloatPos[0] + 250f);
-				Node.setStartTime(System.currentTimeMillis());
 				
 				// Search for the best path
 				actionPath = Node.searchForPath(head, new PriorityQueue<Node>());
