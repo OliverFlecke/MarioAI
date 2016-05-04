@@ -118,14 +118,14 @@ public class Node implements Comparable<Node> {
 		float h = 0;
 		if (mario.isDead() || this.y > 223f || mario.ya > 11f) 
 		{
-			h = Integer.MAX_VALUE;
+			this.fitness = Integer.MAX_VALUE;
 		}
 		else 
 		{
 //			h = toGoal - (this.y * 0.1f);
 			h = toGoal;
+			this.fitness = Math.round(g + h);
 		}
-		this.fitness = Math.round(g + h);
 
 		if (debug)
 		{			
