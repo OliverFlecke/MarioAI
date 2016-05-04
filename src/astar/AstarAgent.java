@@ -1,14 +1,15 @@
 package astar;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
 
 import astar.level.Level;
+import astar.level.TileBehavior;
 import ch.idsia.agents.Agent;
 import astar.sprites.Mario;
 import ch.idsia.benchmark.mario.environments.Environment;
-
 import ch.idsia.tools.*;
 
 public class AstarAgent extends KeyAdapter implements Agent {
@@ -70,6 +71,12 @@ public class AstarAgent extends KeyAdapter implements Agent {
 	
 	public AstarAgent() 
 	{
+		try {
+			TileBehavior.loadTileBehaviors();
+		} catch (IOException e) {
+			System.out.println("issue loading tile.dat");
+			e.printStackTrace();
+		}
 	}
 
 	public void reset()
@@ -175,7 +182,6 @@ public class AstarAgent extends KeyAdapter implements Agent {
 			levelScene.setup(this.observation, enemiesFloatPos);
 			mario = levelScene.mario;	
 			levelScene.addSprite(mario);			
-			
 			mario.x = marioFloatPos[0];
 			mario.y = marioFloatPos[1];
 			head = new Node(null, levelScene, mario, null, currentAction);

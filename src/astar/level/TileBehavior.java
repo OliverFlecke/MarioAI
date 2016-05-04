@@ -5,22 +5,20 @@ import java.io.IOException;
 
 
 
-public class TileBehavior {
+public final class TileBehavior {
 
 	public final static byte[] TILE_BEHAVIORS = new byte[256];
 	
-	public TileBehavior() throws IOException{
-		
-		loadBehaviors(new DataInputStream(TileBehavior.class.getResourceAsStream("tiles.dat")));
-
+	private TileBehavior(){		
+		System.out.println("static class");
 	}
 
-	static void loadBehaviors(DataInputStream dis) throws IOException
-	{
+	public static void loadTileBehaviors() throws IOException {
+		DataInputStream dis = new DataInputStream(TileBehavior.class.getResourceAsStream("tiles.dat"));
 		dis.readFully(TILE_BEHAVIORS);
 	}
 	
-	public byte[] getTileBehavior(){
+	public static byte[] getTileBehavior(){
 		return TILE_BEHAVIORS;
 	}
 }

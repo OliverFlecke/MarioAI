@@ -147,7 +147,7 @@ public class Level implements Serializable
 
 	public static void loadBehaviors() throws IOException
 	{
-		Level.TILE_BEHAVIORS = new TileBehavior().getTileBehavior();
+		Level.TILE_BEHAVIORS = TileBehavior.getTileBehavior();
 	}
 
 	public static void saveBehaviors(DataOutputStream dos) throws IOException

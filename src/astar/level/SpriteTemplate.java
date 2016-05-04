@@ -97,10 +97,7 @@ public class SpriteTemplate implements Serializable, Cloneable
 	{
 		if (isDead) return;
 
-		if (type == Sprite.KIND_ENEMY_FLOWER)
-		{
-			sprite = new FlowerEnemy(levelScene, x * 16 + 15, y * 16 + 24, x, y);
-		} else if (type == Sprite.KIND_WAVE_GOOMBA)
+		else if (type == Sprite.KIND_WAVE_GOOMBA)
 		{
 			//            sprite = new Enemy(levelScene, x*16+8, y*16+15, dir, type, winged);
 			sprite = new Enemy(levelScene, x * 16 + 8, y * 16 + 15, dir, type, winged, x, y);
