@@ -126,6 +126,7 @@ public class AstarAgent extends KeyAdapter implements Agent {
 				
 				// Search for the best path
 				actionPath = Node.searchForPath(head, new PriorityQueue<Node>());
+//				actionPath.removeFirst();
 			}
 			
 			// If the action path found by the algorithm is not empty, 

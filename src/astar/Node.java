@@ -6,7 +6,7 @@ import astar.sprites.Sprite;
 import ch.idsia.benchmark.mario.environments.Environment;
 
 public class Node implements Comparable<Node> {
-	private static boolean debug = true;
+	private static boolean debug = false;
 	
 	private static int timeLimit = 36;
 	public static int nodeCount = 0;
@@ -157,7 +157,11 @@ public class Node implements Comparable<Node> {
 		while (!current.atGoal())
 		{
 			// Used when testing. Insuring that the graph does not search to far
-			if (current.depth > maxDepth) continue;
+			if (current.depth > maxDepth)
+			{
+				current = queue.remove();
+				continue;
+			}
 						
 			if ((System.currentTimeMillis() - getStartTime()) > timeLimit)
 			{
