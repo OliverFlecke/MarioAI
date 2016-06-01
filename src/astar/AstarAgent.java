@@ -90,7 +90,7 @@ public class AstarAgent extends KeyAdapter implements Agent {
 		if (runSimulation)
 		{
 			runSim();
-			action = Node.createAction(true, false, false, true, false, false);
+			action = Node.createAction(true, false, false, true);
 		}
 		
 //		printMario();
@@ -144,7 +144,7 @@ public class AstarAgent extends KeyAdapter implements Agent {
 			}		
 			else
 			{
-				action = Node.createAction(true, false, false, true, false, false);
+				action = Node.createAction(true, false, false, true);
 			}
 		}
 		
@@ -155,7 +155,7 @@ public class AstarAgent extends KeyAdapter implements Agent {
 		return action;
 	}
 	
-	private final int MAXCOUNT = 4;
+	private final int MAXCOUNT = 5;
 	private int actionCount = MAXCOUNT;
 	private LinkedList<boolean[]> actionPath = new LinkedList<boolean[]>();
 	Node head = null;
@@ -351,7 +351,6 @@ public class AstarAgent extends KeyAdapter implements Agent {
 			}
 			System.out.println();
 		}
-//		System.out.println("------------------------------------");
 	}
 	
 	public void printMario() 

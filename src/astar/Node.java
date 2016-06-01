@@ -21,13 +21,14 @@ public class Node implements Comparable<Node> {
 	private boolean marioCanJump = true;
 	public int jumpTime = 0;
 	
-	public int fitness = 0;				// Overall rating of this option 
+	public float fitness = 0f;				// Overall rating of this option 
 	public int depth;					// Depth of the current node
 	private boolean[] action;	// Action that are done in this node
 	
 	// Game elements 
 	public Mario mario;			// The Mario object 
 	int damageTaken;			// How much damage that Mario will take in this step 
+	float maxSpeed = 10.9090909f;
 	
 	// Enemies 
 	public List<Sprite> enemies;
@@ -82,30 +83,16 @@ public class Node implements Comparable<Node> {
 	 * 
 	 */
 	private void tick() {
-//		this.levelScene.tick();
 		this.mario.tick();
-		
-//		System.out.println("Depth: " + depth + " \tX: " + x + " \tY: " + y);
-		
-//		System.out.println("Mario ya: " + mario.yAcc);
-//		System.out.println("Mario jump: " + (parent.mario.y - mario.y));
-//
-//		if (mario.isOnGround())
-//			System.out.println("Mario is on the ground");
-//		if (mario.mayJump())
-//			System.out.println("Can jump!");
 		if (mario.mayJump() || (!mario.isOnGround() && action[Mario.KEY_JUMP]))
 			marioCanJump = true;
-//		else marioCanJump = false;
-//		else if (mario.ya < parent.mario.ya)
-//			marioCanJump = true;
-//		else if (mario.ya >= -2 && mario.ya < 0)
-//			marioCanJump = false;
 	}
 	
 	
-	private static float alpha = 0.8f;
+	private static float alpha = 0.5f;
 	private static float scalar = 1f;
+	
+	public float g, h;
 	/**
 	 *  The function to evaluate the current frame
 	 */
@@ -117,10 +104,10 @@ public class Node implements Comparable<Node> {
 		this.x = mario.x;
 		this.y = mario.y;
 		
-		float g = scalar * (this.x - head.x);
+		g =  (this.x - head.x);
 		float toGoal = scalar * Math.abs(alpha * (goal - this.x));
-		float h = 0;
-		if (mario.isDead() || this.y > 223f || mario.ya > 11f) 
+		h = 0;
+		if (mario.isDead() || this.y > 223f) 
 		{
 			this.fitness = Integer.MAX_VALUE;
 		}
@@ -128,15 +115,21 @@ public class Node implements Comparable<Node> {
 		{
 //			h = toGoal - (this.y * 0.1f);
 			h = toGoal;
-			this.fitness = Math.round(g + h);
+			this.fitness = h + (20 - mario.xa);
 		}
 
 		if (debug)
 		{			
-			System.out.print("X: " + this.x + " \tY: " + this.y + " \tYa: " + mario.ya + "\t");
-			System.out.print(printAction(action));
-			System.out.println(" Depth: " + this.depth + " F: " + fitness + " g " + g + " h: " + h);
+			printData(this);
 		}
+	}
+
+	private static void printData(Node node) {
+		System.out.printf("X: %.2f\t", node.x);
+		System.out.printf("Y: %.2f\t", node.y);
+		System.out.printf("Ya: %.2f\t", node.mario.ya);
+		System.out.print(printAction(node.action));
+		System.out.println(" Depth: " + node.depth + " F: " + node.fitness + " g " + node.g + " h: " + node.h);
 	}
 	
 	/**
@@ -152,18 +145,19 @@ public class Node implements Comparable<Node> {
 		generateNodes(head, queue);
 		
 		// Choose to use this, if we find a solution, but want to continue our search
-		Node current = queue.remove();
+		Node current = queue.poll();
 		Node best = current; 
 		
 		// Set the start time of the search
 		setStartTime(System.currentTimeMillis());
 		
 		while (!current.atGoal())
-		{
+		{			
+//			printData(current);
 			// Used when testing. Insuring that the graph does not search to far
 			if (current.depth > maxDepth)
 			{
-				current = queue.remove();
+				current = queue.poll();
 				continue;
 			}
 						
@@ -173,7 +167,7 @@ public class Node implements Comparable<Node> {
 				break;
 			}
 			generateNodes(current, queue);
-			current = queue.remove();
+			current = queue.poll();
 						
 			// Update the best node
 			if (best.fitness >= current.fitness)
@@ -202,67 +196,64 @@ public class Node implements Comparable<Node> {
 //			newEnemy.tick();
 //			newEnemies.add(newEnemy);
 //		}
-		Node node;
+		List<boolean[]> options = new ArrayList<boolean[]>();
 		
-		// Create new nodes with actions 
-		// Action: Nothing
-//		node = createNode(current, Node.createAction(false, false, false, false, false, false), newEnemies);
-//		node.fitnessEval();
-//		queue.add(node);
+		// Create the different action options
+//		options.add(createAction(false, false, false, false));	// Do nothing
 		
-		// Action: Move right
-		node = createNode(current, Node.createAction(true, false, false, false, false, false), newEnemies);
-		node.fitnessEval();
-		queue.add(node);
-		// Action: Move right with speed
-		node = createNode(current, Node.createAction(true, false, false, true, false, false), newEnemies);
-		node.fitnessEval();
-		queue.add(node);
-
-		// Action: Move left
-//		node = createNode(current, Node.createAction(false, true, false, false, false, false), newEnemies);
-//		node.fitnessEval();
-//		queue.add(node);
-//		// Action: Move left with speed
-//		node = createNode(current, Node.createAction(false, true, false, true, false, false), newEnemies);
-//		node.fitnessEval();
-//		queue.add(node);
+		// Right movement
+		if (current.parent == null || 
+				(current.parent != null && Math.abs(current.x - current.parent.x) != 0))
+		{
+			options.add(createAction(true, false, false, false));
+			options.add(createAction(true, false, false, true));
+		}
+		
+		// Left movement
+		options.add(createAction(false, true, false, false));
+		options.add(createAction(false, true, false, true));
 	
 		// Check if pressing the jump key makes a differers, and generate nodes if it does
-		if (current.marioCanJump)
+		if (current.canJump())
 		{
-			// Action: Jump
-			node = createNode(current, Node.createAction(false, false, true, false, false, false), newEnemies);
-			node.fitnessEval();
-			queue.add(node);
-			// Action: Jump and move right
-			node = createNode(current, Node.createAction(true, false, true, false, false, false), newEnemies);
-			node.fitnessEval();
-			queue.add(node);
-			// Action: Jump, right and speed
-			node = createNode(current, Node.createAction(true, false, true, true, false, false), newEnemies);
-			node.fitnessEval();
-			queue.add(node);
+			options.add(createAction(false, false, true, false));	// Just jump
+			options.add(createAction(true, false, true, false));	// Jump and go right
+			options.add(createAction(true, false, true, true));		// Jump, go right, and speed
 			
-			// Action: Jump and left
-//			node = createNode(current, Node.createAction(false, true, true, false, false, false), newEnemies);
-//			node.fitnessEval();
-//			queue.add(node);
-//			// Action: Jump, left and speed
-//			node = createNode(current, Node.createAction(false, true, true, true, false, false), newEnemies);
-//			node.fitnessEval();
-//			queue.add(node);
+			// Left, jump movement
+			options.add(createAction(false, true, true, false));
+			options.add(createAction(false, true, true, true));
 		}
-	
-//		// Is mario able to shoot?
-//		if (mario.ableToShoot && mario.getMode() == 2 && this.levelScene.fireballsOnScreen < 2)
-//		{
-//			node = new Node(this, this.head, newScene, newMario, newEnemies, Node.createAction(false, false, false, true, false, false));
-//			node.fitnessEval();
-//			queue.add(node);
-//		}
+		
+		for (boolean[] action : options)
+		{
+			Node node = createNode(current, action, newEnemies);
+			node.fitnessEval();
+			queue.add(node);
+		}
 	}
 	
+	/*
+	 * Computes when Mario is able to jump
+	 */
+	public boolean canJump() {
+		if (parent != null)
+		{
+			if (this.y == parent.y)
+			{
+				if (parent.action[Mario.KEY_JUMP])
+					return false;
+				else 
+					return true;
+			}
+			else if (this.y < parent.y) // Mario is going upwards
+				return true;
+			else if (this.y > parent.y) // Mario is going downwards
+				return false;	
+		}
+		return true;
+	}
+
 	/**
 	 * Creates a new node with clones of the level scene and mario,
 	 * as well as the passed enemies and action array. The current
@@ -282,25 +273,37 @@ public class Node implements Comparable<Node> {
 	 * @param left
 	 * @param jump
 	 * @param speed
-	 * @param up
-	 * @param down
 	 * @return An action with the passed values
 	 */
-	public static boolean[] createAction(boolean right, boolean left, boolean jump, boolean speed, boolean up, boolean down)
+	public static boolean[] createAction(boolean right, boolean left, boolean jump, boolean speed)
 	{
 		boolean[] action = new boolean[Environment.numberOfKeys];
 		action[Mario.KEY_RIGHT] = right;
 		action[Mario.KEY_LEFT] = left;
 		action[Mario.KEY_JUMP] = jump;
 		action[Mario.KEY_SPEED] = speed;
-		action[Mario.KEY_DOWN] = down;
-		action[Mario.KEY_UP] = up;		
+		action[Mario.KEY_DOWN] = false;
+		action[Mario.KEY_UP] = false;
 		return action;
 	}
 	
+	/*
+	 * Calculate if the Mario in the current node can jump higher
+	 */
+    public boolean canJumpHigher(boolean jumpParent)
+    {
+    	if (this.parent != null && jumpParent && this.parent.canJumpHigher(false))
+    			return true;
+    	return this.mario.mayJump() || (this.mario.jumpTime > 0);
+    }
+	
 	@Override
 	public int compareTo(Node other) {
-		return (other.fitness - this.fitness);
+		if (other.fitness - this.fitness > 0)
+			return -1;
+		else if (other.fitness - this.fitness < 0)
+			return 1;
+		else return 0;
 	}
 
 	/**
@@ -383,7 +386,7 @@ public class Node implements Comparable<Node> {
 		// Base case: If no children, return this node's actions 
 		if (searchNode.children == null) return searchNode;
 		
-		int min = Integer.MAX_VALUE;
+		float min = Float.MAX_VALUE;
 		Node bestNode = null;
 		for (Node node : searchNode.children) 
 		{

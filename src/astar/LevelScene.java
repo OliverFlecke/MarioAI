@@ -619,11 +619,11 @@ public final class LevelScene implements SpriteContext, Cloneable
 		}
 
 		if(debugAddEnemies){
-			System.out.println("-------------\n");
+//			System.out.println("-------------\n");
 			for(Sprite s : sprites){
 				System.out.println("kind: " + (int)s.kind+", Coordinate: " + s.x + "," + s.y + "\n ");			
 			}
-			System.out.println("-------------\n");
+//			System.out.println("-------------\n");
 		}
 	}
 
