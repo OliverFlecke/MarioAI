@@ -101,13 +101,13 @@ public class AstarAgent extends KeyAdapter implements Agent {
 			{
 				actionCount = MAXCOUNT;
 				// Create a new simulation for the AStar 
-				Node.queue = new PriorityQueue<Node>();
+				// This is what creates a copy of the game world
 				levelScene = new LevelScene();
 				levelScene.level = new Level(1500, 15);
 				levelScene.setup(this.observation, enemiesFloatPos);
-				levelScene.setLevelScene(this.observation);
-				mario = new Mario(levelScene);
-				levelScene.mario = mario;
+				mario = levelScene.mario;
+//				mario = new Mario(levelScene);
+//				levelScene.mario = mario;
 				levelScene.addSprite(mario);	
 				
 				mario.x = marioFloatPos[0];
@@ -119,21 +119,20 @@ public class AstarAgent extends KeyAdapter implements Agent {
 				// As the speed is going towards zero, 
 //				if (Math.abs(marioFloatPos[1] - lastY) > 0.1f)
 				mario.ya = (marioFloatPos[1] - lastY) * 0.89f;
-				System.out.println("MarioX " + marioFloatPos[0] + " LastX " + lastX + " xa " + mario.xa);
-				System.out.println("MarioY " + marioFloatPos[1] + " LastY " + lastY + " ya " + mario.ya);
+//				System.out.println("MarioX " + marioFloatPos[0] + " LastX " + lastX + " xa " + mario.xa);
+//				System.out.println("MarioY " + marioFloatPos[1] + " LastY " + lastY + " ya " + mario.ya);
 				
 				mario.mayJump = isMarioAbleToJump;
 				mario.canJump = isMarioAbleToJump;
 				mario.onGround = isMarioOnGround;
 				
 				// Create graph
-				head = new Node(null, levelScene, mario, null, currentAction);
+				head = new Node(levelScene, mario, null, currentAction);
 				Node.setHead(head);
 				Node.setGoal(marioFloatPos[0] + 250f);
 				
 				// Search for the best path
 				actionPath = Node.searchForPath(head, new PriorityQueue<Node>());
-//				actionPath.removeFirst();
 			}
 			
 			// If the action path found by the algorithm is not empty, 
@@ -156,7 +155,7 @@ public class AstarAgent extends KeyAdapter implements Agent {
 		return action;
 	}
 	
-	private final int MAXCOUNT = 5;
+	private final int MAXCOUNT = 4;
 	private int actionCount = MAXCOUNT;
 	private LinkedList<boolean[]> actionPath = new LinkedList<boolean[]>();
 	Node head = null;
@@ -352,7 +351,7 @@ public class AstarAgent extends KeyAdapter implements Agent {
 			}
 			System.out.println();
 		}
-		System.out.println("------------------------------------");
+//		System.out.println("------------------------------------");
 	}
 	
 	public void printMario() 

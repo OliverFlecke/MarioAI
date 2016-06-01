@@ -125,6 +125,7 @@ public final class LevelScene implements SpriteContext, Cloneable
 		// This (last) Mario should be a clone for all the node instances
 		this.mario = new Mario(this);
 		this.mario.levelScene = this;
+//		this.addSprite(mario);
 
 		startTime = 1;
 		timeLeft = 3000;

@@ -73,6 +73,10 @@ public class Node implements Comparable<Node> {
 		Node.nodeCount++;
 	}
 
+	public Node(LevelScene levelScene, Mario mario, List<Sprite> enemies, boolean[] action)
+	{
+		this(null, levelScene, mario, enemies, action);
+	}
 	
 	/**
 	 * 
