@@ -98,6 +98,7 @@ public class Node implements Comparable<Node> {
 	private static float scalar = 1f;
 	
 	public float g, h;
+	
 	/**
 	 *  The function to evaluate the current frame
 	 */
@@ -109,18 +110,16 @@ public class Node implements Comparable<Node> {
 		this.x = mario.x;
 		this.y = mario.y;
 		
-		g =  (this.x - head.x);
-		float toGoal = scalar * Math.abs(alpha * (goal - this.x));
-		h = 0;
+		g =  getDistanceTraveled(this);
+		
 		if (mario.isDead() || this.y > 223f) 
 		{
 			this.fitness = Integer.MAX_VALUE;
 		}
 		else 
 		{
-//			h = toGoal - (this.y * 0.1f);
-			h = toGoal;
-			this.fitness = h + (20 - mario.xa);
+			h = getHeuristic(this);
+			this.fitness = h;
 		}
 
 		if (debug)
@@ -128,7 +127,31 @@ public class Node implements Comparable<Node> {
 			printData(this);
 		}
 	}
+	
+	/**
+	 * Get the heuristic for a given node
+	 * @param node to get the heuristic value from
+	 * @return A float, representing 
+	 */
+	public static float getHeuristic(Node node)
+	{
+		return alpha * (goal - node.x) + (20 - node.mario.xa);
+	}
+	
+	/**
+	 * Get the distance which the passed node has already traveled
+	 * @param node to get the distance from 
+	 * @return The distance with the given node is from the starting point
+	 */
+	public static float getDistanceTraveled(Node node)
+	{
+		return (node.x - head.x);
+	}
 
+	/**
+	 * Print out the data about the node
+	 * @param node to output data about
+	 */
 	private static void printData(Node node) {
 		System.out.printf("X: %.2f\t", node.x);
 		System.out.printf("Y: %.2f\t", node.y);
@@ -175,7 +198,7 @@ public class Node implements Comparable<Node> {
 			current = queue.poll();
 						
 			// Update the best node
-			if (best.fitness >= current.fitness && best.depth < current.depth)
+			if (best.fitness >= current.fitness)
 				best = current;
 		}
 		
@@ -378,30 +401,5 @@ public class Node implements Comparable<Node> {
 			list = getActionPath(node.parent);
 		list.add(node.action);
 		return list;
-	}
-	
-	/**
-	 * Not in use!
-	 * The main search function to find the optimal path
-	 * @param searchNode node to start searching from
-	 * @return Should return the best child option
-	 */
-	public static Node searchChildren(Node searchNode)
-	{
-		// Base case: If no children, return this node's actions 
-		if (searchNode.children == null) return searchNode;
-		
-		float min = Float.MAX_VALUE;
-		Node bestNode = null;
-		for (Node node : searchNode.children) 
-		{
-			if (node.fitness < min)
-			{
-				min = node.fitness;
-				bestNode = node;
-			}
-		}
-		
-		return bestNode;
 	}
 }
