@@ -112,16 +112,12 @@ public class AstarAgent extends KeyAdapter implements Agent {
 				
 				mario.x = marioFloatPos[0];
 				mario.y = marioFloatPos[1];
-//				System.out.println("Mario: x: " + mario.x + " y: " + mario.y);
 				
 				// Calculate the current velocity
 				mario.xa = (marioFloatPos[0] - lastX) * 0.89f;
-				// As the speed is going towards zero, 
-//				if (Math.abs(marioFloatPos[1] - lastY) > 0.1f)
 				mario.ya = (marioFloatPos[1] - lastY) * 0.89f;
-//				System.out.println("MarioX " + marioFloatPos[0] + " LastX " + lastX + " xa " + mario.xa);
-//				System.out.println("MarioY " + marioFloatPos[1] + " LastY " + lastY + " ya " + mario.ya);
-				
+	
+				// Set the variables with the data from the environment 
 				mario.mayJump = isMarioAbleToJump;
 				mario.canJump = isMarioAbleToJump;
 				mario.onGround = isMarioOnGround;

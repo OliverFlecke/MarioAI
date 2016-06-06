@@ -8,7 +8,7 @@ import ch.idsia.benchmark.mario.environments.Environment;
 public class Node implements Comparable<Node> {
 	private static boolean debug = false;
 	
-	private static int timeLimit = 36;
+	private static int timeLimit = 33;	// Any larger, and the game seem to lack 
 	public static int nodeCount = 0;
 
 	private static long startTime;
@@ -18,7 +18,6 @@ public class Node implements Comparable<Node> {
 	// Coordinates of the node
 	private float x, y;
 	
-	private boolean marioCanJump = true;
 	public int jumpTime = 0;
 	
 	public float fitness = 0f;				// Overall rating of this option 
@@ -39,7 +38,7 @@ public class Node implements Comparable<Node> {
 	public Node parent;
 	public static Node head;
 	public List<Node> children = new ArrayList<Node>();
-	private static int maxDepth = 40;
+	private static int maxDepth = 1000;
 	
 	
 	
@@ -74,21 +73,27 @@ public class Node implements Comparable<Node> {
 		Node.nodeCount++;
 	}
 
+	/**
+	 * Create a node without a parent
+	 * @param levelScene
+	 * @param mario
+	 * @param enemies
+	 * @param action
+	 */
 	public Node(LevelScene levelScene, Mario mario, List<Sprite> enemies, boolean[] action)
 	{
 		this(null, levelScene, mario, enemies, action);
 	}
 	
 	/**
-	 * 
+	 * Ticked in every frame
 	 */
-	private void tick() {
+	private void tick() 
+	{
 		this.mario.tick();
-		if (mario.mayJump() || (!mario.isOnGround() && action[Mario.KEY_JUMP]))
-			marioCanJump = true;
 	}
 	
-	
+	// Helper variables to the fitness evaluations 
 	private static float alpha = 0.5f;
 	private static float scalar = 1f;
 	
@@ -154,7 +159,7 @@ public class Node implements Comparable<Node> {
 		while (!current.atGoal())
 		{			
 //			printData(current);
-			// Used when testing. Insuring that the graph does not search to far
+			// Used when testing. Insuring that the graph does not search too far
 			if (current.depth > maxDepth)
 			{
 				current = queue.poll();
@@ -233,8 +238,9 @@ public class Node implements Comparable<Node> {
 		}
 	}
 	
-	/*
-	 * Computes when Mario is able to jump
+	/**
+	 * Computes if Mario is able to jump
+	 * @return True, if Mario is able to jump
 	 */
 	public boolean canJump() {
 		if (parent != null)
@@ -287,17 +293,13 @@ public class Node implements Comparable<Node> {
 		return action;
 	}
 	
-	/*
-	 * Calculate if the Mario in the current node can jump higher
-	 */
-    public boolean canJumpHigher(boolean jumpParent)
-    {
-    	if (this.parent != null && jumpParent && this.parent.canJumpHigher(false))
-    			return true;
-    	return this.mario.mayJump() || (this.mario.jumpTime > 0);
-    }
-	
 	@Override
+	/**
+     * Compare this node to another. 
+     * @return -1, if the other node's fitness is larger than this nodes fitness. 
+     * 0 is returned if the have the same fitness, and 1 is returned if this node has 
+     * the larger fitness.
+	 */
 	public int compareTo(Node other) {
 		if (other.fitness - this.fitness > 0)
 			return -1;
@@ -324,6 +326,11 @@ public class Node implements Comparable<Node> {
 		Node.goal = goal;
 	}
 	
+	/**
+	 * Returns a string with displaying the given actions
+	 * @param action to display
+	 * @return A string displaying the action
+	 */
 	public static String printAction(boolean[] action)
 	{
 		String output = "R: " + ((action[Mario.KEY_RIGHT]) ? "t" : "f") +
