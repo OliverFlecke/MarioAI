@@ -150,17 +150,17 @@ public class NodeTest {
 	}
 
 	/**
-	 * Test method for {@link astar.Node#printAction(boolean[])}.
+	 * Test method for {@link astar.Node#getActionAsString(boolean[])}.
 	 */
 	@Test
 	public void testPrintAction() {
 		boolean[] action = new boolean[Environment.numberOfKeys];
-		assertEquals("R: f \tL: f \tJ: f \tS: f", Node.printAction(action));
+		assertEquals("R: f \tL: f \tJ: f \tS: f", Node.getActionAsString(action));
 	
 		for (int i = 0; i < action.length; i++) {
 			action[i] = true;
 		}
-		assertEquals("R: t \tL: t \tJ: t \tS: t", Node.printAction(action));
+		assertEquals("R: t \tL: t \tJ: t \tS: t", Node.getActionAsString(action));
 	}
 
 	/**

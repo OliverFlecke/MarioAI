@@ -121,11 +121,6 @@ public class Node implements Comparable<Node> {
 			h = getHeuristic(this);
 			this.fitness = h;
 		}
-
-		if (debug)
-		{			
-			printData(this);
-		}
 	}
 	
 	/**
@@ -135,6 +130,7 @@ public class Node implements Comparable<Node> {
 	 */
 	public static float getHeuristic(Node node)
 	{
+//		return alpha * (goal - node.x);
 		return alpha * (goal - node.x) + (20 - node.mario.xa);
 	}
 	
@@ -152,12 +148,16 @@ public class Node implements Comparable<Node> {
 	 * Print out the data about the node
 	 * @param node to output data about
 	 */
-	private static void printData(Node node) {
+	private static void printNodeData(Node node) {
 		System.out.printf("X: %.2f\t", node.x);
 		System.out.printf("Y: %.2f\t", node.y);
 		System.out.printf("Ya: %.2f\t", node.mario.ya);
-		System.out.print(printAction(node.action));
-		System.out.println(" Depth: " + node.depth + " F: " + node.fitness + " g " + node.g + " h: " + node.h);
+		System.out.print(getActionAsString(node.action));
+		System.out.printf("Depth: %3d ", node.depth);
+		System.out.printf("F: %.3f\t", node.fitness);
+		System.out.printf("g: %.3f\t", Node.getDistanceTraveled(node));
+		System.out.printf("h: %.3f\t", Node.getHeuristic(node));
+		System.out.println();
 	}
 	
 	/**
@@ -181,6 +181,8 @@ public class Node implements Comparable<Node> {
 		
 		while (!current.atGoal())
 		{			
+			if (debug) printNodeData(current);
+			
 			// Used when testing. Insuring that the graph does not search too far
 			if (current.depth > maxDepth)
 			{
@@ -193,13 +195,15 @@ public class Node implements Comparable<Node> {
 				if (debug) System.out.println("Out of time!");
 				break;
 			}
-			// Generate the children for this node, and poll the new best options
+			// Generate the children for this node
 			generateNodes(current, queue);
-			current = queue.poll();
+			if (queue.isEmpty()) break;	// If there are no more options, end the search
+			
+			current = queue.poll();	// Poll the new best options
 						
 			// Update the best node
 			if (best.fitness >= current.fitness)
-				best = current;
+				best = current;				
 		}
 		
 		if (debug)
@@ -228,9 +232,10 @@ public class Node implements Comparable<Node> {
 		// Create the different action options
 //		options.add(createAction(false, false, false, false));	// Do nothing
 		
-		// Right movement
+		// Right movement - Only created if it is possible to go right, or if mario is in the air
 		if (current.parent == null || 
-				(current.parent != null && Math.abs(current.x - current.parent.x) != 0))
+				(Math.abs(current.x - current.parent.x) > 0.7) ||
+				(current.y != current.parent.y))
 		{
 			options.add(createAction(true, false, false, false));
 			options.add(createAction(true, false, false, true));
@@ -353,13 +358,13 @@ public class Node implements Comparable<Node> {
 	 * @param action to display
 	 * @return A string displaying the action
 	 */
-	public static String printAction(boolean[] action)
+	public static String getActionAsString(boolean[] action)
 	{
-		String output = "R: " + ((action[Mario.KEY_RIGHT]) ? "t" : "f") +
+		return "R: " + ((action[Mario.KEY_RIGHT]) ? "t" : "f") +
 				" \tL: " + ((action[Mario.KEY_LEFT]) ? "t" : "f") +
 				" \tJ: " + ((action[Mario.KEY_JUMP]) ? "t" : "f") +
-				" \tS: " + ((action[Mario.KEY_SPEED]) ? "t" : "f");
-		return output;
+				" \tS: " + ((action[Mario.KEY_SPEED]) ? "t" : "f") +
+				"\t";
 	}
 
 	/**
@@ -401,7 +406,7 @@ public class Node implements Comparable<Node> {
 		list.add(node.action);
 		
 		// Output debug information
-		if (debug) printData(node);
+		if (debug) printNodeData(node);
 		return list;
 	}
 }
