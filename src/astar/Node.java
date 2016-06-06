@@ -18,7 +18,6 @@ public class Node implements Comparable<Node> {
 	// Coordinates of the node
 	public float x, y;
 	
-	public int jumpTime = 0;
 	
 	public float fitness = 0f;				// Overall rating of this option 
 	public int depth;					// Depth of the current node
@@ -27,7 +26,8 @@ public class Node implements Comparable<Node> {
 	// Game elements 
 	public Mario mario;			// The Mario object 
 	int damageTaken;			// How much damage that Mario will take in this step 
-	float maxSpeed = 10.9090909f;
+	public int jumpTime = 0;
+	public final static float maxSpeed = 10.9090909f;
 	
 	// Enemies 
 	public List<Sprite> enemies;
@@ -39,8 +39,6 @@ public class Node implements Comparable<Node> {
 	public static Node head;
 	public List<Node> children = new ArrayList<Node>();
 	private static int maxDepth = 1000;
-	
-	
 	
 	/**
 	 * Create a new node, which should have everything needed to compute next frame
@@ -104,13 +102,17 @@ public class Node implements Comparable<Node> {
 	 */
 	public void fitnessEval()
 	{
-		// Evalf the simulation
+		// Evaluate the simulation
 		this.tick();
 		
+		if (mario.x == 816f)
+		{
+			mario.x = (mario.xOld + mario.xa * 1.12f);
+		}
 		this.x = mario.x;
 		this.y = mario.y;
 		
-		g =  getDistanceTraveled(this);
+		g = getDistanceTraveled(this);
 		
 		if (mario.isDead() || this.y > 223f) 
 		{
@@ -131,7 +133,8 @@ public class Node implements Comparable<Node> {
 	public static float getHeuristic(Node node)
 	{
 //		return alpha * (goal - node.x);
-		return alpha * (goal - node.x) + (20 - node.mario.xa);
+		return alpha * (goal - node.x) 
+				+ (Node.maxSpeed - node.mario.xa); 
 	}
 	
 	/**
@@ -142,22 +145,6 @@ public class Node implements Comparable<Node> {
 	public static float getDistanceTraveled(Node node)
 	{
 		return (node.x - head.x);
-	}
-
-	/**
-	 * Print out the data about the node
-	 * @param node to output data about
-	 */
-	private static void printNodeData(Node node) {
-		System.out.printf("X: %.2f\t", node.x);
-		System.out.printf("Y: %.2f\t", node.y);
-		System.out.printf("Ya: %.2f\t", node.mario.ya);
-		System.out.print(getActionAsString(node.action));
-		System.out.printf("Depth: %3d ", node.depth);
-		System.out.printf("F: %.3f\t", node.fitness);
-		System.out.printf("g: %.3f\t", Node.getDistanceTraveled(node));
-		System.out.printf("h: %.3f\t", Node.getHeuristic(node));
-		System.out.println();
 	}
 	
 	/**
@@ -234,17 +221,18 @@ public class Node implements Comparable<Node> {
 		
 		// Right movement - Only created if it is possible to go right, or if mario is in the air
 		if (current.parent == null || 
-				(Math.abs(current.x - current.parent.x) > 0.7) ||
-				(current.y != current.parent.y))
+				(Math.abs(current.x - current.parent.x) > 0.7) 
+				|| (current.y != current.parent.y)
+				)
 		{
 			options.add(createAction(true, false, false, false));
 			options.add(createAction(true, false, false, true));
+
+			// Left movement
+			options.add(createAction(false, true, false, false));
+			options.add(createAction(false, true, false, true));	
 		}
-		
-		// Left movement
-		options.add(createAction(false, true, false, false));
-		options.add(createAction(false, true, false, true));
-	
+
 		// Check if pressing the jump key makes a differers, and generate nodes if it does
 		if (current.canJump())
 		{
@@ -269,7 +257,8 @@ public class Node implements Comparable<Node> {
 	 * Computes if Mario is able to jump
 	 * @return True, if Mario is able to jump
 	 */
-	public boolean canJump() {
+	public boolean canJump() 
+	{
 		if (parent != null)
 		{
 			if (this.y == parent.y)
@@ -297,15 +286,16 @@ public class Node implements Comparable<Node> {
 	 */
 	private static Node createNode(Node parent, boolean[] actions, List<Sprite> enemies)
 	{
-		return new Node(parent, (LevelScene) parent.levelScene, (Mario) parent.mario.clone(), enemies, actions);
+		return new Node(parent, (LevelScene) parent.levelScene.clone(), (Mario) parent.mario.clone(), enemies, actions);
 	}
 	
 	/**
-	 * Create an action array
-	 * @param right
-	 * @param left
-	 * @param jump
-	 * @param speed
+	 * Create an action array with the given actions, which should
+	 * get mario to moved in the given direction
+	 * @param right True, if mario should move to the right
+	 * @param left True, if  mario should move to the left 
+	 * @param jump True, if mario should jump
+	 * @param speed True, if mario should run or fire a fireball
 	 * @return An action with the passed values
 	 */
 	public static boolean[] createAction(boolean right, boolean left, boolean jump, boolean speed)
@@ -354,20 +344,6 @@ public class Node implements Comparable<Node> {
 	}
 	
 	/**
-	 * Returns a string with displaying the given actions
-	 * @param action to display
-	 * @return A string displaying the action
-	 */
-	public static String getActionAsString(boolean[] action)
-	{
-		return "R: " + ((action[Mario.KEY_RIGHT]) ? "t" : "f") +
-				" \tL: " + ((action[Mario.KEY_LEFT]) ? "t" : "f") +
-				" \tJ: " + ((action[Mario.KEY_JUMP]) ? "t" : "f") +
-				" \tS: " + ((action[Mario.KEY_SPEED]) ? "t" : "f") +
-				"\t";
-	}
-
-	/**
 	 * Set the start time of the current search
 	 * @param currentTimeMillis
 	 */
@@ -408,5 +384,37 @@ public class Node implements Comparable<Node> {
 		// Output debug information
 		if (debug) printNodeData(node);
 		return list;
+	}
+	
+	/**
+	 * Returns a string with displaying the given actions
+	 * @param action to display
+	 * @return A string displaying the action
+	 */
+	public static String getActionAsString(boolean[] action)
+	{
+		return "R: " + ((action[Mario.KEY_RIGHT]) ? "t" : "f") +
+				" \tL: " + ((action[Mario.KEY_LEFT]) ? "t" : "f") +
+				" \tJ: " + ((action[Mario.KEY_JUMP]) ? "t" : "f") +
+				" \tS: " + ((action[Mario.KEY_SPEED]) ? "t" : "f") +
+				"\t";
+	}
+
+	/**
+	 * Print out the data about the node
+	 * @param node to output data about
+	 */
+	private static void printNodeData(Node node) {
+		System.out.printf("X: %.2f\t", node.x);
+		System.out.printf("Y: %.2f\t", node.y);
+		System.out.printf("Vx: %.2f\t", node.mario.xa);
+		System.out.printf("Vy: %.2f\t", node.mario.ya);
+		System.out.printf("Ay: %.2f\t", node.mario.yaa);
+		System.out.print(getActionAsString(node.action));
+		System.out.printf("Depth: %3d ", node.depth);
+		System.out.printf("F: %.3f\t", node.fitness);
+		System.out.printf("g: %.3f\t", Node.getDistanceTraveled(node));
+		System.out.printf("h: %.3f\t", Node.getHeuristic(node));
+		System.out.println();
 	}
 }

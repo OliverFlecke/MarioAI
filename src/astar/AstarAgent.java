@@ -69,7 +69,7 @@ public class AstarAgent extends KeyAdapter implements Agent {
 	private String name = "AstarAgent";
 
 	private byte[][] observation;
-	
+
 	public AstarAgent() 
 	{
 		try {
@@ -116,11 +116,13 @@ public class AstarAgent extends KeyAdapter implements Agent {
 				
 				// Calculate the current velocity
 				mario.xa = (marioFloatPos[0] - lastX) * 0.89f;
+				if (mario.xa > Node.maxSpeed) mario.xa = Node.maxSpeed;
 				mario.ya = (marioFloatPos[1] - lastY) * 0.89f;
+				if (mario.ya > Node.maxSpeed) mario.ya = Node.maxSpeed;
 	
 				// Set the variables with the data from the environment 
-				mario.mayJump = isMarioAbleToJump;
-				mario.canJump = isMarioAbleToJump;
+				mario.mayJump = isMarioAbleToJump || action[Mario.KEY_JUMP];
+				mario.canJump = isMarioAbleToJump || action[Mario.KEY_JUMP];
 				mario.onGround = isMarioOnGround;
 				
 				// Create graph
@@ -138,8 +140,9 @@ public class AstarAgent extends KeyAdapter implements Agent {
 			{
 				if (memeoryData)
 				{					
-					System.out.format("Number of nodes: %8d\t", Node.nodeCount);
-					System.out.println("Size:" + actionPath.size());
+					System.out.printf("Number of nodes: %8d\t", Node.nodeCount);
+					System.out.printf("Size: %3d\t", actionPath.size());
+					System.out.printf("Ratio: %.2f\n", actionPath.size() /((float) Node.nodeCount));
 				}
 				action = actionPath.removeFirst();
 				actionCount--;
@@ -157,7 +160,7 @@ public class AstarAgent extends KeyAdapter implements Agent {
 		return action;
 	}
 	
-	private final int MAXCOUNT = 5;
+	private final int MAXCOUNT = 4;
 	private int actionCount = MAXCOUNT;
 	private LinkedList<boolean[]> actionPath = new LinkedList<boolean[]>();
 	Node head = null;

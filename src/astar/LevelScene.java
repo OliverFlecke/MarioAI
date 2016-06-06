@@ -133,16 +133,20 @@ public final class LevelScene implements SpriteContext, Cloneable
 	}
 
 	@Override
-	public Object clone() throws CloneNotSupportedException
+	public Object clone() 
 	{
-		LevelScene clone = (LevelScene) super.clone();
+		LevelScene clone = null;
+		try {
+			clone = (LevelScene) super.clone();
 		// Copy mario and other objects
 		clone.mario = (Mario) this.mario.clone();
 		clone.mario.levelScene = clone;
 
 		// Clone the list of sprites
 		clone.sprites = new ArrayList<Sprite>();
-
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+		}
 		return clone;
 	}
 
@@ -570,6 +574,14 @@ public final class LevelScene implements SpriteContext, Cloneable
 		setEnemiesFloatPos(enemiesFloatPos);
 	}
 
+	/**
+	 * Set levelscene data based on the information from the interface
+	 * @param levelSceneObservationZ
+	 */
+	private void setLevelScene(byte[][] levelSceneObservationZ) {
+		//this.level.map = levelSceneObservationZ;
+	}
+
 	//adding enemy sprites and fireballs etc
 	public void setEnemiesFloatPos(float[] enemiesFloatPos)
 	{
@@ -735,103 +747,4 @@ public final class LevelScene implements SpriteContext, Cloneable
 		tickCount = 0;
 	}
 
-    // Update internal level representation to what we get from the API.
-    // includes some gap detection code
-    public boolean setLevelScene(byte[][] data)
-    {
-        int HalfObsWidth = 9;
-        int HalfObsHeight = 9;
-        int MarioXInMap = (int)mario.x/16;
-        int MarioYInMap = (int)mario.y/16;
-        boolean gapAtLast = true;
-        boolean gapAtSecondLast = true;
-        int lastEventX = 0;
-        int[] heights = new int[19];
-        for(int i = 0; i < heights.length; i++)
-        	heights[i] = 0;
-        
-        int gapBorderHeight = 0;
-        int gapBorderMinusOneHeight = 0;
-        int gapBorderMinusTwoHeight = 0;
-        
-        for (int y = MarioYInMap - HalfObsHeight, obsX = 0; y < MarioYInMap + HalfObsHeight; y++, obsX++)
-        {
-            for (int x = MarioXInMap - HalfObsWidth, obsY = 0; x < MarioXInMap + HalfObsWidth; x++, obsY++)
-            {
-                if (x >=0 && x <= level.xExit && y >= 0 && y < level.height)
-                {
-                	byte datum = data[obsX][obsY];
-                	
-                 	if (datum != 0 && datum != -10 && datum != 1 && obsY > lastEventX)
-                	{
-                 		lastEventX = obsY;
-                	}
-                 	if (datum != 0 && datum != 1)
-                	{
-                		if (heights[obsY] == 0)
-                		{
-                			heights[obsY] = y;
-                		}
-                	}
-                 	
-                	// cannon detection: if there's a one-block long hill, it's a cannon!
-                 	// i think this is not required anymore, because we get the cannon data straight from the API.
-                	if (x == MarioXInMap + HalfObsWidth - 3 &&
-                			datum != 0 && y > 5)
-                	{
-
-                		if (gapBorderMinusTwoHeight == 0)
-                			gapBorderMinusTwoHeight = y;
-                	}
-                	if (x == MarioXInMap + HalfObsWidth - 2 &&
-                			datum != 0 && y > 5)
-                	{
-                		if (gapBorderMinusOneHeight == 0)
-                			gapBorderMinusOneHeight = y;
-                		gapAtSecondLast = false;
-                	}
-                	if (x == MarioXInMap + HalfObsWidth - 1 &&
-                			datum != 0 && y > 5)
-                	{
-
-                		if (gapBorderHeight == 0)
-                			gapBorderHeight = y;
-                		gapAtLast = false;
-                	}
-                	
-                    if (datum != 1 && level.getBlock(x, y) != 14) 
-                    	level.setBlock(x, y, datum);
-                }
-            }
-        }
-        if (gapBorderHeight == gapBorderMinusTwoHeight && gapBorderMinusOneHeight < gapBorderHeight)
-        {
-        	// found a cannon!
-        	//System.out.println("Got a cannon!");
-        	level.setBlock(MarioXInMap + HalfObsWidth - 2,gapBorderMinusOneHeight, (byte)14);
-        }
-//        if (gapAtLast && !gapAtSecondLast)
-//        {
-//        	// found a gap. 
-//        	int holeWidth = 3;
-//
-//    		// make the gap wider before we see the end to allow ample time for the 
-//        	// planner to jump over.
-//        	for(int i = 0; i < holeWidth; i++)
-//        	{
-//            	for(int j = 0; j < 15; j++)
-//            	{
-//            		level.setBlock(MarioXInMap + HalfObsWidth + i, j, (byte) 0);
-//            	}
-//            	level.isGap[MarioXInMap + HalfObsWidth + i] = true;
-//            	level.gapHeight[MarioXInMap + HalfObsWidth + i] = gapBorderMinusOneHeight;
-//        	}
-//        	for(int j = gapBorderMinusOneHeight; j < 16; j++)
-//        	{
-//        		level.setBlock(MarioXInMap + HalfObsWidth + holeWidth, gapBorderMinusOneHeight, (byte) 4);
-//        	}
-//        	return true;
-//        }
-    	return false;
-    }
 }
