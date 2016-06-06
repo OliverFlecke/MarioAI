@@ -2,6 +2,8 @@ package astar.tests;
 
 import static org.junit.Assert.*;
 
+import java.util.PriorityQueue;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -9,14 +11,19 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import astar.*;
+import astar.sprites.Mario;
 import ch.idsia.benchmark.mario.environments.Environment;
+import junit.framework.Assert;
 
 
 /**
  * Contains test for the node class
  */
 public class NodeTest {
-
+	
+	LevelScene scene;
+	
+	
 	/**
 	 * @throws java.lang.Exception
 	 */
@@ -36,6 +43,7 @@ public class NodeTest {
 	 */
 	@Before
 	public void setUp() throws Exception {
+		scene = new LevelScene();
 	}
 
 	/**
@@ -50,8 +58,8 @@ public class NodeTest {
 	 */
 	@Test
 	public void testNode() {
-		fail("Not yet implemented");
-//		Node node = new Node(null, null, null, null, null);
+		Node node = new Node(scene, scene.mario, null, null);
+		Assert.assertNotNull(node);
 	}
 
 	/**
@@ -60,6 +68,16 @@ public class NodeTest {
 	@Test
 	public void testFitnessEval() {
 		fail("Not yet implemented");
+//		Node head = new Node(scene, scene.mario, null, null);
+//		Node.setHead(head);
+//		Node.setGoal(200);
+//		
+//		// Setup test object
+//		Node node = new Node(scene, scene.mario, null, Node.createAction(false, false, false, false));
+//		node.mario.x = 100;
+//		
+//		node.fitnessEval();
+//		Assert.assertTrue(node.fitness > 0);
 	}
 
 	/**
@@ -75,7 +93,12 @@ public class NodeTest {
 	 */
 	@Test
 	public void testGenerateNewNodes() {
-		fail("Not yet implemented");
+		Node node = new Node(scene, scene.mario, null, Node.createAction(false, false, false, false));
+		PriorityQueue<Node> queue = new PriorityQueue<Node>();
+		
+		
+		Node.generateNodes(node, queue);
+		Assert.assertEquals(9, queue.size());
 	}
 
 	/**
@@ -83,7 +106,11 @@ public class NodeTest {
 	 */
 	@Test
 	public void testCreateAction() {
-		fail("Not yet implemented");
+		boolean[] action = Node.createAction(true, false, true, true);
+		Assert.assertTrue(action[Mario.KEY_RIGHT]);
+		Assert.assertTrue(action[Mario.KEY_JUMP]);
+		Assert.assertTrue(action[Mario.KEY_SPEED]);
+		Assert.assertFalse(action[Mario.KEY_LEFT]);
 	}
 
 	/**
@@ -91,7 +118,12 @@ public class NodeTest {
 	 */
 	@Test
 	public void testCompareTo() {
-		fail("Not yet implemented");
+		Node lowest = new Node(scene, scene.mario, null, null);
+		Node highest = new Node(scene, scene.mario, null, null);
+		
+		lowest.fitness = 10;
+		highest.fitness = Float.MAX_VALUE;
+		Assert.assertTrue(lowest.compareTo(highest) == -1);
 	}
 
 	/**
@@ -99,7 +131,11 @@ public class NodeTest {
 	 */
 	@Test
 	public void testAtGoal() {
-		fail("Not yet implemented");
+		Node.setGoal(200);
+		Node node = new Node(scene, scene.mario, null, null);
+		node.x = 200;
+		
+		Assert.assertTrue(node.atGoal());
 	}
 
 	/**
@@ -152,7 +188,10 @@ public class NodeTest {
 	 */
 	@Test
 	public void testSetHead() {
-		fail("Not yet implemented");
+		Node head = new Node(scene, scene.mario, null, null);
+		Node.setHead(head);
+		
+		Assert.assertNotNull(Node.head);
 	}
 
 	/**

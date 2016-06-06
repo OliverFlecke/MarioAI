@@ -16,7 +16,7 @@ public class Node implements Comparable<Node> {
 	public static PriorityQueue<Node> queue;
 	
 	// Coordinates of the node
-	private float x, y;
+	public float x, y;
 	
 	public int jumpTime = 0;
 	
@@ -175,15 +175,15 @@ public class Node implements Comparable<Node> {
 			current = queue.poll();
 						
 			// Update the best node
-			if (best.fitness >= current.fitness)
+			if (best.fitness >= current.fitness && best.depth < current.depth)
 				best = current;
 		}
 		
 		if (debug)
 		{			
 			System.out.println("Depth: " + best.depth + " Fitness: " + best.fitness);
-			System.out.println(Node.nodeCount);
 		}
+		System.out.println("Number of nodes: " + Node.nodeCount);
 		return getActionPath(best);
 	}
 	
@@ -370,14 +370,12 @@ public class Node implements Comparable<Node> {
 	 */
 	public static LinkedList<boolean[]> getActionPath(Node node)
 	{
+		LinkedList<boolean[]> list;
 		// We only want the path from the node AFTER the root. The root does not have any actions
 		if (node.parent.depth == 0) 
-		{
-			LinkedList<boolean[]> list = new LinkedList<boolean[]>();
-			list.add(node.action);
-			return list;
-		}
-		LinkedList<boolean[]> list = getActionPath(node.parent);
+			list = new LinkedList<boolean[]>();
+		else 
+			list = getActionPath(node.parent);
 		list.add(node.action);
 		return list;
 	}

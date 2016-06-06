@@ -135,6 +135,7 @@ public class AstarAgent extends KeyAdapter implements Agent {
 			// it uses the first action in the list
 			if (!actionPath.isEmpty())
 			{
+				System.out.println("size:" + actionPath.size());
 				action = actionPath.removeFirst();
 				actionCount--;
 			}		
