@@ -13,7 +13,8 @@ import ch.idsia.benchmark.mario.environments.Environment;
 import ch.idsia.tools.*;
 
 public class AstarAgent extends KeyAdapter implements Agent {
-
+	public boolean memeoryData = true;
+	
 	private int[] marioPos = new int[2];
 	
 	// To specify jump height
@@ -135,7 +136,11 @@ public class AstarAgent extends KeyAdapter implements Agent {
 			// it uses the first action in the list
 			if (!actionPath.isEmpty())
 			{
-				System.out.println("size:" + actionPath.size());
+				if (memeoryData)
+				{					
+					System.out.format("Number of nodes: %8d\t", Node.nodeCount);
+					System.out.println("Size:" + actionPath.size());
+				}
 				action = actionPath.removeFirst();
 				actionCount--;
 			}		

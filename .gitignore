@@ -413,3 +413,5 @@
 .idea/workspace.xml
 bin/MarioAI/astar/sprites/FlowerEnemy.class
 *.class
+*.class
+bin/MarioAI/astar/AstarAgent.class

@@ -6,7 +6,7 @@ import astar.sprites.Sprite;
 import ch.idsia.benchmark.mario.environments.Environment;
 
 public class Node implements Comparable<Node> {
-	private static boolean debug = false;
+	private static boolean debug = true;
 	
 	private static int timeLimit = 33;	// Any larger, and the game seem to lack 
 	public static int nodeCount = 0;
@@ -181,7 +181,6 @@ public class Node implements Comparable<Node> {
 		
 		while (!current.atGoal())
 		{			
-//			printData(current);
 			// Used when testing. Insuring that the graph does not search too far
 			if (current.depth > maxDepth)
 			{
@@ -194,6 +193,7 @@ public class Node implements Comparable<Node> {
 				if (debug) System.out.println("Out of time!");
 				break;
 			}
+			// Generate the children for this node, and poll the new best options
 			generateNodes(current, queue);
 			current = queue.poll();
 						
@@ -206,7 +206,6 @@ public class Node implements Comparable<Node> {
 		{			
 			System.out.println("Depth: " + best.depth + " Fitness: " + best.fitness);
 		}
-		System.out.println("Number of nodes: " + Node.nodeCount);
 		return getActionPath(best);
 	}
 	
@@ -400,6 +399,9 @@ public class Node implements Comparable<Node> {
 		else 
 			list = getActionPath(node.parent);
 		list.add(node.action);
+		
+		// Output debug information
+		if (debug) printData(node);
 		return list;
 	}
 }
