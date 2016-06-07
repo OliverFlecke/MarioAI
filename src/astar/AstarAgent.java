@@ -13,7 +13,7 @@ import ch.idsia.benchmark.mario.environments.Environment;
 import ch.idsia.tools.*;
 
 public class AstarAgent extends KeyAdapter implements Agent {
-	public boolean outputMemeoryData = true;
+	public boolean outputMemeoryData = false;
 	
 	private int[] marioPos = new int[2];
 	
@@ -104,7 +104,7 @@ public class AstarAgent extends KeyAdapter implements Agent {
 				// Create a new simulation for the AStar 
 				// This is what creates a copy of the game world
 				levelScene = new LevelScene();
-				levelScene.level = new Level(1500, 15);
+				LevelScene.level = new Level(1500, 15);
 				levelScene.setup(this.observation, enemiesFloatPos);
 				mario = levelScene.mario;
 //				mario = new Mario(levelScene);
@@ -183,7 +183,7 @@ public class AstarAgent extends KeyAdapter implements Agent {
 			currentAction[Mario.KEY_JUMP] = true;
 			currentAction[Mario.KEY_SPEED] = true;
 			levelScene = new LevelScene();
-			levelScene.level = new Level(1500, 15);
+			LevelScene.level = new Level(1500, 15);
 			levelScene.setup(this.observation, enemiesFloatPos);
 			mario = levelScene.mario;	
 			levelScene.addSprite(mario);			
@@ -193,7 +193,7 @@ public class AstarAgent extends KeyAdapter implements Agent {
 		}
 		else
 		{
-			levelScene.level.map = this.observation;
+			LevelScene.level.map = this.observation;
 		}
 		
 //		mario.x = marioFloatPos[0];
@@ -344,7 +344,7 @@ public class AstarAgent extends KeyAdapter implements Agent {
 			printMario();
 			break;
 		case KeyEvent.VK_7:
-			runSimulation = true;
+			runSimulation = true;		// Start a simulation when 7 is pressed
 			break;
 		case KeyEvent.VK_6:
 			System.out.println("Next goal: " + Node.goal + "\tMario X pos: " + marioFloatPos[0]);
@@ -357,9 +357,9 @@ public class AstarAgent extends KeyAdapter implements Agent {
 	 */
 	public void printLevelGrid()
 	{
-		for (int i = 0; i <  head.levelScene.level.map.length; i++) {
-			for (int j = 0; j <  head.levelScene.level.map[0].length; j++) {
-					System.out.format("%5d ", head.levelScene.level.getBlock(i, j));
+		for (int i = 0; i <  LevelScene.level.map.length; i++) {
+			for (int j = 0; j <  LevelScene.level.map[0].length; j++) {
+					System.out.format("%5d ", LevelScene.level.getBlock(i, j));
 			}
 			System.out.println();
 		}
