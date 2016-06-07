@@ -13,7 +13,8 @@ import ch.idsia.benchmark.mario.environments.Environment;
 import ch.idsia.tools.*;
 
 public class AstarAgent extends KeyAdapter implements Agent {
-
+	public boolean outputMemeoryData = true;
+	
 	private int[] marioPos = new int[2];
 	
 	// To specify jump height
@@ -68,7 +69,7 @@ public class AstarAgent extends KeyAdapter implements Agent {
 	private String name = "AstarAgent";
 
 	private byte[][] observation;
-	
+
 	public AstarAgent() 
 	{
 		try {
@@ -116,13 +117,16 @@ public class AstarAgent extends KeyAdapter implements Agent {
 				// Calculate the current velocity
 				mario.xa = (marioFloatPos[0] - lastX) * 0.89f;
 				mario.ya = (marioFloatPos[1] - lastY) * 0.89f;
+				// If the speeds is too high, set to max speed
+				if (mario.xa > Node.maxSpeed) mario.xa = Node.maxSpeed;
+				if (mario.ya > Node.maxSpeed) mario.ya = Node.maxSpeed;
 	
 				// Set the variables with the data from the environment 
-				mario.mayJump = isMarioAbleToJump;
-				mario.canJump = isMarioAbleToJump;
+				mario.mayJump = isMarioAbleToJump || action[Mario.KEY_JUMP];
+				mario.canJump = isMarioAbleToJump || action[Mario.KEY_JUMP];
 				mario.onGround = isMarioOnGround;
 				
-				// Create graph
+				// Create graph starting point and set goal
 				head = new Node(levelScene, mario, null, currentAction);
 				Node.setHead(head);
 				Node.setGoal(marioFloatPos[0] + 250f);
@@ -135,7 +139,12 @@ public class AstarAgent extends KeyAdapter implements Agent {
 			// it uses the first action in the list
 			if (!actionPath.isEmpty())
 			{
-				System.out.println("size:" + actionPath.size());
+				if (outputMemeoryData)
+				{					
+					System.out.printf("Number of nodes: %8d\t", Node.nodeCount);
+					System.out.printf("Size: %3d\t", actionPath.size());
+					System.out.printf("Ratio: %.2f\n", actionPath.size() /((float) Node.nodeCount));
+				}
 				action = actionPath.removeFirst();
 				actionCount--;
 			}		
@@ -152,7 +161,7 @@ public class AstarAgent extends KeyAdapter implements Agent {
 		return action;
 	}
 	
-	private final int MAXCOUNT = 5;
+	private final int MAXCOUNT = 4;
 	private int actionCount = MAXCOUNT;
 	private LinkedList<boolean[]> actionPath = new LinkedList<boolean[]>();
 	Node head = null;
@@ -211,6 +220,13 @@ public class AstarAgent extends KeyAdapter implements Agent {
 		}		
 	}
 
+	/**
+	 * Get a given field value from the merged observations from the 
+	 * environment interface
+	 * @param x coordinate of the given field
+	 * @param y coordinate of the given field
+	 * @return A value from the observation grid
+	 */
 	private byte getField(int x, int y)
 	{
 //		return levelScene[marioEgoCol + y][marioEgoRow + x];
@@ -320,8 +336,7 @@ public class AstarAgent extends KeyAdapter implements Agent {
 		case KeyEvent.VK_V:
 			reset();
 			break;
-			
-			
+				
 		case KeyEvent.VK_0:
 			printLevelGrid();
 			break;
@@ -350,6 +365,9 @@ public class AstarAgent extends KeyAdapter implements Agent {
 		}
 	}
 	
+	/**
+	 * Print the coordinates and data of Mario 
+	 */
 	public void printMario() 
 	{
 		System.out.println("Nor - X = " + (marioFloatPos[0]) + " \tY = " + marioFloatPos[1]);
