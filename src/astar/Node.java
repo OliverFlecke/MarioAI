@@ -5,32 +5,31 @@ import astar.sprites.Mario;
 import astar.sprites.Sprite;
 import ch.idsia.benchmark.mario.environments.Environment;
 
+/**
+ * The node class represent a frame or state in the Mario world, in which the simulation
+ * has executed the action stored in this given node. 
+ */
 public class Node implements Comparable<Node> {
-	private static boolean debug = true;
+	private static boolean debug = true;	// True, if the program should output debug data
 	
-	private static int timeLimit = 33;	// Any larger, and the game seem to lack 
-	public static int nodeCount = 0;
+	private static int timeLimit = 33;		// Any larger, and the game seem to lack 
+	public static int nodeCount = 0;		// Counter to keep track of the number of generated nodes
 
-	private static long startTime;
-	public static float goal = 0;
-	public static PriorityQueue<Node> queue;
+	private static long startTime;			// Start time for the current start
+	public static float goal = 0;			// The goal which Mario should reach
+	public static PriorityQueue<Node> queue;// Queue to store all the nodes that are yet to be explored
 	
 	// Coordinates of the node
-	public float x, y;
+	public float x, y;	
 	
 	
 	public float fitness = 0f;				// Overall rating of this option 
-	public int depth;					// Depth of the current node
-	private boolean[] action;	// Action that are done in this node
+	public int depth;						// Depth of the current node
+	private boolean[] action;				// Action that are done in this node
 	
 	// Game elements 
-	public Mario mario;			// The Mario object 
-	int damageTaken;			// How much damage that Mario will take in this step 
-	public int jumpTime = 0;
-	public final static float maxSpeed = 10.9090909f;
-	
-	// Enemies 
-	public List<Sprite> enemies;
+	public Mario mario;						// The Mario object 
+	public final static float maxSpeed = 10.9090909f;	// The max speed that Mario can reach
 	
 	public LevelScene levelScene;
 	
@@ -59,8 +58,8 @@ public class Node implements Comparable<Node> {
 		this.levelScene = levelScene;
 		this.levelScene.mario = this.mario;
 		this.mario.levelScene = this.levelScene;
-		this.enemies = levelScene.sprites;
 		
+		// Store the actions passed to the node
 		this.action = action;
 		
 		// Update Mario
@@ -68,11 +67,12 @@ public class Node implements Comparable<Node> {
 		this.x = mario.x;
 		this.y = mario.y;
 		
+		// Increment the node count in order to keep track of the number nodes generated
 		Node.nodeCount++;
 	}
 
 	/**
-	 * Create a node without a parent.
+	 * Create a node without a parent. Everything else is in a normal node
 	 * @param levelScene
 	 * @param mario
 	 * @param enemies
@@ -106,7 +106,6 @@ public class Node implements Comparable<Node> {
 	
 	// Helper variables to the fitness evaluations 
 	private static float alpha = 0.5f;
-	private static float scalar = 1f;
 
 	/**
 	 *  The function to evaluate the current nodes fitness.
@@ -116,6 +115,7 @@ public class Node implements Comparable<Node> {
 		// Evaluate the simulation
 		this.tick();
 		
+		// Error handling for unknown error
 		if (mario.x == 816f)
 		{
 			mario.x = (this.x + mario.xa);
@@ -131,7 +131,7 @@ public class Node implements Comparable<Node> {
 		{
 			this.fitness = Float.MAX_VALUE;
 		}
-//		else if (mario.yaa > maxSpeed - 5)
+//		else if (mario.yaa > maxSpeed - 5)	// To help avoid falling down
 //		{
 //			this.fitness = Float.MAX_VALUE;
 //		}
@@ -205,7 +205,7 @@ public class Node implements Comparable<Node> {
 						
 			// Update the best node
 			if (best.fitness >= current.fitness)
-				best = current;				
+				best = current;
 		}
 		
 		if (debug)
@@ -216,7 +216,9 @@ public class Node implements Comparable<Node> {
 	}
 	
 	/**
-	 * Generate all the new nodes which Mario can move to from this
+	 * Generate all the new nodes which Mario can move to from this.
+	 * This method should take into account what options Mario have at a given moment. 
+	 * That means that jump nodes are not generated when Mario do not have the option of jumping
 	 */
 	public static void generateNodes(Node current, PriorityQueue<Node> queue)
 	{
@@ -229,6 +231,7 @@ public class Node implements Comparable<Node> {
 //			newEnemy.tick();
 //			newEnemies.add(newEnemy);
 //		}
+		
 		// Create the different action options and place them in this list
 		List<boolean[]> options = new ArrayList<boolean[]>();
 		
