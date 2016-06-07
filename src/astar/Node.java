@@ -51,8 +51,8 @@ public class Node implements Comparable<Node> {
 	public Node(Node parent, LevelScene levelScene, Mario mario, List<Sprite> enemies, boolean[] action) 
 	{
 		this.parent = parent;
-		if (this.parent == null) this.depth = 0;
-		else this.depth = this.parent.depth + 1;
+		if (this.parent == null) depth = 0;
+		else depth = parent.depth + 1;
 		
 		// Copy these elements, don't just save the pointers 
 		this.mario = mario; 
@@ -72,7 +72,7 @@ public class Node implements Comparable<Node> {
 	}
 
 	/**
-	 * Create a node without a parent
+	 * Create a node without a parent.
 	 * @param levelScene
 	 * @param mario
 	 * @param enemies
@@ -81,6 +81,19 @@ public class Node implements Comparable<Node> {
 	public Node(LevelScene levelScene, Mario mario, List<Sprite> enemies, boolean[] action)
 	{
 		this(null, levelScene, mario, enemies, action);
+	}
+	
+	/**
+	 * Creates a new node with clones of the level scene and Mario,
+	 * as well as the passed enemies and action array. The current
+	 * node is passed as the parent node
+	 * @param actions the new node should simulate
+	 * @param enemies which should be passed into the levelscene
+	 * @return A node with cloned objects
+	 */
+	private static Node createNode(Node parent, boolean[] actions, List<Sprite> enemies)
+	{
+		return new Node(parent, (LevelScene) parent.levelScene.clone(), (Mario) parent.mario.clone(), enemies, actions);
 	}
 	
 	/**
@@ -94,34 +107,37 @@ public class Node implements Comparable<Node> {
 	// Helper variables to the fitness evaluations 
 	private static float alpha = 0.5f;
 	private static float scalar = 1f;
-	
-	public float g, h;
-	
+
 	/**
-	 *  The function to evaluate the current frame
+	 *  The function to evaluate the current nodes fitness.
 	 */
-	public void fitnessEval()
+	public void fitnessEvaluation()
 	{
 		// Evaluate the simulation
 		this.tick();
 		
 		if (mario.x == 816f)
 		{
-			mario.x = (mario.xOld + mario.xa * 1.12f);
+			mario.x = (this.x + mario.xa);
+			mario.xa = mario.x - this.x;
 		}
+		
+		// Update the nodes coordinates
 		this.x = mario.x;
 		this.y = mario.y;
 		
-		g = getDistanceTraveled(this);
-		
+		// If Mario is dead or to low in the level, the path is dead
 		if (mario.isDead() || this.y > 223f) 
 		{
-			this.fitness = Integer.MAX_VALUE;
+			this.fitness = Float.MAX_VALUE;
 		}
+//		else if (mario.yaa > maxSpeed - 5)
+//		{
+//			this.fitness = Float.MAX_VALUE;
+//		}
 		else 
 		{
-			h = getHeuristic(this);
-			this.fitness = h;
+			this.fitness = getHeuristic(this);
 		}
 	}
 	
@@ -132,7 +148,6 @@ public class Node implements Comparable<Node> {
 	 */
 	public static float getHeuristic(Node node)
 	{
-//		return alpha * (goal - node.x);
 		return alpha * (goal - node.x) 
 				+ (Node.maxSpeed - node.mario.xa); 
 	}
@@ -214,17 +229,17 @@ public class Node implements Comparable<Node> {
 //			newEnemy.tick();
 //			newEnemies.add(newEnemy);
 //		}
+		// Create the different action options and place them in this list
 		List<boolean[]> options = new ArrayList<boolean[]>();
 		
-		// Create the different action options
-//		options.add(createAction(false, false, false, false));	// Do nothing
 		
-		// Right movement - Only created if it is possible to go right, or if mario is in the air
-		if (current.parent == null || 
-				(Math.abs(current.x - current.parent.x) > 0.7) 
-				|| (current.y != current.parent.y)
-				)
+		// Only created if it is possible to go right, or if mario is in the air
+		if (current.parent == null || (Math.abs(current.x - current.parent.x) > 0.7) 
+				|| (current.y != current.parent.y))
 		{
+			options.add(createAction(false, false, false, false));	// Do nothing
+
+			// Right movement
 			options.add(createAction(true, false, false, false));
 			options.add(createAction(true, false, false, true));
 
@@ -248,20 +263,25 @@ public class Node implements Comparable<Node> {
 		for (boolean[] action : options)
 		{
 			Node node = createNode(current, action, newEnemies);
-			node.fitnessEval();
+			node.fitnessEvaluation();
 			queue.add(node);
 		}
 	}
 	
 	/**
-	 * Computes if Mario is able to jump
+	 * Computes if Mario is able to jump.
+	 * He is able to jump, if Mario is already jumping, that is going upwards.
+	 * If he is on the ground, Mario can only jump if he did not hold the down
+	 * the jump button in the parent node. If the parent node was holding down
+	 * the button while on the ground, he is not able to jump in the current 
+	 * state. If Mario is falling, he is not able to jump either. 
 	 * @return True, if Mario is able to jump
 	 */
 	public boolean canJump() 
 	{
 		if (parent != null)
 		{
-			if (this.y == parent.y)
+			if (this.y == parent.y)	// If Mario is on the ground
 			{
 				if (parent.action[Mario.KEY_JUMP])
 					return false;
@@ -277,25 +297,12 @@ public class Node implements Comparable<Node> {
 	}
 
 	/**
-	 * Creates a new node with clones of the level scene and mario,
-	 * as well as the passed enemies and action array. The current
-	 * node is passed as the parent node
-	 * @param actions the new node should simulate
-	 * @param enemies which should be passed into the levelscene
-	 * @return A node with cloned objects
-	 */
-	private static Node createNode(Node parent, boolean[] actions, List<Sprite> enemies)
-	{
-		return new Node(parent, (LevelScene) parent.levelScene.clone(), (Mario) parent.mario.clone(), enemies, actions);
-	}
-	
-	/**
 	 * Create an action array with the given actions, which should
-	 * get mario to moved in the given direction
-	 * @param right True, if mario should move to the right
-	 * @param left True, if  mario should move to the left 
-	 * @param jump True, if mario should jump
-	 * @param speed True, if mario should run or fire a fireball
+	 * get Mario to moved in the given direction
+	 * @param right True, if Mario should move to the right
+	 * @param left True, if  Mario should move to the left 
+	 * @param jump True, if Mario should jump
+	 * @param speed True, if Mario should run or fire a fireball
 	 * @return An action with the passed values
 	 */
 	public static boolean[] createAction(boolean right, boolean left, boolean jump, boolean speed)
@@ -335,8 +342,8 @@ public class Node implements Comparable<Node> {
 	}
 	
 	/**
-	 * Set the goal for the current simulation
-	 * @param goal Value of the goal
+	 * Set the goal for the current search
+	 * @param goal which Mario should aim for 
 	 */
 	public static void setGoal(float goal)
 	{
@@ -345,7 +352,7 @@ public class Node implements Comparable<Node> {
 	
 	/**
 	 * Set the start time of the current search
-	 * @param currentTimeMillis
+	 * @param currentTimeMillis the time which the search started at 
 	 */
 	public static void setStartTime(long currentTimeMillis) {
 		Node.startTime  = currentTimeMillis;
@@ -361,14 +368,14 @@ public class Node implements Comparable<Node> {
 
 	/**
 	 * Set the head/starting point of the graph.
-	 * @param head
+	 * @param head The starting point of the graph
 	 */
 	public static void setHead(Node head) {
 		Node.head = head;
 	}
 
 	/**
-	 * Get a path of actions to the node
+	 * Get a path of actions to the node from the head. This is done recursively
 	 * @return A LinkedList with a path representing the actions to get to that node/position 
 	 */
 	public static LinkedList<boolean[]> getActionPath(Node node)

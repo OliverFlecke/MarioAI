@@ -63,7 +63,7 @@ public class NodeTest {
 	}
 
 	/**
-	 * Test method for {@link astar.Node#fitnessEval()}.
+	 * Test method for {@link astar.Node#fitnessEvaluation()}.
 	 */
 	@Test
 	public void testFitnessEval() {
