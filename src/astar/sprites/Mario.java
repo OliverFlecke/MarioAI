@@ -90,6 +90,8 @@ public final class Mario extends Sprite implements Cloneable
 	private boolean newFire;
 	
 	public boolean canJump;
+
+	private boolean loadFromEngine = false;
 	
 	/**
 	 * Mario constructor
@@ -488,12 +490,18 @@ public final class Mario extends Sprite implements Cloneable
 		int x = (int) (_x / 16);
 		int y = (int) (_y / 16);
 		if (x == (int) (this.x / 16) && y == (int) (this.y / 16)) return false;
-
-		boolean blocking = ch.idsia.benchmark.mario.engine.level.Level.IsBlocking(x, y, xa, ya);
-
-//		byte block = levelScene.level.getBlock(x, y);
-		byte block = ch.idsia.benchmark.mario.engine.level.Level.GetBlock(x, y);
 		
+		boolean blocking;
+		byte block;
+		//If true, game does not comply with interface rule - only for testing!
+		if(loadFromEngine ){
+		blocking = ch.idsia.benchmark.mario.engine.level.Level.IsBlocking(x, y, xa, ya);		
+		block = ch.idsia.benchmark.mario.engine.level.Level.GetBlock(x, y);
+		}
+		else{
+			blocking = levelScene.level.isBlocking(x, y, xa, ya);
+			block = levelScene.level.getBlock(x, y);
+		}
 		
 		
 //		System.out.println("Sim: " + x + " - " + y + " Block: " + block);

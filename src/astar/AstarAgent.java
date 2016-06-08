@@ -13,7 +13,7 @@ import ch.idsia.benchmark.mario.environments.Environment;
 import ch.idsia.tools.*;
 
 public class AstarAgent extends KeyAdapter implements Agent {
-	public boolean memeoryData = true;
+	public boolean memeoryData = false;
 	
 	private int[] marioPos = new int[2];
 	
@@ -105,14 +105,14 @@ public class AstarAgent extends KeyAdapter implements Agent {
 				// This is what creates a copy of the game world
 				levelScene = new LevelScene();
 				levelScene.level = new Level(1500, 15);
-				levelScene.setup(this.observation, enemiesFloatPos);
 				mario = levelScene.mario;
+				mario.x = marioFloatPos[0];
+				mario.y = marioFloatPos[1];
+				levelScene.setup(this.observation, enemiesFloatPos);
 //				mario = new Mario(levelScene);
 //				levelScene.mario = mario;
 				levelScene.addSprite(mario);	
 				
-				mario.x = marioFloatPos[0];
-				mario.y = marioFloatPos[1];
 				
 				// Calculate the current velocity
 				mario.xa = (marioFloatPos[0] - lastX) * 0.89f;

@@ -6,7 +6,7 @@ import astar.sprites.Sprite;
 import ch.idsia.benchmark.mario.environments.Environment;
 
 public class Node implements Comparable<Node> {
-	private static boolean debug = true;
+	private static boolean debug = false;
 	
 	private static int timeLimit = 33;	// Any larger, and the game seem to lack 
 	public static int nodeCount = 0;
