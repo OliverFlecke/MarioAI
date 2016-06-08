@@ -359,7 +359,15 @@ public class Node implements Comparable<Node> {
 			return -1;
 		else if (other.fitness - this.fitness < 0)
 			return 1;
-		else return 0;
+		else 
+		{
+			if ((other.x - this.x) > 0f)
+				return 1;
+			else if ((other.x - this.x) < 0f)
+				return -1;
+			else 
+				return 0;
+		}
 	}
 
 	/**
