@@ -352,13 +352,19 @@ public class Node implements Comparable<Node> {
 			return 1;
 		else 
 		{
-			if ((other.x - this.x) > 0f)
+			if ((other.x - this.x) > 0)
 				return 1;
-			else if ((other.x - this.x) < 0f)
+			else if ((other.x - this.x) < 0)
 				return -1;
 			else 
-				return 0;
+			{
+				if ((other.y - this.y) > 0)
+					return -1;
+				else if ((other.y - this.y) < 0)
+					return 1;
+			}
 		}
+		return 0;
 	}
 
 	/**
