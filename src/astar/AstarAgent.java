@@ -13,8 +13,9 @@ import ch.idsia.benchmark.mario.environments.Environment;
 import ch.idsia.tools.*;
 
 public class AstarAgent extends KeyAdapter implements Agent {
-	public boolean outputMemeoryData = true;
-	
+
+	public boolean outputMemeoryData = false;
+
 	private int[] marioPos = new int[2];
 	
 	// To specify jump height
@@ -104,30 +105,29 @@ public class AstarAgent extends KeyAdapter implements Agent {
 				// Create a new simulation for the AStar 
 				// This is what creates a copy of the game world
 				levelScene = new LevelScene();
-				levelScene.level = new Level(1500, 15);
-				levelScene.setup(this.observation, enemiesFloatPos);
-				mario = levelScene.mario;
-//				mario = new Mario(levelScene);
-//				levelScene.mario = mario;
-				levelScene.addSprite(mario);	
 				
+				mario = levelScene.mario;
 				mario.x = marioFloatPos[0];
 				mario.y = marioFloatPos[1];
-				
-				// Calculate the current velocity
+
 				mario.xa = (marioFloatPos[0] - lastX) * 0.89f;
 				mario.ya = (marioFloatPos[1] - lastY) * 0.89f;
 				// If the speeds is too high, set to max speed
 				if (mario.xa > Node.maxSpeed) mario.xa = Node.maxSpeed;
 				if (mario.ya > Node.maxSpeed) mario.ya = Node.maxSpeed;
-	
+				
+				LevelScene.level = new Level(1500, 15);
+				levelScene.setup(this.observation, environment.getEnemiesFloatPos());
+				levelScene.addSprite(mario);	
+				
+				// Calculate the current velocity
 				// Set the variables with the data from the environment 
 				mario.mayJump = isMarioAbleToJump || action[Mario.KEY_JUMP];
 				mario.canJump = isMarioAbleToJump || action[Mario.KEY_JUMP];
 				mario.onGround = isMarioOnGround;
 				
 				// Create graph starting point and set goal
-				head = new Node(levelScene, mario, null, currentAction);
+				head = new Node(levelScene, null, null, currentAction);
 				Node.setHead(head);
 				Node.setGoal(marioFloatPos[0] + 250f);
 				
@@ -183,17 +183,17 @@ public class AstarAgent extends KeyAdapter implements Agent {
 			currentAction[Mario.KEY_JUMP] = true;
 			currentAction[Mario.KEY_SPEED] = true;
 			levelScene = new LevelScene();
-			levelScene.level = new Level(1500, 15);
+			LevelScene.level = new Level(1500, 15);
 			levelScene.setup(this.observation, enemiesFloatPos);
 			mario = levelScene.mario;	
 			levelScene.addSprite(mario);			
 			mario.x = marioFloatPos[0];
 			mario.y = marioFloatPos[1];
-			head = new Node(null, levelScene, mario, null, currentAction);
+			head = new Node(null, levelScene, currentAction);
 		}
 		else
 		{
-			levelScene.level.map = this.observation;
+			LevelScene.level.map = this.observation;
 		}
 		
 //		mario.x = marioFloatPos[0];
@@ -344,7 +344,7 @@ public class AstarAgent extends KeyAdapter implements Agent {
 			printMario();
 			break;
 		case KeyEvent.VK_7:
-			runSimulation = true;
+			runSimulation = true;		// Start a simulation when 7 is pressed
 			break;
 		case KeyEvent.VK_6:
 			System.out.println("Next goal: " + Node.goal + "\tMario X pos: " + marioFloatPos[0]);
@@ -357,9 +357,9 @@ public class AstarAgent extends KeyAdapter implements Agent {
 	 */
 	public void printLevelGrid()
 	{
-		for (int i = 0; i <  head.levelScene.level.map.length; i++) {
-			for (int j = 0; j <  head.levelScene.level.map[0].length; j++) {
-					System.out.format("%5d ", head.levelScene.level.getBlock(i, j));
+		for (int i = 0; i <  LevelScene.level.map.length; i++) {
+			for (int j = 0; j <  LevelScene.level.map[0].length; j++) {
+					System.out.format("%5d ", LevelScene.level.getBlock(i, j));
 			}
 			System.out.println();
 		}

@@ -184,12 +184,12 @@ public class NodeTest {
 	@Test
 	public void testPrintAction() {
 		boolean[] action = new boolean[Environment.numberOfKeys];
-		assertEquals("R: f \tL: f \tJ: f \tS: f", Node.getActionAsString(action));
+		assertEquals("R: f \tL: f \tJ: f \tS: f\t", Node.getActionAsString(action));
 	
 		for (int i = 0; i < action.length; i++) {
 			action[i] = true;
 		}
-		assertEquals("R: t \tL: t \tJ: t \tS: t", Node.getActionAsString(action));
+		assertEquals("R: t \tL: t \tJ: t \tS: t\t", Node.getActionAsString(action));
 	}
 
 	/**

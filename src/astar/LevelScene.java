@@ -1,32 +1,4 @@
-/*
- * Copyright (c) 2009-2010, Sergey Karakovskiy and Julian Togelius
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *  Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *  Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- *  Neither the name of the Mario AI nor the
- * names of its contributors may be used to endorse or promote products
- * derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- */
-
 package astar;
-
 
 import java.awt.Point;
 import java.io.DataInputStream;
@@ -37,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.lang.Cloneable;
+
+import com.sun.xml.internal.ws.api.pipe.Engine;
 
 import astar.level.Level;
 import astar.level.SpriteTemplate;
@@ -52,10 +26,15 @@ import astar.sprites.SpriteContext;
 import ch.idsia.benchmark.mario.engine.GlobalOptions;
 import ch.idsia.tools.MarioAIOptions;
 
+/**
+ * The level scene class. Contains the given level, which is stored in the Level object, 
+ * as well as the Mario and enemies object.
+ */
 public final class LevelScene implements SpriteContext, Cloneable
 {
 	//debug flags
-	boolean debugAddEnemies = true;
+	int debugSetBlocks = 0; // 1 prints 19:19 environment and set data. 2 also prints whole level
+	boolean debugSetEnemies = false;
 
 	public static final int cellSize = 16;
 
@@ -92,7 +71,9 @@ public final class LevelScene implements SpriteContext, Cloneable
 	//    public int getTimeLimit() {  return timeLimit; }
 
 	public void setTimeLimit(int timeLimit)
-	{ this.timeLimit = timeLimit; }
+	{ 
+		this.timeLimit = timeLimit; 
+	}
 
 	private int timeLimit = 200;
 
@@ -125,7 +106,7 @@ public final class LevelScene implements SpriteContext, Cloneable
 		// This (last) Mario should be a clone for all the node instances
 		this.mario = new Mario(this);
 		this.mario.levelScene = this;
-//		this.addSprite(mario);
+		//		this.addSprite(mario);
 
 		startTime = 1;
 		timeLeft = 3000;
@@ -136,15 +117,23 @@ public final class LevelScene implements SpriteContext, Cloneable
 	public Object clone() 
 	{
 		LevelScene clone = null;
-		try {
+		try 
+		{
 			clone = (LevelScene) super.clone();
-		// Copy mario and other objects
-		clone.mario = (Mario) this.mario.clone();
-		clone.mario.levelScene = clone;
-
-		// Clone the list of sprites
-		clone.sprites = new ArrayList<Sprite>();
-		} catch (CloneNotSupportedException e) {
+			
+			// Copy Mario and other objects
+			clone.mario = (Mario) this.mario.clone();
+			clone.mario.levelScene = clone;
+	
+			// Clone the list of sprites into the new object
+			clone.sprites = new ArrayList<Sprite>();
+			for (Sprite sprite : this.sprites)
+			{
+				clone.sprites.add((Sprite)sprite.clone());
+			}
+		} 
+		catch (CloneNotSupportedException e) 
+		{
 			e.printStackTrace();
 		}
 		return clone;
@@ -205,116 +194,29 @@ public final class LevelScene implements SpriteContext, Cloneable
 
 	public void tick()
 	{
-		if (GlobalOptions.isGameplayStopped)
-			return;
-
 		timeLeft--;
 		if (timeLeft == 0)
 			mario.die("Time out!");
-		xCamO = xCam;
-		yCamO = yCam;
-
+		
 		if (startTime > 0)
-		{
 			startTime++;
-		}
-
-		float targetXCam = mario.x - 160;
-
-		xCam = targetXCam;
-
-		if (xCam < 0) xCam = 0;
-		if (xCam > level.length * cellSize - GlobalOptions.VISUAL_COMPONENT_WIDTH)
-			xCam = level.length * cellSize - GlobalOptions.VISUAL_COMPONENT_WIDTH;
-
+	
 		fireballsOnScreen = 0;
 
-		for (Sprite sprite : sprites)
-		{
-			if (sprite != mario)
-			{
-				float xd = sprite.x - xCam;
-				float yd = sprite.y - yCam;
-				if (xd < -64 || xd > GlobalOptions.VISUAL_COMPONENT_WIDTH + 64 || yd < -64 || yd > GlobalOptions.VISUAL_COMPONENT_HEIGHT + 64)
-				{
-					removeSprite(sprite);
-				} else
-				{
-					if (sprite instanceof Fireball)
-						fireballsOnScreen++;
-				}
-			}
-		}
-
 		tickCount++;
-		level.tick();
 
-		//            boolean hasShotCannon = false;
-		//            int xCannon = 0;
-
-		for (int x = (int) xCam / cellSize - 1; x <= (int) (xCam + this.width) / cellSize + 1; x++)
-			for (int y = (int) yCam / cellSize - 1; y <= (int) (yCam + this.height) / cellSize + 1; y++)
+		for (Sprite sprite : sprites)
+		{			
+			if (!(sprite instanceof Mario))
 			{
-				int dir = 0;
-
-				if (x * cellSize + 8 > mario.x + cellSize) dir = -1;
-				if (x * cellSize + 8 < mario.x - cellSize) dir = 1;
-
-				SpriteTemplate st = level.getSpriteTemplate(x, y);
-
-				if (st != null)
-				{
-					//                        if (st.getType() == Sprite.KIND_SPIKY)
-					//                        {
-					//                            System.out.println("here");
-					//                        }
-
-					if (st.lastVisibleTick != tickCount - 1)
-					{
-						if (st.sprite == null || !sprites.contains(st.sprite))
-							st.spawn(this, x, y, dir);
-					}
-
-					st.lastVisibleTick = tickCount;
-				}
-
-				if (dir != 0)
-				{
-					byte b = level.getBlock(x, y);
-					if (((Level.TILE_BEHAVIORS[b & 0xff]) & Level.BIT_ANIMATED) > 0)
-					{
-						if ((b % cellSize) / 4 == 3 && b / cellSize == 0)
-						{
-							if ((tickCount - x * 2) % 100 == 0)
-							{
-								//                                    xCannon = x;
-								addSprite(new BulletBill(this, x * cellSize + 8 + dir * 8, y * cellSize + 15, dir));
-
-								//                                    hasShotCannon = true;
-							}
-						}
-					}
-				}
+				sprite.tick();
 			}
-
-		for (Sprite sprite : sprites)
-			sprite.tick();
-
-		byte levelElement = level.getBlock(mario.mapX, mario.mapY);
-		if (levelElement == (byte) (13 + 3 * 16) || levelElement == (byte) (13 + 5 * 16))
-		{
-			if (levelElement == (byte) (13 + 5 * 16))
-				mario.setOnTopOfLadder(true);
-			else
-				mario.setInLadderZone(true);
-		} else if (mario.isInLadderZone())
-		{
-			mario.setInLadderZone(false);
-		}
-
-
-		for (Sprite sprite : sprites)
+			else 
+			{
+				 System.out.println();
+			}
 			sprite.collideCheck();
+		}
 
 		for (Shell shell : shellsToCheck)
 		{
@@ -328,7 +230,6 @@ public final class LevelScene implements SpriteContext, Cloneable
 						{
 							mario.carried = null;
 							mario.setRacoon(false);
-							//System.out.println("sprite = " + sprite);
 							shell.die();
 							++this.killedCreaturesTotal;
 						}
@@ -407,7 +308,7 @@ public final class LevelScene implements SpriteContext, Cloneable
 			if (canBreakBricks)
 			{
 				level.setBlock(x, y, (byte) 0);
-							
+
 			} else
 			{
 				level.setBlockData(x, y, (byte) 4);
@@ -518,58 +419,60 @@ public final class LevelScene implements SpriteContext, Cloneable
 		return marioFloatPos;
 	}
 
-	public int getMarioMode()
-	{ return mario.getMode(); }
+	public int getMarioMode() {
+		return mario.getMode();
+	}
 
-	public boolean isMarioCarrying()
-	{ return mario.carried != null; }
+	public boolean isMarioCarrying() {
+		return mario.carried != null;
+	}
 
-	public int getLevelDifficulty()
-	{ return levelDifficulty; }
+	public int getLevelDifficulty() {
+		return levelDifficulty;
+	}
 
-	public long getLevelSeed()
-	{ return levelSeed; }
+	public long getLevelSeed() {
+		return levelSeed;
+	}
 
-	public int getLevelLength()
-	{ return levelLength; }
+	public int getLevelLength() {
+		return levelLength;
+	}
 
-	public int getLevelHeight()
-	{ return levelHeight; }
+	public int getLevelHeight() {
+		return levelHeight;
+	}
 
-	public int getLevelType()
-	{ return levelType; }
+	public int getLevelType() {
+		return levelType;
+	}
 
-
-	public void addMemoMessage(final String memoMessage)
-	{
+	public void addMemoMessage(final String memoMessage) {
 		memo += memoMessage;
 	}
 
 	public Point getMarioInitialPos() {
 		return marioInitialPos;
 	}
-	public int getGreenMushroomMode()
-	{
+
+	public int getGreenMushroomMode() {
 		return greenMushroomMode;
 	}
 
-	public int getBonusPoints()
-	{
+	public int getBonusPoints() {
 		return bonusPoints;
 	}
 
-	public void setBonusPoints(final int bonusPoints)
-	{
+	public void setBonusPoints(final int bonusPoints) {
 		this.bonusPoints = bonusPoints;
 	}
 
-	public void appendBonusPoints(final int superPunti)
-	{
+	public void appendBonusPoints(final int superPunti) {
 		bonusPoints += superPunti;
 	}
 
 	public void setup(byte[][] levelSceneObservationZ, float[] enemiesFloatPos) {
-//		this.level.map = levelSceneObservationZ;
+		//		this.level.map = levelSceneObservationZ;
 		this.setLevelScene(levelSceneObservationZ);
 		setEnemiesFloatPos(enemiesFloatPos);
 	}
@@ -578,35 +481,230 @@ public final class LevelScene implements SpriteContext, Cloneable
 	 * Set levelscene data based on the information from the interface
 	 * @param levelSceneObservationZ
 	 */
-	private void setLevelScene(byte[][] levelSceneObservationZ) {
-		//this.level.map = levelSceneObservationZ;
+	private void setLevelScene(byte[][] obs) {
+
+		for(int i=0; i<19; i++){
+			for(int j=0; j<19; j++){
+				byte b = obs[i][j];
+				if(b==-60)
+					b=-127;
+				int x = (int)(mario.x/16+j-9);
+				int y = (int)(mario.y/16+i-9);
+				level.setBlock(x, y, b);
+			}
+		}
+		if(debugSetBlocks>0){
+			System.out.println();
+			System.out.println("Data original/copy");
+			System.out.println(mario.x + " : " + mario.y);
+			System.out.println();
+			boolean printColumnNr = true;
+			for(int i=0; i<19; i++){
+				for(int j=0; j<19; j++){
+					if(printColumnNr){
+						String nr = Integer.toString((int)(mario.x/16+j-9));
+						System.out.printf("|%7s%-8s",nr,"");
+					}
+					else{
+						int x = (int)(mario.x/16+j-9);
+						int y = (int)(mario.y/16+i-9);
+						String c = "["+level.getBlock(x, y)+"]";
+						String o = "["+ch.idsia.benchmark.mario.engine.level.Level.GetBlock(x, y)+"]";
+						System.out.printf("|%7s/%-7s", o,c);
+					}
+				}
+				printColumnNr = false;
+				System.out.println("");
+			}
+
+			System.out.println();
+			System.out.println();
+			System.out.println("**********************************************************************************************");
+			System.out.println();
+
+			if(debugSetBlocks>1){
+				System.out.println();
+				System.out.println("Whole level");
+				System.out.println();
+				printColumnNr = true;
+				for(int i=0; i<19; i++){
+					for(int j=0; j<1500; j++){
+						int x = j;
+						int y = i;
+						if(printColumnNr){
+							String nr = Integer.toString(j);
+							System.out.printf("|%7s%-8s",nr,"");
+						}
+						else{
+							String o = "["+ch.idsia.benchmark.mario.engine.level.Level.GetBlock(x, y)+"]";
+							System.out.printf("|%7s/%-7s", o,0);
+						}
+					}
+					printColumnNr = false;
+					System.out.println("");
+				}
+
+				System.out.println();
+				System.out.println();
+				System.out.println("**********************************************************************************************");
+				System.out.println();
+			}
+		}
 	}
 
+	//    public boolean setLevelScene(byte[][] data)
+	//    {
+	//        int HalfObsWidth = 11;
+	//        int HalfObsHeight = 11;
+	//        int MarioXInMap = (int)mario.x/16;
+	//        int MarioYInMap = (int)mario.y/16;
+	//        boolean gapAtLast = true;
+	//        boolean gapAtSecondLast = true;
+	//        int lastEventX = 0;
+	//        int[] heights = new int[22];
+	//        for(int i = 0; i < heights.length; i++)
+	//        	heights[i] = 0;
+	//        
+	//        int gapBorderHeight = 0;
+	//        int gapBorderMinusOneHeight = 0;
+	//        int gapBorderMinusTwoHeight = 0;
+	//        
+	//        for (int y = MarioYInMap - HalfObsHeight, obsX = 0; y < MarioYInMap + HalfObsHeight; y++, obsX++)
+	//        {
+	//            for (int x = MarioXInMap - HalfObsWidth, obsY = 0; x < MarioXInMap + HalfObsWidth; x++, obsY++)
+	//            {
+	//                if (x >=0 && x <= level.xExit && y >= 0 && y < level.height)
+	//                {
+	//                	byte datum = data[obsX][obsY];
+	//                	
+	//                 	if (datum != 0 && datum != -10 && datum != 1 && obsY > lastEventX)
+	//                	{
+	//                 		lastEventX = obsY;
+	//                	}
+	//                 	if (datum != 0 && datum != 1)
+	//                	{
+	//                		if (heights[obsY] == 0)
+	//                		{
+	//                			heights[obsY] = y;
+	//                		}
+	//                	}
+	//                 	
+	//                	// cannon detection: if there's a one-block long hill, it's a cannon!
+	//                 	// i think this is not required anymore, because we get the cannon data straight from the API.
+	//                	if (x == MarioXInMap + HalfObsWidth - 3 &&
+	//                			datum != 0 && y > 5)
+	//                	{
+	//
+	//                		if (gapBorderMinusTwoHeight == 0)
+	//                			gapBorderMinusTwoHeight = y;
+	//                	}
+	//                	if (x == MarioXInMap + HalfObsWidth - 2 &&
+	//                			datum != 0 && y > 5)
+	//                	{
+	//                		if (gapBorderMinusOneHeight == 0)
+	//                			gapBorderMinusOneHeight = y;
+	//                		gapAtSecondLast = false;
+	//                	}
+	//                	if (x == MarioXInMap + HalfObsWidth - 1 &&
+	//                			datum != 0 && y > 5)
+	//                	{
+	//
+	//                		if (gapBorderHeight == 0)
+	//                			gapBorderHeight = y;
+	//                		gapAtLast = false;
+	//                	}
+	//                	
+	//                    if (datum != 1 && level.getBlock(x, y) != 14) 
+	//                    	level.setBlock(x, y, datum);
+	//                }
+	//            }
+	//        }
+	//        if (gapBorderHeight == gapBorderMinusTwoHeight && gapBorderMinusOneHeight < gapBorderHeight)
+	//        {
+	//        	// found a cannon!
+	//        	//System.out.println("Got a cannon!");
+	//        	level.setBlock(MarioXInMap + HalfObsWidth - 2,gapBorderMinusOneHeight, (byte)14);
+	//        }
+	//        if (gapAtLast && !gapAtSecondLast)
+	//        {
+	//        	// found a gap. 
+	//        	int holeWidth = 3;
+	//
+	//    		// make the gap wider before we see the end to allow ample time for the 
+	//        	// planner to jump over.
+	//        	for(int i = 0; i < holeWidth; i++)
+	//        	{
+	//            	for(int j = 0; j < 15; j++)
+	//            	{
+	//            		level.setBlock(MarioXInMap + HalfObsWidth + i, j, (byte) 0);
+	//            	}
+	//            	level.isGap[MarioXInMap + HalfObsWidth + i] = true;
+	//            	level.gapHeight[MarioXInMap + HalfObsWidth + i] = gapBorderMinusOneHeight;
+	//        	}
+	//        	for(int j = gapBorderMinusOneHeight; j < 16; j++)
+	//        	{
+	//        		level.setBlock(MarioXInMap + HalfObsWidth + holeWidth, gapBorderMinusOneHeight, (byte) 4);
+	//        	}
+	//        	return true;
+	//        }
+	//    	return false;
+	//    }
+
 	//adding enemy sprites and fireballs etc
+	/**
+	 * Create objects for the enemies in the game from the enemies float array. 
+	 * @param enemiesFloatPos The array with all the information of the enemies in the game
+	 */
 	public void setEnemiesFloatPos(float[] enemiesFloatPos)
 	{
-		for(int i=0; i<enemiesFloatPos.length; i+=3){
+		for(int i = 0; i < enemiesFloatPos.length; i += 3){
 
-			int kind = (int)enemiesFloatPos[i];
-			float x = enemiesFloatPos[i+1];
-			float y = enemiesFloatPos[i+2];
+			int type = (int)enemiesFloatPos[i];
+			float x = enemiesFloatPos[i + 1];
+			float y = enemiesFloatPos[i + 2];
 
-			int type = -1;
 			boolean winged = false;
 
+			switch (type) 
+			{
+				case (Sprite.KIND_GOOMBA_WINGED):
+				case (Sprite.KIND_GREEN_KOOPA_WINGED):
+				case (Sprite.KIND_RED_KOOPA_WINGED):
+				case (Sprite.KIND_SPIKY_WINGED):
+					winged = true;
+					break;
+				case (Sprite.KIND_BULLET_BILL):
+				case (Sprite.KIND_SHELL):
+				case (Sprite.KIND_GOOMBA):
+				case (Sprite.KIND_ENEMY_FLOWER):
+				case (Sprite.KIND_GREEN_KOOPA):
+				case (Sprite.KIND_RED_KOOPA):
+				case (Sprite.KIND_SPIKY):
+				case (Sprite.KIND_WAVE_GOOMBA):
+				default:
+					winged = false;
+			}
 //			switch (kind) {
-//			case(Sprite.KIND_BULLET_BILL): type = -2;
-//			break;
-//			case(Sprite.KIND_SHELL): type = Enemy.KIND_SHELL;
-//			break;
-//			case(Sprite.KIND_GOOMBA): type = Enemy.ENEMY_GOOMBA;
-//			break;
-//			case(Sprite.KIND_GOOMBA_WINGED): type = Enemy.ENEMY_GOOMBA; winged = true;
-//			break;
-//			case(Sprite.KIND_GREEN_KOOPA): type = Enemy.ENEMY_GREEN_KOOPA;
-//			break;
-//			case(Sprite.KIND_GREEN_KOOPA_WINGED): type = Enemy.ENEMY_GREEN_KOOPA; winged = true;
-//			break;
+//			case(Sprite.KIND_BULLET_BILL): 
+//				type = -2;
+//				break;
+//			case(Sprite.KIND_SHELL): 
+//				type = Enemy.KIND_SHELL;
+//				break;
+//			case(Sprite.KIND_GOOMBA): 
+//				type = Enemy.KIND_GOOMBA;
+//				break;
+//			case(Sprite.KIND_GOOMBA_WINGED): 
+//				type = Enemy.KIND_GOOMBA_WINGED; 
+//				winged = true;
+//				break;
+//			case(Sprite.KIND_GREEN_KOOPA): 
+//				type = Enemy.KIND_GREEN_KOOPA;
+//				break;
+//			case(Sprite.KIND_GREEN_KOOPA_WINGED): 
+//				type = Enemy.KIND_GREEN_KOOPA_WINGEDE; 
+//				winged = true;
+//				break;
 //			case(Sprite.KIND_RED_KOOPA): type = Enemy.ENEMY_RED_KOOPA;
 //			break;
 //			case(Sprite.KIND_RED_KOOPA_WINGED): type = Enemy.ENEMY_RED_KOOPA; winged = true;
@@ -618,24 +716,26 @@ public final class LevelScene implements SpriteContext, Cloneable
 //			default : type=-1;
 //			break;
 //			}
-//			if(type==-1){
-//				System.out.println("oh shit type -1");
-//			}
-//			else{
-//				sprite = new Enemy(this, x, y, -1, type, winged, (int) x/16, (int) y/16);
-//			}
-//
-//			sprite.spriteTemplate =  new SpriteTemplate(type, winged);
-//			sprites.add(sprite);
+			Sprite sprite = null;
+			if(type == -1)
+			{
+				System.out.println("oh shit type -1");
+			}
+			else
+			{
+				sprite = new Enemy(this, x, y, -1, type, winged, (int) x/16, (int) y/16);
+			}
+
+			sprite.spriteTemplate =  new SpriteTemplate(type);
+			sprites.add(sprite);
 
 		}
 
-		if(debugAddEnemies){
-//			System.out.println("-------------\n");
+		if (debugSetEnemies){
 			for(Sprite s : sprites){
-				System.out.println("kind: " + (int)s.kind+", Coordinate: " + s.x + "," + s.y + "\n ");			
+				System.out.println("kind: " + (int) s.kind + ", Coordinate: " + s.x + "," + s.y);			
 			}
-//			System.out.println("-------------\n");
+			System.out.println();
 		}
 	}
 
