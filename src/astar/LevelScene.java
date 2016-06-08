@@ -41,6 +41,9 @@ public final class LevelScene implements SpriteContext, Cloneable
 	public List<Sprite> sprites = new ArrayList<Sprite>();
 	private List<Sprite> spritesToAdd = new ArrayList<Sprite>();
 	private List<Sprite> spritesToRemove = new ArrayList<Sprite>();
+	
+	// The position and kind of the enemies
+	public float[] enemies;
 
 	public static Level level;
 	public Mario mario;
@@ -144,26 +147,25 @@ public final class LevelScene implements SpriteContext, Cloneable
 		enemiesFloatsList.clear();
 		for (Sprite sprite : sprites)
 		{
-			// TODO:[M]: add unit tests for getEnemiesFloatPos involving all kinds of creatures
 			if (sprite.isDead()) continue;
 			switch (sprite.kind)
 			{
-			case Sprite.KIND_GOOMBA:
-			case Sprite.KIND_BULLET_BILL:
-			case Sprite.KIND_ENEMY_FLOWER:
-			case Sprite.KIND_GOOMBA_WINGED:
-			case Sprite.KIND_GREEN_KOOPA:
-			case Sprite.KIND_GREEN_KOOPA_WINGED:
-			case Sprite.KIND_RED_KOOPA:
-			case Sprite.KIND_RED_KOOPA_WINGED:
-			case Sprite.KIND_SPIKY:
-			case Sprite.KIND_SPIKY_WINGED:
-			case Sprite.KIND_SHELL:
-			{
-				enemiesFloatsList.add((float) sprite.kind);
-				enemiesFloatsList.add(sprite.x - mario.x);
-				enemiesFloatsList.add(sprite.y - mario.y);
-			}
+				case Sprite.KIND_GOOMBA:
+				case Sprite.KIND_BULLET_BILL:
+				case Sprite.KIND_ENEMY_FLOWER:
+				case Sprite.KIND_GOOMBA_WINGED:
+				case Sprite.KIND_GREEN_KOOPA:
+				case Sprite.KIND_GREEN_KOOPA_WINGED:
+				case Sprite.KIND_RED_KOOPA:
+				case Sprite.KIND_RED_KOOPA_WINGED:
+				case Sprite.KIND_SPIKY:
+				case Sprite.KIND_SPIKY_WINGED:
+				case Sprite.KIND_SHELL:
+				{
+					enemiesFloatsList.add((float) sprite.kind);
+					enemiesFloatsList.add(sprite.x - mario.x);
+					enemiesFloatsList.add(sprite.y - mario.y);
+				}
 			}
 		}
 
@@ -327,9 +329,15 @@ public final class LevelScene implements SpriteContext, Cloneable
 		}
 	}
 
-	public int getTimeSpent() { return startTime / GlobalOptions.mariosecondMultiplier; }
+	public int getTimeSpent() 
+	{
+		return startTime / GlobalOptions.mariosecondMultiplier;
+	}
 
-	public int getTimeLeft() { return timeLeft / GlobalOptions.mariosecondMultiplier; }
+	public int getTimeLeft() 
+	{
+		return timeLeft / GlobalOptions.mariosecondMultiplier;
+	}
 
 	public int getKillsTotal()
 	{
@@ -402,11 +410,15 @@ public final class LevelScene implements SpriteContext, Cloneable
 		return ret;
 	}
 
-	public boolean isMarioOnGround()
-	{ return mario.isOnGround(); }
+	public boolean isMarioOnGround() 
+	{
+		return mario.isOnGround();
+	}
 
-	public boolean isMarioAbleToJump()
-	{ return mario.mayJump(); }
+	public boolean isMarioAbleToJump() 
+	{
+		return mario.mayJump();
+	}
 
 	public float[] getMarioFloatPos()
 	{
@@ -467,9 +479,14 @@ public final class LevelScene implements SpriteContext, Cloneable
 		bonusPoints += superPunti;
 	}
 
+	/**
+	 * Used to update the levelgrid and the enemies in the level
+	 * @param levelSceneObservationZ The grid of the level. This should contain the data of where
+	 * blocks and the ground are.
+	 * @param enemiesFloatPos Kind and position of the enemies in the level 
+	 */
 	public void setup(byte[][] levelSceneObservationZ, float[] enemiesFloatPos) {
-		//		this.level.map = levelSceneObservationZ;
-		this.setLevelScene(levelSceneObservationZ);
+		setLevelScene(levelSceneObservationZ);
 		setEnemiesFloatPos(enemiesFloatPos);
 	}
 
@@ -653,6 +670,7 @@ public final class LevelScene implements SpriteContext, Cloneable
 	 */
 	public void setEnemiesFloatPos(float[] enemiesFloatPos)
 	{
+		enemies = enemiesFloatPos;
 		for(int i = 0; i < enemiesFloatPos.length; i += 3){
 
 			int type = (int)enemiesFloatPos[i];

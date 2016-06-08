@@ -127,7 +127,6 @@ public final class Mario extends Sprite implements Cloneable
 		try {
 			clone = (Mario) super.clone();
 		} catch (CloneNotSupportedException e) {
-			// TODO Auto-generated catch block
 			clone = new Mario(levelScene);
 		}
 		// Important to copy keys, else we will operate on the same array object
@@ -139,6 +138,7 @@ public final class Mario extends Sprite implements Cloneable
 		clone.mayJump = this.mayJump;
 		clone.onGround = this.onGround;
 		
+		// Insure everything is copied correctly
 		clone.xa = this.xa;
 		clone.ya = this.ya;
 		clone.yaa = this.yaa;
@@ -207,7 +207,7 @@ public final class Mario extends Sprite implements Cloneable
 	public void move()
 	{
 		if (mapY > -1 && isTrace)
-			++levelScene.level.marioTrace[this.mapX][this.mapY];
+			++LevelScene.level.marioTrace[this.mapX][this.mapY];
 
 		if (winTime > 0)
 		{
@@ -343,7 +343,7 @@ public final class Mario extends Sprite implements Cloneable
 		move(xa, 0);
 		move(0, ya);
 
-		if (y > levelScene.level.height * LevelScene.cellSize + LevelScene.cellSize)
+		if (y > LevelScene.level.height * LevelScene.cellSize + LevelScene.cellSize)
 			die("Gap");
 
 		if (x < 0)
@@ -352,15 +352,15 @@ public final class Mario extends Sprite implements Cloneable
 			xa = 0;
 		}
 
-		if (mapX >= levelScene.level.xExit && mapY <= levelScene.level.yExit)
+		if (mapX >= LevelScene.level.xExit && mapY <= LevelScene.level.yExit)
 		{
-			x = (levelScene.level.xExit + 1) * LevelScene.cellSize;
+			x = (LevelScene.level.xExit + 1) * LevelScene.cellSize;
 			win();
 		}
 
-		if (x > levelScene.level.length * LevelScene.cellSize)
+		if (x > LevelScene.level.length * LevelScene.cellSize)
 		{
-			x = levelScene.level.length * LevelScene.cellSize;
+			x = LevelScene.level.length * LevelScene.cellSize;
 			xa = 0;
 		}
 
@@ -499,8 +499,8 @@ public final class Mario extends Sprite implements Cloneable
 		block = ch.idsia.benchmark.mario.engine.level.Level.GetBlock(x, y);
 		}
 		else{
-			blocking = levelScene.level.isBlocking(x, y, xa, ya);
-			block = levelScene.level.getBlock(x, y);
+			blocking = LevelScene.level.isBlocking(x, y, xa, ya);
+			block = LevelScene.level.getBlock(x, y);
 		}
 		
 		
@@ -511,7 +511,7 @@ public final class Mario extends Sprite implements Cloneable
 		if (((Level.TILE_BEHAVIORS[block & 0xff]) & Level.BIT_PICKUPABLE) > 0)
 		{
 			this.gainCoin();
-			levelScene.level.setBlock(x, y, (byte) 0);	
+			LevelScene.level.setBlock(x, y, (byte) 0);	
 		}
 
 		if (blocking && ya < 0)

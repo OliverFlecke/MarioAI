@@ -11,7 +11,7 @@ import ch.idsia.benchmark.mario.environments.Environment;
  */
 public class Node implements Comparable<Node> {
 
-	private static boolean debug = true;	// True, if the program should output debug data
+	private static boolean debug = false;	// True, if the program should output debug data
 	
 	private static int timeLimit = 33;		// Any larger, and the game seem to lack 
 	public static int nodeCount = 0;		// Counter to keep track of the number of generated nodes
@@ -23,7 +23,7 @@ public class Node implements Comparable<Node> {
 	// Coordinates of the node
 	public float x, y;	
 	
-	
+	private static float alpha = 0.5f;		// Factor to modify the heuristic 
 	public float fitness = 0f;				// Overall rating of this option 
 	public int depth;						// Depth of the current node
 	private boolean[] action;				// Action that are done in this node
@@ -32,6 +32,7 @@ public class Node implements Comparable<Node> {
 	public Mario mario;						// The Mario object 
 	public final static float maxSpeed = 10.9090909f;	// The max speed that Mario can reach
 	
+	// The level scene used for this simulation
 	public LevelScene levelScene;
 	
 	// Graph pointers 
@@ -43,10 +44,8 @@ public class Node implements Comparable<Node> {
 	/**
 	 * Create a new node, which should have everything needed to compute next frame
 	 * @param parent of the current node
-	 * @param levelScene
-	 * @param mario
-	 * @param enemies
-	 * @param action
+	 * @param levelScene A copy of the level sceneS
+	 * @param action which Mario should take in this simulation
 	 */
 	public Node(Node parent, LevelScene levelScene, boolean[] action) 
 	{
@@ -58,15 +57,15 @@ public class Node implements Comparable<Node> {
 		if (this.parent == null) depth = 0;
 		else depth = parent.depth + 1;
 		
-		// Copy these elements, don't just save the pointers 
-		this.mario = levelScene.mario; 
+		// The elements should have been copied before they were passed
 		this.levelScene = levelScene;
+		this.mario = levelScene.mario; 
 			
 		this.action = action;
 		// Update Mario
 		this.mario.keys = action;
 		this.x = mario.x;
-		this.y = mario.y;	
+		this.y = mario.y;
 	}
 
 	/**
@@ -101,21 +100,17 @@ public class Node implements Comparable<Node> {
 	{
 		this.levelScene.tick();
 		this.mario.tick();
-		this.mario.collideCheck();
 	}
-	
-	// Helper variables to the fitness evaluations 
-	private static float alpha = 0.5f;
 
 	/**
-	 *  The function to evaluate the current nodes fitness.
+	 *  The function to evaluate the nodes fitness.
 	 */
 	public void fitnessEvaluation()
 	{
 		// Evaluate the simulation
 		this.tick();
 		
-		// Error handling for unknown error
+		// Error handling for unknown error were Mario get a constant x coordinate
 		if (mario.x == 816f)
 		{
 			mario.x = (this.x + mario.xa * 1.12f);
@@ -131,16 +126,16 @@ public class Node implements Comparable<Node> {
 		{
 			this.fitness = Float.MAX_VALUE;
 		}
-//		else if (mario.yaa > maxSpeed - 5)	// To help avoid falling down
-//		{
-//			this.fitness = Float.MAX_VALUE;
-//		}
+		else if (checkCollision())
+		{
+			this.fitness = Float.MAX_VALUE;
+		}
 		else 
 		{
 			this.fitness = getHeuristic(this);
 		}
 	}
-	
+
 	/**
 	 * Get the heuristic for a given node
 	 * @param node to get the heuristic value from
@@ -197,6 +192,7 @@ public class Node implements Comparable<Node> {
 				if (debug) System.out.println("Out of time!");
 				break;
 			}
+			
 			// Generate the children for this node
 			generateNodes(current, queue);
 			if (queue.isEmpty()) break;	// If there are no more options, end the search
@@ -209,9 +205,8 @@ public class Node implements Comparable<Node> {
 		}
 		
 		if (debug)
-		{			
 			System.out.println("Depth: " + best.depth + " Fitness: " + best.fitness);
-		}
+		
 		return getActionPath(best);
 	}
 	
@@ -227,7 +222,6 @@ public class Node implements Comparable<Node> {
 		
 		// Create the different action options and place them in this list
 		List<boolean[]> options = new ArrayList<boolean[]>();
-		
 		
 		// Only created if it is possible to go right, or if Mario is in the air
 		if (current.parent == null || (Math.abs(current.x - current.parent.x) > 0.7) 
@@ -372,6 +366,47 @@ public class Node implements Comparable<Node> {
 		return 0;
 	}
 
+	/**
+	 * Check the collision between Mario and the enemies in the level scene
+	 * @return True, if Mario has collided with any enemy
+	 */
+	public boolean checkCollision() 
+	{
+//		for (Sprite sprite : levelScene.sprites)
+//		{
+//			if (sprite.kind != Sprite.KIND_MARIO)
+//			{
+//				return Math.abs(mario.x - sprite.x) < 32 && Math.abs(mario.y - sprite.y) < 16;
+//			}
+//		}
+//		return false;
+//		for (int i = 0; i < levelScene.enemies.length; i += 3)
+//		{
+//			x = levelScene.enemies[i + 1];
+//			y = levelScene.enemies[i + 2];
+//			
+//			if (Math.abs(x - getX()) < 64 && Math.abs(y - getY()) < 64)
+//				return true;
+//		}
+		return false;
+	}
+
+	/**
+	 * Get the x coordinate of this node
+	 * @return The x coordinate of this node
+	 */
+	public float getX() {
+		return mario.x;
+	}
+	
+	/**
+	 * Get the y coordinate of this node
+	 * @return The x coordinate of this node
+	 */
+	public float getY() {
+		return mario.y;
+	}
+	
 	/**
 	 * Test to see if this node is at the goal
 	 * @return True, if this node is at the goal line
