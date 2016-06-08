@@ -35,8 +35,15 @@ public final class LevelScene implements SpriteContext, Cloneable
 	//debug flags
 	int debugSetBlocks = 0; // 1 prints 19:19 environment and set data. 2 also prints whole level
 	boolean debugSetEnemies = false;
-
+	private boolean debugGapDetection = true;
+	
+	//grid constants
 	public static final int cellSize = 16;
+	private static final float blockWidth = 16;
+	private static final float halfGrid = 9;
+	
+	//First coordinate is x, second array is 0 if gap is present else it is minimum y-coordinate
+	int[][] isGap = new int[19][2]; 
 
 	public List<Sprite> sprites = new ArrayList<Sprite>();
 	private List<Sprite> spritesToAdd = new ArrayList<Sprite>();
@@ -188,6 +195,8 @@ public final class LevelScene implements SpriteContext, Cloneable
 	}
 
 	List<Fireball> fireballsToCheck = new ArrayList<Fireball>();
+	
+
 
 	public void checkFireballCollide(Fireball fireball)
 	{
@@ -501,8 +510,8 @@ public final class LevelScene implements SpriteContext, Cloneable
 				byte b = obs[i][j];
 				if(b==-60)
 					b=-127;
-				int x = (int)(mario.x/16+j-9);
-				int y = (int)(mario.y/16+i-9);
+				int x = (int)(mario.x/blockWidth+j-halfGrid);
+				int y = (int)(mario.y/blockWidth+i-halfGrid);
 				level.setBlock(x, y, b);
 			}
 		} 
@@ -519,8 +528,8 @@ public final class LevelScene implements SpriteContext, Cloneable
 						System.out.printf("|%7s%-8s",nr,"");
 					}
 					else{
-						int x = (int)(mario.x/16+j-9);
-						int y = (int)(mario.y/16+i-9);
+						int x = (int)(mario.x/blockWidth+j-halfGrid);
+						int y = (int)(mario.y/blockWidth+i-halfGrid);
 						String c = "["+level.getBlock(x, y)+"]";
 						String o = "["+ch.idsia.benchmark.mario.engine.level.Level.GetBlock(x, y)+"]";
 						System.out.printf("|%7s/%-7s", o,c);
@@ -563,7 +572,65 @@ public final class LevelScene implements SpriteContext, Cloneable
 				System.out.println();
 			}
 		}
+		setGapDetection(obs);
 	}
+	//Checks whether an x coordinate is a gap and determines what y coordinate is lower than either side of the gap
+		private void setGapDetection(byte[][] obs) {
+						for(int i=0; i<19; i++){
+				for(int j=0; j<19; j++){
+					if(obs[j][i]==0 && isGap[i][1]==0){
+						isGap[i][1] = 0;					
+					}
+					else
+						isGap[i][1] = 1;
+				}
+			}
+			if(debugGapDetection){
+				System.out.println("Data original/copy");
+				System.out.println(mario.x + " : " + mario.y);
+				System.out.println();
+				boolean printColumnNr = true;
+				for(int i=0; i<19; i++){
+					for(int j=0; j<19; j++){
+						if(printColumnNr){
+							String nr = Integer.toString((int)(mario.x/blockWidth+j-halfGrid));
+							String gap = Boolean.toString(!(isGap[j][1]==1));
+							System.out.printf("|%7s %-7s",nr,gap);
+							System.out.flush();
+						}
+						else{
+							int x = (int)(mario.x/blockWidth+j-halfGrid);
+							int y = (int)(mario.y/blockWidth+i-halfGrid);
+							String c = "["+level.getBlock(x, y)+"]";
+							String o = "["+ch.idsia.benchmark.mario.engine.level.Level.GetBlock(x, y)+"]";
+							System.out.printf("|%7s/%-7s", o,c);
+							System.out.flush();
+						}
+					}
+					printColumnNr = false;
+					System.out.println("");
+				}
+				System.out.println();
+				System.out.println();
+				System.out.println("**********************************************************************************************");
+				System.out.println();
+			}
+
+		}
+
+		/**
+		 * 
+		 * @param node
+		 * @return Checks whether a node's x coordinate is in a gap and whether the y-coordinate is below platforms on either side returning a boolean
+		 */
+		public boolean isInGap(Node node){
+			if(isGap[(int)(node.mario.x/blockWidth)][1]==0
+					&& node.mario.y/blockWidth>12){
+				return true;
+			}
+		else
+			return false;
+		}
 
 	//    public boolean setLevelScene(byte[][] data)
 	//    {
