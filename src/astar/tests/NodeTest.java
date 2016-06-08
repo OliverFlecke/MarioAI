@@ -2,8 +2,12 @@ package astar.tests;
 
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.PriorityQueue;
+import java.util.Random;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -39,7 +43,7 @@ public class NodeTest {
 		final BasicTask bt = new BasicTask(AiOptions);
 		bt.setOptionsAndReset(AiOptions);
 		bt.runSingleEpisode(1);
-	    System.out.println(bt.getEnvironment().getEvaluationInfoAsString());
+	    //System.out.println(bt.getEnvironment().getEvaluationInfoAsString());
 	}
 
 	/**
@@ -123,7 +127,7 @@ public class NodeTest {
 		
 		
 		Node.generateNodes(node, queue);
-		Assert.assertEquals(9, queue.size());
+		Assert.assertEquals(10, queue.size());
 	}
 
 	/**
@@ -328,18 +332,44 @@ public void testLevelCompletionNoGapsNoEnemies() {
 @Test
 public void testDeterminism() {
 	
-	final MarioAIOptions AiOptions = new MarioAIOptions("-vis off -lca off -lco off -lb off -le off -ltb off -ls 22 -fps 24 -ag astar.AstarAgent");
-	final BasicTask bt = new BasicTask(AiOptions);
-	bt.setOptionsAndReset(AiOptions);
-	bt.runSingleEpisode(1);
+
+	int playThroughs = 3;	
+	int[] times = new int[playThroughs];
+	int[] fitnessScores = new int[playThroughs];
 	
-	EvaluationInfo evalInfo = bt.getEnvironment().getEvaluationInfo();
+	for (int i=0;i <playThroughs;i++){
+		
+		final MarioAIOptions AiOptions = new MarioAIOptions("-vis off -lca off -lco off -lb off -le off -ltb off -ls 22 -fps 24 -ag astar.AstarAgent");
+		final BasicTask bt = new BasicTask(AiOptions);
+		
+		bt.setOptionsAndReset(AiOptions);
+		bt.runSingleEpisode(1);
+		
+		EvaluationInfo evalInfo = bt.getEnvironment().getEvaluationInfo();
+		
+		times[i]=evalInfo.timeLeft;
+		fitnessScores[i] = evalInfo.computeWeightedFitness();
+		
+		
+	}
+	//check time left and print result
+
+	System.out.print("Time left in each playthrough: ");
+	for (int i=0; i < playThroughs; i++){
+		System.out.print(times[i]+", ");
+		assertEquals(true, times[0]==times[i]);
+		
+	//check weighted fitness and print result
+		
+	}
+	System.out.print("\n Fitness Score for each playthrough: ");
+	for (int i=0; i < playThroughs; i++){
+		System.out.print(fitnessScores[i]+", ");
+		assertEquals(true, fitnessScores[0]==fitnessScores[i]);
+	}
 	
-	//check time left
-	assertEquals(161, evalInfo.timeLeft);
+
 	
-	//check weighted fitness
-	assertEquals(6472, evalInfo.computeWeightedFitness());
 	
 	}
 
@@ -348,7 +378,7 @@ public void testDeterminism() {
  */
 @Test
 public void testLevelCompletionWithGapWithoutEnemies() {
-	final MarioAIOptions AiOptions = new MarioAIOptions("-vis on -lca off -lco off -lb off -le off -ltb off -ls 22 -ld 5 -fps 24 -ag astar.AstarAgent");
+	final MarioAIOptions AiOptions = new MarioAIOptions("-vis off -lca off -lco off -lb off -le off -ltb off -ls 22 -ld 5 -fps 24 -ag astar.AstarAgent");
 	final BasicTask bt = new BasicTask(AiOptions);
 	bt.setOptionsAndReset(AiOptions);
 	bt.runSingleEpisode(1);
@@ -360,6 +390,96 @@ public void testLevelCompletionWithGapWithoutEnemies() {
 	
     assertEquals(1, evalInfo.marioStatus);
     
+	}
+public void testMarioIsDead() {
+	
+	Node node = new Node(scene, scene.mario, null, null);
+
+	scene.mario.die("Gap");
+	
+	node.fitnessEvaluation();
+	
+	assertEquals(Float.MAX_VALUE, node.fitness, 0);
+}
+
+/**
+ * 
+ */
+@Test
+public void testCoalitionBetweenXandFitness() {
+	
+	
+//generate a random graph of nodes.
+	
+	Node topNode = new Node(scene, scene.mario, null,  Node.createAction(false, false, false, false));
+	
+	topNode.depth = 0;
+	int graphDepth = 8;
+	int numbOfParents=1;
+	Random rand = new Random();
+	
+	List<Node> nodeList = new ArrayList<Node>();
+	Node[] parentNodes = new Node[10];
+	Node.setGoal(100000f);
+	
+	for (int i=0;i<graphDepth;i++){
+		
+		
+		int numOfNodes = rand.nextInt(10)+1;
+		
+		
+		Node[] currentNodes = new Node[numOfNodes];
+		
+		for (int j=0; j<numOfNodes;j++){
+			
+			Node node = new Node(scene, scene.mario, null,  Node.createAction(false, false, false, false));
+			float randomXCoord =  rand.nextFloat() * numOfNodes + 1;
+			int randParent = rand.nextInt(numbOfParents);
+			
+			node.mario.x = randomXCoord;
+			
+			//eval fitness
+			node.fitnessEvaluation();
+			
+			
+			//setting the parent
+			if (i==0){
+				node.parent = topNode;
+			} else {
+				node.parent = parentNodes[randParent];
+			}
+			
+			//adding to array.
+			currentNodes[j] = node;
+			nodeList.add(node);
+			
+		}
+		
+		//Set current nodes to be parent nodes
+
+		parentNodes = currentNodes;
+		numbOfParents = numOfNodes;
+	}
+	
+	Node goalNode = new Node(scene, scene.mario, null,  Node.createAction(false, false, false, false));
+	goalNode.depth = graphDepth;
+	
+	
+
+
+	
+	//order nodes after decending fitness score.
+	Collections.sort(nodeList);
+	
+	//assert if the coalition between x and fitness holds
+	for (int i=1; i < nodeList.size(); i++){
+		Node prevNode = nodeList.get(i-1);
+		Node curNode = nodeList.get(i);
+		//System.out.println("X-coordinate: " + prevNode.x + " >= " + curNode.x + " Fitness: " + prevNode.fitness + " <= " + curNode.fitness);
+		assertTrue(prevNode.x >= curNode.x);
+		assertTrue(prevNode.fitness <= curNode.fitness);
+	}
+	
 	}
 
 }

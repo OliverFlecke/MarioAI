@@ -33,7 +33,7 @@ import ch.idsia.tools.MarioAIOptions;
 public final class LevelScene implements SpriteContext, Cloneable
 {
 	//debug flags
-	boolean debugSetBlocks = true;
+	int debugSetBlocks = 0; // 1 prints 19:19 environment and set data. 2 also prints whole level
 	boolean debugSetEnemies = false;
 
 	public static final int cellSize = 16;
@@ -489,7 +489,7 @@ public final class LevelScene implements SpriteContext, Cloneable
 				level.setBlock(x, y, b);
 			}
 		}
-		if(debugSetBlocks){
+		if(debugSetBlocks>0){
 			System.out.println();
 			System.out.println("Data original/copy");
 			System.out.println(mario.x + " : " + mario.y);
@@ -518,7 +518,7 @@ public final class LevelScene implements SpriteContext, Cloneable
 			System.out.println("**********************************************************************************************");
 			System.out.println();
 
-			if(false){
+			if(debugSetBlocks>1){
 				System.out.println();
 				System.out.println("Whole level");
 				System.out.println();
