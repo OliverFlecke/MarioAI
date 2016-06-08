@@ -417,3 +417,5 @@ bin/MarioAI/astar/sprites/FlowerEnemy.class
 bin/MarioAI/astar/AstarAgent.class
 *.class
 *.class
+*.class
+bin/MarioAI/astar/LevelScene.class

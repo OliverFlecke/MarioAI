@@ -488,7 +488,7 @@ public final class LevelScene implements SpriteContext, Cloneable
 				int y = (int)(mario.y/16+i-9);
 				level.setBlock(x, y, b);
 			}
-		}
+		} 
 		if(debugSetBlocks>0){
 			System.out.println();
 			System.out.println("Data original/copy");
