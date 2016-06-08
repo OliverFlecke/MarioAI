@@ -336,8 +336,8 @@ public class Node implements Comparable<Node> {
 	 */
 	public boolean[] getAction() 
 	{
-		return this.mario.keys;
-//		return this.action;
+//		return this.mario.keys;
+		return this.action;
 	}
 
 	@Override
