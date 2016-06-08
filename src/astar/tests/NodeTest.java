@@ -339,7 +339,7 @@ public void testDeterminism() {
 	
 	for (int i=0;i <playThroughs;i++){
 		
-		final MarioAIOptions AiOptions = new MarioAIOptions("-vis off -lca off -lco off -lb off -le off -ltb off -ls 22 -fps 24 -ag astar.AstarAgent");
+		final MarioAIOptions AiOptions = new MarioAIOptions("-vis on -lca off -lco off -lb off -le off -ltb off -ls 22 -fps 24 -ag astar.AstarAgent");
 		final BasicTask bt = new BasicTask(AiOptions);
 		
 		bt.setOptionsAndReset(AiOptions);
@@ -436,6 +436,7 @@ public void testCoalitionBetweenXandFitness() {
 			float randomXCoord =  rand.nextFloat() * numOfNodes + 1;
 			int randParent = rand.nextInt(numbOfParents);
 			
+			node.mario.y = 20f;
 			node.mario.x = randomXCoord;
 			
 			//eval fitness
@@ -476,9 +477,12 @@ public void testCoalitionBetweenXandFitness() {
 		Node prevNode = nodeList.get(i-1);
 		Node curNode = nodeList.get(i);
 		//System.out.println("X-coordinate: " + prevNode.x + " >= " + curNode.x + " Fitness: " + prevNode.fitness + " <= " + curNode.fitness);
+		if (curNode.fitness != Float.MAX_VALUE){
 		assertTrue(prevNode.x >= curNode.x);
 		assertTrue(prevNode.fitness <= curNode.fitness);
+		}
 	}
+		
 	
 	}
 
