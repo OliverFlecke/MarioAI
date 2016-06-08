@@ -211,10 +211,6 @@ public final class LevelScene implements SpriteContext, Cloneable
 			{
 				sprite.tick();
 			}
-			else 
-			{
-				 System.out.println();
-			}
 			sprite.collideCheck();
 		}
 

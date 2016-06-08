@@ -26,7 +26,7 @@ public class Node implements Comparable<Node> {
 	
 	public float fitness = 0f;				// Overall rating of this option 
 	public int depth;						// Depth of the current node
-	private boolean[] action;				// Action that are done in this node
+//	private boolean[] action;				// Action that are done in this node
 	
 	// Game elements 
 	public Mario mario;						// The Mario object 
@@ -61,14 +61,9 @@ public class Node implements Comparable<Node> {
 		// Copy these elements, don't just save the pointers 
 		this.mario = levelScene.mario; 
 		this.levelScene = levelScene;
-//		this.levelScene.mario = this.mario;
-//		this.mario.levelScene = this.levelScene;
-		
-		// Store the actions passed to the node
-		this.action = action;
-		
+			
 		// Update Mario
-		this.mario.keys = this.action;
+		this.mario.keys = action;
 		this.x = mario.x;
 		this.y = mario.y;	
 	}
@@ -281,19 +276,15 @@ public class Node implements Comparable<Node> {
 	public boolean canJump() 
 	{
 		if (parent != null)
-		{
 			if (this.y == parent.y)	// If Mario is on the ground
-			{
-				if (parent.action[Mario.KEY_JUMP])
+				if (parent.getAction()[Mario.KEY_JUMP])
 					return false;
 				else 
 					return true;
-			}
 			else if (this.y < parent.y) // Mario is going upwards
 				return true;
 			else if (this.y > parent.y) // Mario is going downwards
-				return false;	
-		}
+				return false;
 		return true;
 	}
 
@@ -436,7 +427,7 @@ public class Node implements Comparable<Node> {
 		System.out.printf("Vx: %.2f\t", node.mario.xa);
 		System.out.printf("Vy: %.2f\t", node.mario.ya);
 		System.out.printf("Ay: %.2f\t", node.mario.yaa);
-		System.out.print(getActionAsString(node.action));
+		System.out.print(getActionAsString(node.getAction()));
 		System.out.printf("Depth: %3d ", node.depth);
 		System.out.printf("F: %.3f\t", node.fitness);
 		System.out.printf("g: %.3f\t", Node.getDistanceTraveled(node));
