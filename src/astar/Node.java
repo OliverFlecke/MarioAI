@@ -10,7 +10,7 @@ import ch.idsia.benchmark.mario.environments.Environment;
  * has executed the action stored in this given node. 
  */
 public class Node implements Comparable<Node> {
-	private static boolean debug = true;	// True, if the program should output debug data
+	private static boolean debug = false;	// True, if the program should output debug data
 	
 	private static int timeLimit = 33;		// Any larger, and the game seem to lack 
 	public static int nodeCount = 0;		// Counter to keep track of the number of generated nodes
@@ -47,17 +47,21 @@ public class Node implements Comparable<Node> {
 	 * @param enemies
 	 * @param action
 	 */
-	public Node(Node parent, LevelScene levelScene, Mario mario, List<Sprite> enemies, boolean[] action) 
+	public Node(Node parent, LevelScene levelScene, boolean[] action) 
 	{
+		// Increment the node count in order to keep track of the number nodes generated
+		Node.nodeCount++;
+
+		// Set the parent and the depth of the node
 		this.parent = parent;
 		if (this.parent == null) depth = 0;
 		else depth = parent.depth + 1;
 		
 		// Copy these elements, don't just save the pointers 
-		this.mario = mario; 
+		this.mario = levelScene.mario; 
 		this.levelScene = levelScene;
-		this.levelScene.mario = this.mario;
-		this.mario.levelScene = this.levelScene;
+//		this.levelScene.mario = this.mario;
+//		this.mario.levelScene = this.levelScene;
 		
 		// Store the actions passed to the node
 		this.action = action;
@@ -65,10 +69,7 @@ public class Node implements Comparable<Node> {
 		// Update Mario
 		this.mario.keys = this.action;
 		this.x = mario.x;
-		this.y = mario.y;
-		
-		// Increment the node count in order to keep track of the number nodes generated
-		Node.nodeCount++;
+		this.y = mario.y;	
 	}
 
 	/**
@@ -80,7 +81,7 @@ public class Node implements Comparable<Node> {
 	 */
 	public Node(LevelScene levelScene, Mario mario, List<Sprite> enemies, boolean[] action)
 	{
-		this(null, levelScene, mario, enemies, action);
+		this(null, levelScene, action);
 	}
 	
 	/**
@@ -93,15 +94,17 @@ public class Node implements Comparable<Node> {
 	 */
 	private static Node createNode(Node parent, boolean[] actions, List<Sprite> enemies)
 	{
-		return new Node(parent, (LevelScene) parent.levelScene.clone(), (Mario) parent.mario.clone(), enemies, actions);
+		return new Node(parent, (LevelScene) parent.levelScene.clone(), actions);
 	}
 	
 	/**
-	 * Ticked in every frame
+	 * Ticked in every frame. This will get Mario and every enemy to move
 	 */
 	private void tick() 
 	{
+		this.levelScene.tick();
 		this.mario.tick();
+		this.mario.collideCheck();
 	}
 	
 	// Helper variables to the fitness evaluations 
@@ -118,7 +121,7 @@ public class Node implements Comparable<Node> {
 		// Error handling for unknown error
 		if (mario.x == 816f)
 		{
-			mario.x = (this.x + mario.xa);
+			mario.x = (this.x + mario.xa * 1.12f);
 			mario.xa = mario.x - this.x;
 		}
 		
@@ -224,45 +227,39 @@ public class Node implements Comparable<Node> {
 	{
 		// Compute all the new positions for the enemies
 		List<Sprite> newEnemies = new ArrayList<Sprite>();
-//		for (Sprite enemy : this.enemies)
-//		{
-//			// TODO Clone the current enemy
-//			Sprite newEnemy = null; 
-//			newEnemy.tick();
-//			newEnemies.add(newEnemy);
-//		}
 		
 		// Create the different action options and place them in this list
 		List<boolean[]> options = new ArrayList<boolean[]>();
 		
 		
-		// Only created if it is possible to go right, or if mario is in the air
+		// Only created if it is possible to go right, or if Mario is in the air
 		if (current.parent == null || (Math.abs(current.x - current.parent.x) > 0.7) 
 				|| (current.y != current.parent.y))
 		{
 			options.add(createAction(false, false, false, false));	// Do nothing
 
 			// Right movement
-			options.add(createAction(true, false, false, false));
-			options.add(createAction(true, false, false, true));
+			options.add(createAction(true, false, false, false));	// Move right
+			options.add(createAction(true, false, false, true));	// Move right and speed
 
 			// Left movement
-			options.add(createAction(false, true, false, false));
-			options.add(createAction(false, true, false, true));	
+			options.add(createAction(false, true, false, false));	// Move left 
+			options.add(createAction(false, true, false, true));	// Move left and speed
 		}
 
 		// Check if pressing the jump key makes a differers, and generate nodes if it does
 		if (current.canJump())
 		{
-			options.add(createAction(false, false, true, false));	// Just jump
-			options.add(createAction(true, false, true, false));	// Jump and go right
-			options.add(createAction(true, false, true, true));		// Jump, go right, and speed
+			options.add(createAction(false, false, true, false));	// Jump
+			options.add(createAction(true, false, true, false));	// Jump and move right
+			options.add(createAction(true, false, true, true));		// Jump, move right, and speed
 			
 			// Left, jump movement
-			options.add(createAction(false, true, true, false));
-			options.add(createAction(false, true, true, true));
+			options.add(createAction(false, true, true, false));	// Jump, move left
+			options.add(createAction(false, true, true, true));		// Jump, move left, and speed
 		}
 		
+		// Create a node from all the options
 		for (boolean[] action : options)
 		{
 			Node node = createNode(current, action, newEnemies);
@@ -320,6 +317,35 @@ public class Node implements Comparable<Node> {
 		return action;
 	}
 	
+	/**
+	 * Get a path of actions to the node from the head. This is done recursively
+	 * @return A LinkedList with a path representing the actions to get to that node/position 
+	 */
+	public static LinkedList<boolean[]> getActionPath(Node node)
+	{
+		LinkedList<boolean[]> list;
+		// We only want the path from the node AFTER the root. The root does not have any actions
+		if (node.parent.depth == 0) 
+			list = new LinkedList<boolean[]>();
+		else 
+			list = getActionPath(node.parent);
+		list.add(node.getAction());
+		
+		// Output debug information
+		if (debug) printNodeData(node);
+		return list;
+	}
+	
+	/**
+	 * Get the action from the current node, e.g. the action that Mario is taken in the current
+	 * step. This is stored in Mario's keys field.
+	 * @return The action of this node
+	 */
+	public boolean[] getAction() 
+	{
+		return this.mario.keys;
+	}
+
 	@Override
 	/**
      * Compare this node to another. 
@@ -375,25 +401,6 @@ public class Node implements Comparable<Node> {
 	 */
 	public static void setHead(Node head) {
 		Node.head = head;
-	}
-
-	/**
-	 * Get a path of actions to the node from the head. This is done recursively
-	 * @return A LinkedList with a path representing the actions to get to that node/position 
-	 */
-	public static LinkedList<boolean[]> getActionPath(Node node)
-	{
-		LinkedList<boolean[]> list;
-		// We only want the path from the node AFTER the root. The root does not have any actions
-		if (node.parent.depth == 0) 
-			list = new LinkedList<boolean[]>();
-		else 
-			list = getActionPath(node.parent);
-		list.add(node.action);
-		
-		// Output debug information
-		if (debug) printNodeData(node);
-		return list;
 	}
 	
 	/**

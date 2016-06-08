@@ -107,8 +107,6 @@ public class AstarAgent extends KeyAdapter implements Agent {
 				LevelScene.level = new Level(1500, 15);
 				levelScene.setup(this.observation, enemiesFloatPos);
 				mario = levelScene.mario;
-//				mario = new Mario(levelScene);
-//				levelScene.mario = mario;
 				levelScene.addSprite(mario);	
 				
 				mario.x = marioFloatPos[0];
@@ -126,8 +124,11 @@ public class AstarAgent extends KeyAdapter implements Agent {
 				mario.canJump = isMarioAbleToJump || action[Mario.KEY_JUMP];
 				mario.onGround = isMarioOnGround;
 				
+				// Get the data about enemies and put it into the level scene
+				levelScene.setEnemiesFloatPos(environment.getEnemiesFloatPos());
+				
 				// Create graph starting point and set goal
-				head = new Node(levelScene, mario, null, currentAction);
+				head = new Node(levelScene, null, null, currentAction);
 				Node.setHead(head);
 				Node.setGoal(marioFloatPos[0] + 250f);
 				
@@ -189,7 +190,7 @@ public class AstarAgent extends KeyAdapter implements Agent {
 			levelScene.addSprite(mario);			
 			mario.x = marioFloatPos[0];
 			mario.y = marioFloatPos[1];
-			head = new Node(null, levelScene, mario, null, currentAction);
+			head = new Node(null, levelScene, currentAction);
 		}
 		else
 		{
