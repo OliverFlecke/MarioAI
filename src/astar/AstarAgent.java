@@ -126,6 +126,12 @@ public class AstarAgent extends KeyAdapter implements Agent {
 				mario.canJump = isMarioAbleToJump || action[Mario.KEY_JUMP];
 				mario.onGround = isMarioOnGround;
 				
+				// Set Mario mode
+				if (environment.getMarioMode() == 1) mario.large = true;
+				if (environment.getMarioMode() == 2) mario.fire = true;
+			
+				
+				
 				// Create graph starting point and set goal
 				head = new Node(levelScene, null, null, currentAction);
 				Node.setHead(head);
@@ -161,7 +167,7 @@ public class AstarAgent extends KeyAdapter implements Agent {
 		return action;
 	}
 	
-	private final int MAXCOUNT = 4;
+	private final int MAXCOUNT = 2;
 	private int actionCount = MAXCOUNT;
 	private LinkedList<boolean[]> actionPath = new LinkedList<boolean[]>();
 	Node head = null;
