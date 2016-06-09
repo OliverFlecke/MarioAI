@@ -84,7 +84,6 @@ public class AstarAgent extends KeyAdapter implements Agent {
 	public void reset()
 	{
 	    action = new boolean[Environment.numberOfKeys];
-
 	}
 	
 	public boolean[] getAction()
@@ -110,6 +109,7 @@ public class AstarAgent extends KeyAdapter implements Agent {
 				mario.x = marioFloatPos[0];
 				mario.y = marioFloatPos[1];
 
+				// Calculate the current velocity
 				mario.xa = (marioFloatPos[0] - lastX) * 0.89f;
 				mario.ya = (marioFloatPos[1] - lastY) * 0.89f;
 				// If the speeds is too high, set to max speed
@@ -120,7 +120,6 @@ public class AstarAgent extends KeyAdapter implements Agent {
 				levelScene.setup(this.observation, environment.getEnemiesFloatPos());
 				levelScene.addSprite(mario);	
 				
-				// Calculate the current velocity
 				// Set the variables with the data from the environment 
 				mario.mayJump = isMarioAbleToJump || action[Mario.KEY_JUMP];
 				mario.canJump = isMarioAbleToJump || action[Mario.KEY_JUMP];

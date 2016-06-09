@@ -180,6 +180,7 @@ public class Node implements Comparable<Node> {
 		
 		while (!current.atGoal())
 		{			
+			if ((System.currentTimeMillis() - getStartTime()) > timeLimit) break;
 			if (debug) printNodeData(current);
 			
 			// Used when testing. Insuring that the graph does not search too far
@@ -189,17 +190,15 @@ public class Node implements Comparable<Node> {
 				continue;
 			}
 						
-			if ((System.currentTimeMillis() - getStartTime()) > timeLimit)
-			{
-				if (debug) System.out.println("Out of time!");
-				break;
-			}
 			
 			// Generate the children for this node
-			generateNodes(current, queue);
-			if (queue.isEmpty()) break;	// If there are no more options, end the search
+			if (current.fitness != Float.MAX_VALUE)
+				generateNodes(current, queue);
 			
-			current = queue.poll();	// Poll the new best options
+			if (queue.isEmpty()) 
+				break;	// If there are no more options, end the search
+			else
+				current = queue.poll();	// Poll the new best options
 						
 			// Update the best node
 			if (best.fitness >= current.fitness)
