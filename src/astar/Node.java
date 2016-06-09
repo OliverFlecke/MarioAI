@@ -38,6 +38,8 @@ public class Node implements Comparable<Node> {
 	public Node parent;
 	public static Node head;
 	public List<Node> children = new ArrayList<Node>();
+
+	public boolean[] action;
 	private static int maxDepth = 1000;
 	
 	/**
@@ -60,6 +62,7 @@ public class Node implements Comparable<Node> {
 		this.mario = levelScene.mario; 
 		this.levelScene = levelScene;
 			
+		this.action = action;
 		// Update Mario
 		this.mario.keys = action;
 		this.x = mario.x;
@@ -125,7 +128,7 @@ public class Node implements Comparable<Node> {
 		
 		if (this.atGoal())
 		{
-			this.fitness = 0;
+			this.fitness = 1;
 			return;
 		}
 		
@@ -340,7 +343,8 @@ public class Node implements Comparable<Node> {
 	 */
 	public boolean[] getAction() 
 	{
-		return this.mario.keys;
+//		return this.mario.keys;
+		return this.action;
 	}
 
 	@Override
