@@ -98,7 +98,7 @@ public class Node implements Comparable<Node> {
 	 */
 	private void tick() 
 	{
-		this.levelScene.tick();
+//		this.levelScene.tick();
 		this.mario.tick();
 	}
 

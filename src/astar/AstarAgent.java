@@ -70,6 +70,18 @@ public class AstarAgent extends KeyAdapter implements Agent {
 	private String name = "AstarAgent";
 
 	private byte[][] observation;
+	
+	// Variables for the search
+	private final int MAXCOUNT = 4;
+	private int actionCount = MAXCOUNT;
+	boolean[] currentAction = new boolean[Environment.numberOfKeys];
+	private LinkedList<boolean[]> actionPath = new LinkedList<boolean[]>();
+	Node head = null;
+	LevelScene levelScene = null;
+	Mario mario;
+	private boolean runSimulation = false;
+	private boolean runAstar = true;
+	private float lastX = 0, lastY = 0;
 
 	public AstarAgent() 
 	{
@@ -159,17 +171,6 @@ public class AstarAgent extends KeyAdapter implements Agent {
 		
 		return action;
 	}
-	
-	private final int MAXCOUNT = 4;
-	private int actionCount = MAXCOUNT;
-	private LinkedList<boolean[]> actionPath = new LinkedList<boolean[]>();
-	Node head = null;
-	LevelScene levelScene = null;
-	Mario mario;
-	boolean[] currentAction = new boolean[Environment.numberOfKeys];
-	private boolean runSimulation = false;
-	private boolean runAstar = true;
-	private float lastX = 0, lastY = 0;
 	
 	/**
 	 * This function is used to test a simulation of Mario running 
