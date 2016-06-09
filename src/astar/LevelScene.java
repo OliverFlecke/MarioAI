@@ -1,6 +1,7 @@
 package astar;
 
 import java.awt.Point;
+import java.io.DataInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -9,8 +10,11 @@ import java.util.List;
 import java.util.Random;
 import java.lang.Cloneable;
 
+import com.sun.xml.internal.ws.api.pipe.Engine;
+
 import astar.level.Level;
 import astar.level.SpriteTemplate;
+import astar.sprites.BulletBill;
 import astar.sprites.Enemy;
 import astar.sprites.FireFlower;
 import astar.sprites.Fireball;
@@ -128,7 +132,6 @@ public final class LevelScene implements SpriteContext, Cloneable
 			// Copy Mario and other objects
 			clone.mario = (Mario) this.mario.clone();
 			clone.mario.levelScene = clone;
-			clone.addSprite(clone.mario);
 	
 			// Clone the list of sprites into the new object
 			clone.sprites = new ArrayList<Sprite>();
@@ -213,7 +216,10 @@ public final class LevelScene implements SpriteContext, Cloneable
 
 		for (Sprite sprite : sprites)
 		{			
-			if (!(sprite instanceof Mario)) sprite.tick();
+			if (!(sprite instanceof Mario))
+			{
+				sprite.tick();
+			}
 			sprite.collideCheck();
 		}
 
@@ -285,14 +291,14 @@ public final class LevelScene implements SpriteContext, Cloneable
 			if (((Level.TILE_BEHAVIORS[block & 0xff]) & Level.BIT_SPECIAL) > 0)
 			{
 				{
-					if (!mario.large)
+					if (!Mario.large)
 					{
 						addSprite(new Mushroom(this, x * cellSize + 8, y * cellSize + 8));
-						++Level.counters.mushrooms;
+						++level.counters.mushrooms;
 					} else
 					{
 						addSprite(new FireFlower(this, x * cellSize + 8, y * cellSize + 8));
-						++Level.counters.flowers;
+						++level.counters.flowers;
 					}
 				}
 			} else
