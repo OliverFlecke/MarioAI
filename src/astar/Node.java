@@ -26,7 +26,7 @@ public class Node implements Comparable<Node> {
 	
 	public float fitness = 0f;				// Overall rating of this option 
 	public int depth;						// Depth of the current node
-	private boolean[] action;				// Action that are done in this node
+//	private boolean[] action;				// Action that are done in this node
 	
 	// Game elements 
 	public Mario mario;						// The Mario object 
@@ -62,7 +62,6 @@ public class Node implements Comparable<Node> {
 		this.mario = levelScene.mario; 
 		this.levelScene = levelScene;
 			
-		this.action = action;
 		// Update Mario
 		this.mario.keys = action;
 		this.x = mario.x;
@@ -70,7 +69,7 @@ public class Node implements Comparable<Node> {
 	}
 
 	/**
-	 * Create a node without a parent. Everything else is as in a normal node.
+	 * Create a node without a parent. Everything else is in a normal node
 	 * @param levelScene
 	 * @param mario
 	 * @param enemies
@@ -86,7 +85,7 @@ public class Node implements Comparable<Node> {
 	 * as well as the passed enemies and action array. The current
 	 * node is passed as the parent node
 	 * @param actions the new node should simulate
-	 * @param enemies which should be passed into the level scene
+	 * @param enemies which should be passed into the levelscene
 	 * @return A node with cloned objects
 	 */
 	private static Node createNode(Node parent, boolean[] actions, List<Sprite> enemies)
@@ -125,6 +124,12 @@ public class Node implements Comparable<Node> {
 		// Update the nodes coordinates
 		this.x = mario.x;
 		this.y = mario.y;
+		
+		if (this.atGoal())
+		{
+			this.fitness = 0;
+			return;
+		}
 		
 		// If Mario is dead or to low in the level, the path is dead
 		if (mario.isDead() || this.y > 223f) 
@@ -336,14 +341,12 @@ public class Node implements Comparable<Node> {
 	 */
 	public boolean[] getAction() 
 	{
-//		return this.mario.keys;
-		return this.action;
+		return this.mario.keys;
 	}
 
 	@Override
 	/**
-     * Compare this node to another. Uses the fitness as primary compare tool, then
-     * the x coordinate and lastly the y coordinate.
+     * Compare this node to another. 
      * @return -1, if the other node's fitness is larger than this nodes fitness. 
      * 0 is returned if the have the same fitness, and 1 is returned if this node has 
      * the larger fitness.
@@ -355,14 +358,12 @@ public class Node implements Comparable<Node> {
 			return 1;
 		else 
 		{
-			// Look at the x coordinate
 			if ((other.x - this.x) > 0)
 				return 1;
 			else if ((other.x - this.x) < 0)
 				return -1;
 			else 
 			{
-				// Look at the y coordinate
 				if ((other.y - this.y) > 0)
 					return -1;
 				else if ((other.y - this.y) < 0)
