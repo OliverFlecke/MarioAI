@@ -39,24 +39,13 @@ public class Node implements Comparable<Node> {
 	public Node parent;
 	public static Node head;
 	public List<Node> children = new ArrayList<Node>();
-<<<<<<< HEAD
 	private static int maxDepth = 100;
-=======
-
-	public boolean[] action;
-	private static int maxDepth = 1000;
->>>>>>> origin/master
 	
 	/**
 	 * Create a new node, which should have everything needed to compute next frame
 	 * @param parent of the current node
-<<<<<<< HEAD
 	 * @param levelScene A copy of the level sceneS
 	 * @param action which Mario should take in this simulation
-=======
-	 * @param levelScene to run the simulation
-	 * @param action which is simulated in this node
->>>>>>> origin/master
 	 */
 	public Node(Node parent, LevelScene levelScene, boolean[] action) 
 	{
@@ -80,19 +69,11 @@ public class Node implements Comparable<Node> {
 	}
 
 	/**
-<<<<<<< HEAD
-	 * Create a node without a parent. Everything else is as in a normal node.
-	 * @param levelScene
-	 * @param mario
-	 * @param enemies
-	 * @param action
-=======
 	 * Create a node without a parent. Everything else is in a normal node
 	 * @param levelScene used for the simulation
 	 * @param mario which is used in the simulation
 	 * @param enemies in the simulation
 	 * @param action which is simulated in this node
->>>>>>> origin/master
 	 */
 	public Node(LevelScene levelScene, Mario mario, List<Sprite> enemies, boolean[] action)
 	{
@@ -152,7 +133,6 @@ public class Node implements Comparable<Node> {
 		}
 		else if (levelScene.isInGap(this))
 		{
-			System.out.println("yup");
 			this.fitness = Float.MAX_VALUE;
 		}
 		else 
