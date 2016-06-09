@@ -439,13 +439,8 @@ public class NodeTest {
 	
 		//scene.mario.carried = new Sprite();
 		
-<<<<<<< HEAD
 		scene.mario.spriteTemplate = new SpriteTemplate(Sprite.KIND_MARIO);
 		scene.mario.spriteTemplate.isDead = true;
-=======
-		final MarioAIOptions AiOptions = new MarioAIOptions("-vis off -lca off -lco off -lb off -le off -ltb off -ls 22 -fps 24 -ag astar.AstarAgent");
-		final BasicTask bt = new BasicTask(AiOptions);
->>>>>>> 77d22ac9aab65dbe8ab69543ad30fff81b230b2f
 		
 		
 		//System.out.print(scene.mario.isDead());
@@ -494,11 +489,7 @@ public class NodeTest {
 		for (int i=0;i<graphDepth;i++){
 			
 			
-<<<<<<< HEAD
 			int numOfNodes = rand.nextInt(10)+1;
-=======
-			node.mario.x = randomXCoord;
->>>>>>> 77d22ac9aab65dbe8ab69543ad30fff81b230b2f
 			
 			
 			Node[] currentNodes = new Node[numOfNodes];
@@ -602,7 +593,6 @@ public class NodeTest {
 		
 	}
 	
-<<<<<<< HEAD
 	/**
 	 * 
 	 */
@@ -643,16 +633,6 @@ public class NodeTest {
 		
 		assertFalse(currentNode.canJump());
 	}
-=======
-	//assert if the coalition between x and fitness holds
-	for (int i=1; i < nodeList.size(); i++){
-		Node prevNode = nodeList.get(i-1);
-		Node curNode = nodeList.get(i);
-		//System.out.println("X-coordinate: " + prevNode.x + " >= " + curNode.x + " Fitness: " + prevNode.fitness + " <= " + curNode.fitness);
-		assertTrue(prevNode.x >= curNode.x);
-		assertTrue(prevNode.fitness <= curNode.fitness);
-	}
->>>>>>> 77d22ac9aab65dbe8ab69543ad30fff81b230b2f
 	
 	/**
 	 * 
