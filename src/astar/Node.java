@@ -132,7 +132,6 @@ public class Node implements Comparable<Node> {
 		}
 		else if (levelScene.isInGap(this))
 		{
-			System.out.println("true");
 			this.fitness = Float.MAX_VALUE;
 		}
 		else 
