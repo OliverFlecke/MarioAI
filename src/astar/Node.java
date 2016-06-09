@@ -11,7 +11,7 @@ import ch.idsia.benchmark.mario.environments.Environment;
  */
 public class Node implements Comparable<Node> {
 
-	private static boolean debug = true;	// True, if the program should output debug data
+	private static boolean debug = false;	// True, if the program should output debug data
 	
 	private static int timeLimit = 33;		// Any larger, and the game seem to lack 
 	public static int nodeCount = 0;		// Counter to keep track of the number of generated nodes

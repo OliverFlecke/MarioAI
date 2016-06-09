@@ -16,8 +16,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import astar.*;
+import astar.level.SpriteTemplate;
 import astar.sprites.Mario;
+import astar.sprites.Sprite;
 import ch.idsia.benchmark.mario.environments.Environment;
+import ch.idsia.benchmark.mario.environments.MarioEnvironment;
 import ch.idsia.benchmark.tasks.BasicTask;
 import ch.idsia.tools.EvaluationInfo;
 import ch.idsia.tools.MarioAIOptions;
@@ -39,8 +42,8 @@ public class NodeTest {
 	public static void setUpBeforeClass() throws Exception {
 		
 		LevelScene scene = new LevelScene();
-		final MarioAIOptions AiOptions = new MarioAIOptions("-vis off -lca off -lco off -lb off -le off -ltb off -ls 22 -fps 24 -ag astar.AstarAgent");
-		final BasicTask bt = new BasicTask(AiOptions);
+		 MarioAIOptions AiOptions = new MarioAIOptions("-vis off -lca off -lco off -lb off -le off -ltb off -ls 22 -fps 24 -ag astar.AstarAgent");
+		 BasicTask bt = new BasicTask(AiOptions);
 		bt.setOptionsAndReset(AiOptions);
 		bt.runSingleEpisode(1);
 	    //System.out.println(bt.getEnvironment().getEvaluationInfoAsString());
@@ -69,6 +72,40 @@ public class NodeTest {
 	}
 
 	/**
+	 * 
+	 */
+	@Test
+	public void testRightAndSpeed(){
+
+	int playThroughs = 3;	
+	int[] times = new int[playThroughs];
+	int[] fitnessScores = new int[playThroughs];
+	
+	for (int i=0;i <playThroughs;i++){
+		
+		 MarioAIOptions AiOptions = new MarioAIOptions("-vis off -lf on -lca off -lco off -lb off -le off -ltb off -ls 22 -fps 24 -ag astar.AstarAgent");
+		 BasicTask bt = new BasicTask(AiOptions);
+		
+		bt.setOptionsAndReset(AiOptions);
+		bt.runSingleEpisode(1);
+		
+		EvaluationInfo evalInfo = bt.getEnvironment().getEvaluationInfo();
+		
+		times[i]=evalInfo.timeLeft;
+		fitnessScores[i] = evalInfo.computeWeightedFitness();
+		
+		
+	}
+	//check time left and print result
+
+	//System.out.print("Time left in each playthrough: ");
+	for (int i=0; i < playThroughs; i++){
+		//System.out.print(times[i]+", ");
+		assertEquals(true, times[0]==times[i]);
+	}
+	
+}
+	/**
 	 * Test method for {@link astar.Node#Node(astar.Node, astar.LevelScene, astar.sprites.Mario, java.util.List, boolean[])}.
 	 */
 	@Test
@@ -82,17 +119,16 @@ public class NodeTest {
 	 */
 	@Test
 	public void testFitnessEval() {
-		fail("Not yet implemented");
-//		Node head = new Node(scene, scene.mario, null, null);
-//		Node.setHead(head);
-//		Node.setGoal(200);
-//		
-//		// Setup test object
-//		Node node = new Node(scene, scene.mario, null, Node.createAction(false, false, false, false));
-//		node.mario.x = 100;
-//		
-//		node.fitnessEval();
-//		Assert.assertTrue(node.fitness > 0);
+		Node head = new Node(scene, scene.mario, null, null);
+		Node.setHead(head);
+		Node.setGoal(200);
+		
+		// Setup test object
+		Node node = new Node(scene, scene.mario, null, Node.createAction(false, false, false, false));
+		node.mario.x = 100;
+		
+		node.fitnessEvaluation();
+		Assert.assertTrue(node.fitness > 0);
 	}
 
 	/**
@@ -282,208 +318,382 @@ public class NodeTest {
 		Assert.assertEquals(0.0f, distTraveled);
 	}
 
-/**
- * Test method for {@link astar.Node#testDistanceTraveled()}.
- */
-@Test
-public void testDistanceTraveledWithDistance() {
-	Node node = new Node(scene, scene.mario, null, null);
-	Node headNode = new Node(scene, scene.mario, null, null);
-	Node.setHead(headNode);
-	node.x = 50f;
-	headNode.x = 100f;
+	/**
+	 * Test method for {@link astar.Node#testDistanceTraveled()}.
+	 */
+	@Test
+	public void testDistanceTraveledWithDistance() {
+		Node node = new Node(scene, scene.mario, null, null);
+		Node headNode = new Node(scene, scene.mario, null, null);
+		Node.setHead(headNode);
+		node.x = 50f;
+		headNode.x = 100f;
+		
+		
+		
+		float distTraveled = Node.getDistanceTraveled(node);
+		
+		Assert.assertEquals(-50f, distTraveled);
+		}
+	/**
+	 * 
+	 */
+	@Test
+	public void testAiLoading(){
+		    MarioAIOptions AiOptions = new MarioAIOptions("-vis off -lca off -lco off -lb off -le off -ltb off -ls 22 -fps 24 -ag astar.AstarAgent");
+		    assertNotNull(AiOptions.getAgent());
+		    assertEquals(AiOptions.getAgent().getName(), "AstarAgent");
+		    assertEquals(AiOptions.getAgentFullLoadName(), "astar.AstarAgent");
+		    
+		}
+	/**
+	 * 
+	 */
+	@Test
+	public void testLevelCompletionNoGapsNoEnemies() {
+			MarioAIOptions AiOptions = new MarioAIOptions("-vis off -lca off -lco off -lb off -le off -ltb off -ls 22 -fps 24 -ag astar.AstarAgent");
+			BasicTask bt = new BasicTask(AiOptions);
+			bt.setOptionsAndReset(AiOptions);
+			bt.runSingleEpisode(1);
+		    //System.out.println(bt.getEnvironment().getEvaluationInfoAsString());
+			
+		    assertEquals(1, Mario.STATUS_WIN);
+		    
+		
+		}
 	
+	/**
+	 * 
+	 */
+	@Test
+	public void testDeterminism() {
+		
 	
+		int playThroughs = 3;	
+		int[] times = new int[playThroughs];
+		int[] fitnessScores = new int[playThroughs];
+		
+		for (int i=0;i <playThroughs;i++){
+			
+			 MarioAIOptions AiOptions = new MarioAIOptions("-vis off -lca off -lco off -lb off -le off -ltb off -ls 22 -fps 24 -ag astar.AstarAgent");
+			 BasicTask bt = new BasicTask(AiOptions);
+			
+			bt.setOptionsAndReset(AiOptions);
+			bt.runSingleEpisode(1);
+			
+			EvaluationInfo evalInfo = bt.getEnvironment().getEvaluationInfo();
+			
+			times[i]=evalInfo.timeLeft;
+			fitnessScores[i] = evalInfo.computeWeightedFitness();
+			
+			
+		}
+		//check time left and print result
 	
-	float distTraveled = Node.getDistanceTraveled(node);
+		//System.out.print("Time left in each playthrough: ");
+		for (int i=0; i < playThroughs; i++){
+			//System.out.print(times[i]+", ");
+			assertEquals(times[0], times[i], 10);
+			
+		//check weighted fitness and print result
+			
+		}
+		//System.out.print("\n Fitness Score for each playthrough: ");
+		for (int i=0; i < playThroughs; i++){
+			//System.out.print(fitnessScores[i]+", ");
+			assertEquals(fitnessScores[0], fitnessScores[i],80);
+		}
+		
 	
-	Assert.assertEquals(-50f, distTraveled);
-	}
-/**
- * 
- */
-@Test
-public void testAiLoading(){
-	    final MarioAIOptions AiOptions = new MarioAIOptions("-vis off -lca off -lco off -lb off -le off -ltb off -ls 22 -fps 24 -ag astar.AstarAgent");
-	    assertNotNull(AiOptions.getAgent());
-	    assertEquals(AiOptions.getAgent().getName(), "AstarAgent");
-	    assertEquals(AiOptions.getAgentFullLoadName(), "astar.AstarAgent");
-	    
-	}
-/**
- * 
- */
-@Test
-public void testLevelCompletionNoGapsNoEnemies() {
-		final MarioAIOptions AiOptions = new MarioAIOptions("-vis off -lca off -lco off -lb off -le off -ltb off -ls 22 -fps 24 -ag astar.AstarAgent");
-		final BasicTask bt = new BasicTask(AiOptions);
+		
+		
+		}
+	
+	/**
+	 * 
+	 */
+	@Test
+	public void testLevelCompletionWithGapWithoutEnemies() {
+		 MarioAIOptions AiOptions = new MarioAIOptions("-vis off -lca off -lco off -lb off -le off -ltb off -ls 22 -ld 5 -fps 24 -ag astar.AstarAgent");
+		 BasicTask bt = new BasicTask(AiOptions);
 		bt.setOptionsAndReset(AiOptions);
 		bt.runSingleEpisode(1);
-	    System.out.println(bt.getEnvironment().getEvaluationInfoAsString());
-		
-	    assertEquals(1, Mario.STATUS_WIN);
-	    
 	
-	}
-
-/**
- * 
- */
-@Test
-public void testDeterminism() {
-	
-
-	int playThroughs = 3;	
-	int[] times = new int[playThroughs];
-	int[] fitnessScores = new int[playThroughs];
-	
-	for (int i=0;i <playThroughs;i++){
-		
-		final MarioAIOptions AiOptions = new MarioAIOptions("-vis on -lca off -lco off -lb off -le off -ltb off -ls 22 -fps 24 -ag astar.AstarAgent");
-		final BasicTask bt = new BasicTask(AiOptions);
-		
-		bt.setOptionsAndReset(AiOptions);
-		bt.runSingleEpisode(1);
-		
 		EvaluationInfo evalInfo = bt.getEnvironment().getEvaluationInfo();
 		
-		times[i]=evalInfo.timeLeft;
-		fitnessScores[i] = evalInfo.computeWeightedFitness();
+		//check time left
+		//System.out.print(evalInfo.marioStatus);
+		
+	    assertEquals(1, evalInfo.marioStatus);
+	    
+		}
+	
+	/**
+	 * 
+	 */
+	@Test
+	public void testMarioIsDead() {
+		
+		Node node = new Node(scene, scene.mario, null,  Node.createAction(true, false, false, false));
+	
+	
+		//scene.mario.carried = new Sprite();
+		
+		scene.mario.spriteTemplate = new SpriteTemplate(Sprite.KIND_MARIO);
+		scene.mario.spriteTemplate.isDead = true;
 		
 		
+		//System.out.print(scene.mario.isDead());
+		
+		node.fitnessEvaluation();
+		
+		assertEquals(Float.MAX_VALUE, node.fitness, 0);
 	}
-	//check time left and print result
-
-	System.out.print("Time left in each playthrough: ");
-	for (int i=0; i < playThroughs; i++){
-		System.out.print(times[i]+", ");
-		assertEquals(true, times[0]==times[i]);
+	
+	/**
+	 * 
+	 */
+	@Test
+	public void testMariosYIsToLarge() {
 		
-	//check weighted fitness and print result
+		Node node = new Node(scene, scene.mario, null, Node.createAction(true, false, false, false));
+	
+		scene.mario.y=224f;
 		
+		node.fitnessEvaluation();
+		
+		assertEquals(Float.MAX_VALUE, node.fitness, 0);
 	}
-	System.out.print("\n Fitness Score for each playthrough: ");
-	for (int i=0; i < playThroughs; i++){
-		System.out.print(fitnessScores[i]+", ");
-		assertEquals(true, fitnessScores[0]==fitnessScores[i]);
-	}
-	
-
 	
 	
-	}
-
-/**
- * 
- */
-@Test
-public void testLevelCompletionWithGapWithoutEnemies() {
-	final MarioAIOptions AiOptions = new MarioAIOptions("-vis off -lca off -lco off -lb off -le off -ltb off -ls 22 -ld 5 -fps 24 -ag astar.AstarAgent");
-	final BasicTask bt = new BasicTask(AiOptions);
-	bt.setOptionsAndReset(AiOptions);
-	bt.runSingleEpisode(1);
-
-	EvaluationInfo evalInfo = bt.getEnvironment().getEvaluationInfo();
-	
-	//check time left
-	System.out.print(evalInfo.marioStatus);
-	
-    assertEquals(1, evalInfo.marioStatus);
-    
-	}
-public void testMarioIsDead() {
-	
-	Node node = new Node(scene, scene.mario, null, null);
-
-	scene.mario.die("Gap");
-	
-	node.fitnessEvaluation();
-	
-	assertEquals(Float.MAX_VALUE, node.fitness, 0);
-}
-
-/**
- * 
- */
-@Test
-public void testCoalitionBetweenXandFitness() {
-	
-	
-//generate a random graph of nodes.
-	
-	Node topNode = new Node(scene, scene.mario, null,  Node.createAction(false, false, false, false));
-	
-	topNode.depth = 0;
-	int graphDepth = 8;
-	int numbOfParents=1;
-	Random rand = new Random();
-	
-	List<Node> nodeList = new ArrayList<Node>();
-	Node[] parentNodes = new Node[10];
-	Node.setGoal(100000f);
-	
-	for (int i=0;i<graphDepth;i++){
+	/**
+	 * 
+	 */
+	@Test
+	public void testCoalitionBetweenXandFitness() {
 		
 		
-		int numOfNodes = rand.nextInt(10)+1;
+	//generate a random graph of nodes.
 		
+		Node topNode = new Node(scene, scene.mario, null,  Node.createAction(false, false, false, false));
 		
-		Node[] currentNodes = new Node[numOfNodes];
+		topNode.depth = 0;
+		int graphDepth = 8;
+		int numbOfParents=1;
+		Random rand = new Random();
 		
-		for (int j=0; j<numOfNodes;j++){
-			
-			Node node = new Node(scene, scene.mario, null,  Node.createAction(false, false, false, false));
-			float randomXCoord =  rand.nextFloat() * numOfNodes + 1;
-			int randParent = rand.nextInt(numbOfParents);
-			
-			node.mario.y = 20f;
-			node.mario.x = randomXCoord;
-			
-			//eval fitness
-			node.fitnessEvaluation();
+		List<Node> nodeList = new ArrayList<Node>();
+		Node[] parentNodes = new Node[10];
+		Node.setGoal(100000f);
+		
+		for (int i=0;i<graphDepth;i++){
 			
 			
-			//setting the parent
-			if (i==0){
-				node.parent = topNode;
-			} else {
-				node.parent = parentNodes[randParent];
+			int numOfNodes = rand.nextInt(10)+1;
+			
+			
+			Node[] currentNodes = new Node[numOfNodes];
+			
+			for (int j=0; j<numOfNodes;j++){
+				
+				Node node = new Node(scene, scene.mario, null,  Node.createAction(false, false, false, false));
+				float randomXCoord =  rand.nextFloat() * numOfNodes + 1;
+				int randParent = rand.nextInt(numbOfParents);
+				
+				node.mario.y = 20f;
+				node.mario.x = randomXCoord;
+				
+				//eval fitness
+				node.fitnessEvaluation();
+				
+				
+				//setting the parent
+				if (i==0){
+					node.parent = topNode;
+				} else {
+					node.parent = parentNodes[randParent];
+				}
+				
+				//adding to array.
+				currentNodes[j] = node;
+				nodeList.add(node);
+				
 			}
 			
-			//adding to array.
-			currentNodes[j] = node;
-			nodeList.add(node);
+			//Set current nodes to be parent nodes
+	
+			parentNodes = currentNodes;
+			numbOfParents = numOfNodes;
+		}
+		
+		Node goalNode = new Node(scene, scene.mario, null,  Node.createAction(false, false, false, false));
+		goalNode.depth = graphDepth;
+		
+		
+	
+	
+		
+		//order nodes after decending fitness score.
+		Collections.sort(nodeList);
+		
+		//assert if the coalition between x and fitness holds
+		for (int i=1; i < nodeList.size(); i++){
+			Node prevNode = nodeList.get(i-1);
+			Node curNode = nodeList.get(i);
+			//System.out.println("X-coordinate: " + prevNode.x + " >= " + curNode.x + " Fitness: " + prevNode.fitness + " <= " + curNode.fitness);
+			if (curNode.fitness != Float.MAX_VALUE){
+			assertTrue(prevNode.x >= curNode.x);
+			assertTrue(prevNode.fitness <= curNode.fitness);
+			}
+		}
 			
-		}
 		
-		//Set current nodes to be parent nodes
-
-		parentNodes = currentNodes;
-		numbOfParents = numOfNodes;
-	}
-	
-	Node goalNode = new Node(scene, scene.mario, null,  Node.createAction(false, false, false, false));
-	goalNode.depth = graphDepth;
-	
-	
-
-
-	
-	//order nodes after decending fitness score.
-	Collections.sort(nodeList);
-	
-	//assert if the coalition between x and fitness holds
-	for (int i=1; i < nodeList.size(); i++){
-		Node prevNode = nodeList.get(i-1);
-		Node curNode = nodeList.get(i);
-		//System.out.println("X-coordinate: " + prevNode.x + " >= " + curNode.x + " Fitness: " + prevNode.fitness + " <= " + curNode.fitness);
-		if (curNode.fitness != Float.MAX_VALUE){
-		assertTrue(prevNode.x >= curNode.x);
-		assertTrue(prevNode.fitness <= curNode.fitness);
 		}
-	}
+	/**
+	 * 
+	 */
+	@Test
+	public void testLargerAccelerationBetterFitness() {
 		
+		Node walkingNode = new Node(scene, scene.mario, null, Node.createAction(true, false, false, false));
+		Node runningNode = new Node(scene, scene.mario, null, Node.createAction(true, false, false, true));
+		
+		walkingNode.mario.x = 100f;
+		walkingNode.mario.xa = 1f;
+		walkingNode.mario.y = 20f;
+		
+		runningNode.mario.x = 100f;
+		runningNode.mario.xa = Node.maxSpeed;
+		walkingNode.mario.y = 20f;
+		
+		walkingNode.fitnessEvaluation();
+		runningNode.fitnessEvaluation();
+		
+		assertTrue(walkingNode.fitness > runningNode.fitness);
+		}
 	
+	/**
+	 * 
+	 */
+	@Test
+	public void testJumpWhileFalling() {
+		Node parentNode = new Node(scene, scene.mario, null, Node.createAction(true, false, false, true));
+		Node currentNode = new Node(scene, scene.mario, null, Node.createAction(true, false, false, true));
+		
+		currentNode.parent = parentNode;
+		
+		parentNode.mario.x = 200f;
+		parentNode.y = 20f;
+		
+		currentNode.mario.x=203f;
+		currentNode.y=21f;
+		
+		assertFalse(currentNode.canJump());
+		
+		
+	}
+	
+	/**
+	 * 
+	 */
+	@Test
+	public void testJumpWhileJumping() {
+		Node parentNode = new Node(scene, scene.mario, null, Node.createAction(true, false, false, true));
+		Node currentNode = new Node(scene, scene.mario, null, Node.createAction(true, false, false, true));
+		
+		currentNode.parent = parentNode;
+		
+		parentNode.mario.x = 200f;
+		parentNode.y = 20f;
+		
+		currentNode.mario.x=203f;
+		currentNode.y=19f;
+		
+		assertTrue(currentNode.canJump());
+		
+		
+	}
+	
+	
+	/**
+	 * 
+	 */
+	@Test
+	public void testJumpWhileOnGroundHoldingJump() {
+		Node parentNode = new Node(scene, scene.mario, null, Node.createAction(true, false, true, true));
+		Node currentNode = new Node(scene, scene.mario, null, Node.createAction(true, false, false, true));
+		
+		currentNode.parent = parentNode;
+		
+		parentNode.mario.x = 200f;
+		parentNode.y = 20f;
+		
+		currentNode.mario.x=203f;
+		currentNode.y=20f;
+		
+		assertFalse(currentNode.canJump());
+	}
+	
+	/**
+	 * 
+	 */
+	@Test
+	public void testSimulationGridCenterAndSize() {
+//        
+        MarioAIOptions AiOptions = new MarioAIOptions("-vis on -ls 22 -fps 24 -ag astar.AstarAgent");
+        MarioEnvironment environment = MarioEnvironment.getInstance();
+
+
+        environment.reset(AiOptions);
+        
+        
+        AstarAgent simulationObject = new AstarAgent();
+        simulationObject.integrateObservation(environment);
+        simulationObject.reset();
+        simulationObject.getAction();
+        
+        //check size of grid in simulation
+        assertEquals(19, simulationObject.receptiveFieldWidth);
+        assertEquals(19, simulationObject.receptiveFieldHeight);
+        
+        
+        //center position of the enviroment, and it should be the middle of the grid in the simulation.
+        int[] marioPos = environment.getMarioEgoPos();
+        assertEquals(9, marioPos[0], 0);
+        assertEquals(9, marioPos[1], 0);
 	}
 
+	/**
+	 * 
+	 */
+	@Test
+	public void testMarioCoordinateInGameAndSimulation() {
+		
+		Random rand = new Random();
+		int x = rand.nextInt(1000);
+		String options = "-vis off -lca off -lco off -lb off -le off -ltb off -ls 22 -fps 24 -miy 200 -tl 1" + " -mix "+ x; 
+		MarioAIOptions AiOptionsForGame = new MarioAIOptions(options);
+		BasicTask btForGame = new BasicTask(AiOptionsForGame);
+		
+		MarioEnvironment environmentForGame = MarioEnvironment.getInstance();
+        MarioEnvironment environmentForSim = MarioEnvironment.getInstance();
+        
+        int[] levelSceneFromGame = environmentForGame.getSerializedLevelSceneObservationZ(1);
+        
+		scene.reset(AiOptionsForGame);
+        AstarAgent simulationObject = new AstarAgent();
+        simulationObject.integrateObservation(environmentForGame);
+        simulationObject.reset();
+        simulationObject.getAction();
+        
+        int[] levelSceneFromSim = environmentForSim.getSerializedLevelSceneObservationZ(1);
+        
+        
+        for (int i = 0; i < levelSceneFromSim.length; i=i+19){
+        	for(int j=0; j <19; j++){
+        		assertEquals(levelSceneFromSim[j+i], levelSceneFromGame[j+i]);
+        	}
+        }
+
+	}
 }
