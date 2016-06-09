@@ -35,7 +35,7 @@ public final class LevelScene implements SpriteContext, Cloneable
 	//debug flags
 	int debugSetBlocks = 0; // 1 prints 19:19 environment and set data. 2 also prints whole level
 	boolean debugSetEnemies = false;
-	private boolean debugGapDetection = true;
+	private boolean debugGapDetection = false;
 	
 	//grid constants
 	public static final int cellSize = 16;
@@ -96,8 +96,6 @@ public final class LevelScene implements SpriteContext, Cloneable
 	public static int killedCreaturesByFireBall;
 	public static int killedCreaturesByStomp;
 	public static int killedCreaturesByShell;
-
-
 
 	public LevelScene()
 	{
