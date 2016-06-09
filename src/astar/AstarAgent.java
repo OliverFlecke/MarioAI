@@ -59,9 +59,9 @@ public class AstarAgent extends KeyAdapter implements Agent {
 
 	private int[] marioState;
 
-	private int receptiveFieldWidth;
+	public int receptiveFieldWidth;
 
-	private int receptiveFieldHeight;
+	public int receptiveFieldHeight;
 
 	private int marioEgoCol;
 
