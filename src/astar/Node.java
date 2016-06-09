@@ -125,6 +125,12 @@ public class Node implements Comparable<Node> {
 		this.x = mario.x;
 		this.y = mario.y;
 		
+		if (this.atGoal())
+		{
+			this.fitness = 0;
+			return;
+		}
+		
 		// If Mario is dead or to low in the level, the path is dead
 		if (mario.isDead() || this.y > 223f) 
 		{
