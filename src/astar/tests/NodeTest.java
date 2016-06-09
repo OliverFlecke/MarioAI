@@ -288,13 +288,13 @@ public class NodeTest {
 		assertEquals(firstAction[Mario.KEY_JUMP], false);
 		assertEquals(firstAction[Mario.KEY_SPEED], false);
 		
-		boolean[] secondAction = listOfActions.pop();
+		boolean[] secondAction = listOfActions.remove();
 		assertEquals(secondAction[Mario.KEY_RIGHT], false);
 		assertEquals(secondAction[Mario.KEY_LEFT], false);
 		assertEquals(secondAction[Mario.KEY_JUMP], true);
 		assertEquals(secondAction[Mario.KEY_SPEED], false);
 		
-		boolean[] thirdAction = listOfActions.pop();
+		boolean[] thirdAction = listOfActions.remove();
 		assertEquals(thirdAction[Mario.KEY_RIGHT], false);
 		assertEquals(thirdAction[Mario.KEY_LEFT], false);
 		assertEquals(thirdAction[Mario.KEY_JUMP], false);
@@ -476,7 +476,6 @@ public class NodeTest {
 	//generate a random graph of nodes.
 		
 		Node topNode = new Node(scene, scene.mario, null,  Node.createAction(false, false, false, false));
-		
 		topNode.depth = 0;
 		int graphDepth = 8;
 		int numbOfParents=1;
@@ -609,6 +608,7 @@ public class NodeTest {
 		currentNode.mario.x=203f;
 		currentNode.y=19f;
 		
+		System.out.println(currentNode.canJump());
 		assertTrue(currentNode.canJump());
 		
 		
@@ -629,7 +629,7 @@ public class NodeTest {
 		parentNode.y = 20f;
 		
 		currentNode.mario.x=203f;
-		currentNode.y=20f;
+		currentNode.y=20f;	
 		
 		assertFalse(currentNode.canJump());
 	}
@@ -653,8 +653,8 @@ public class NodeTest {
         simulationObject.getAction();
         
         //check size of grid in simulation
-        assertEquals(19, simulationObject.receptiveFieldWidth);
         assertEquals(19, simulationObject.receptiveFieldHeight);
+        assertEquals(19, simulationObject.receptiveFieldWidth);
         
         
         //center position of the enviroment, and it should be the middle of the grid in the simulation.
