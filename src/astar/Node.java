@@ -130,6 +130,8 @@ public class Node implements Comparable<Node> {
 		{
 			this.fitness = Float.MAX_VALUE;
 		}
+		else if (levelScene.isInGap(this))
+			this.fitness = Float.MAX_VALUE;
 		else 
 		{
 			this.fitness = getHeuristic(this);
