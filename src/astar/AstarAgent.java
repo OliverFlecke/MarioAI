@@ -129,7 +129,7 @@ public class AstarAgent extends KeyAdapter implements Agent {
 				// Create graph starting point and set goal
 				head = new Node(levelScene, null, null, currentAction);
 				Node.setHead(head);
-				Node.setGoal(marioFloatPos[0] + 250f);
+				Node.setGoal(marioFloatPos[0] + 144f);
 				
 				// Search for the best path
 				actionPath = Node.searchForPath(head, new PriorityQueue<Node>());
@@ -161,7 +161,7 @@ public class AstarAgent extends KeyAdapter implements Agent {
 		return action;
 	}
 	
-	private final int MAXCOUNT = 4;
+	private final int MAXCOUNT = 2;
 	private int actionCount = MAXCOUNT;
 	private LinkedList<boolean[]> actionPath = new LinkedList<boolean[]>();
 	Node head = null;

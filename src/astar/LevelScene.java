@@ -657,10 +657,10 @@ public final class LevelScene implements SpriteContext, Cloneable
 	 */
 	public boolean isInGap(Node node){
 		int x = (int)(node.mario.x/blockWidth)-(int)(marioXVantage/blockWidth)+9;
-		if(x<0)
+		if(x>19 || x<0)
 			return false;
-		if(isGap[x][1]==0
-				&& node.mario.y/blockWidth>isGap[x][0]){
+		if(isGap[x-1][1]==0
+				&& node.mario.y/blockWidth>isGap[x-1][0]-1){
 			return true;
 		}
 		else

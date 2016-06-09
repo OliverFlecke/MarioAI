@@ -39,7 +39,7 @@ public class Node implements Comparable<Node> {
 	public Node parent;
 	public static Node head;
 	public List<Node> children = new ArrayList<Node>();
-	private static int maxDepth = 6;
+	private static int maxDepth = 100;
 	
 	/**
 	 * Create a new node, which should have everything needed to compute next frame
