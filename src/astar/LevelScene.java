@@ -36,21 +36,25 @@ public final class LevelScene implements SpriteContext, Cloneable
 	int debugSetBlocks = 0; // 1 prints 19:19 environment and set data. 2 also prints whole level
 	boolean debugSetEnemies = false;
 	private boolean debugGapDetection = false;
-	
+
 	//grid constants
 	public static final int cellSize = 16;
 	private static final float blockWidth = 16;
 	private static final float halfGrid = 9;
-	
+
 	//First coordinate is x, second array is 0 if gap is present else it is minimum y-coordinate
 	int[][] isGap = new int[19][2]; 
 
 	public List<Sprite> sprites = new ArrayList<Sprite>();
 	private List<Sprite> spritesToAdd = new ArrayList<Sprite>();
 	private List<Sprite> spritesToRemove = new ArrayList<Sprite>();
-	
+
 	// The position and kind of the enemies
 	public float[] enemies;
+
+	//The mario position from which the current instance is generated
+	float marioXVantage;
+	float marioYVantage;
 
 	public static Level level;
 	public Mario mario;
@@ -128,11 +132,11 @@ public final class LevelScene implements SpriteContext, Cloneable
 		try 
 		{
 			clone = (LevelScene) super.clone();
-			
+
 			// Copy Mario and other objects
 			clone.mario = (Mario) this.mario.clone();
 			clone.mario.levelScene = clone;
-	
+
 			// Clone the list of sprites into the new object
 			clone.sprites = new ArrayList<Sprite>();
 			for (Sprite sprite : this.sprites)
@@ -155,22 +159,22 @@ public final class LevelScene implements SpriteContext, Cloneable
 			if (sprite.isDead()) continue;
 			switch (sprite.kind)
 			{
-				case Sprite.KIND_GOOMBA:
-				case Sprite.KIND_BULLET_BILL:
-				case Sprite.KIND_ENEMY_FLOWER:
-				case Sprite.KIND_GOOMBA_WINGED:
-				case Sprite.KIND_GREEN_KOOPA:
-				case Sprite.KIND_GREEN_KOOPA_WINGED:
-				case Sprite.KIND_RED_KOOPA:
-				case Sprite.KIND_RED_KOOPA_WINGED:
-				case Sprite.KIND_SPIKY:
-				case Sprite.KIND_SPIKY_WINGED:
-				case Sprite.KIND_SHELL:
-				{
-					enemiesFloatsList.add((float) sprite.kind);
-					enemiesFloatsList.add(sprite.x - mario.x);
-					enemiesFloatsList.add(sprite.y - mario.y);
-				}
+			case Sprite.KIND_GOOMBA:
+			case Sprite.KIND_BULLET_BILL:
+			case Sprite.KIND_ENEMY_FLOWER:
+			case Sprite.KIND_GOOMBA_WINGED:
+			case Sprite.KIND_GREEN_KOOPA:
+			case Sprite.KIND_GREEN_KOOPA_WINGED:
+			case Sprite.KIND_RED_KOOPA:
+			case Sprite.KIND_RED_KOOPA_WINGED:
+			case Sprite.KIND_SPIKY:
+			case Sprite.KIND_SPIKY_WINGED:
+			case Sprite.KIND_SHELL:
+			{
+				enemiesFloatsList.add((float) sprite.kind);
+				enemiesFloatsList.add(sprite.x - mario.x);
+				enemiesFloatsList.add(sprite.y - mario.y);
+			}
 			}
 		}
 
@@ -193,7 +197,7 @@ public final class LevelScene implements SpriteContext, Cloneable
 	}
 
 	List<Fireball> fireballsToCheck = new ArrayList<Fireball>();
-	
+
 
 
 	public void checkFireballCollide(Fireball fireball)
@@ -206,10 +210,10 @@ public final class LevelScene implements SpriteContext, Cloneable
 		timeLeft--;
 		if (timeLeft == 0)
 			mario.die("Time out!");
-		
+
 		if (startTime > 0)
 			startTime++;
-	
+
 		fireballsOnScreen = 0;
 
 		tickCount++;
@@ -572,63 +576,94 @@ public final class LevelScene implements SpriteContext, Cloneable
 		}
 		setGapDetection(obs);
 	}
-	//Checks whether an x coordinate is a gap and determines what y coordinate is lower than either side of the gap
-		private void setGapDetection(byte[][] obs) {
-						for(int i=0; i<19; i++){
-				for(int j=0; j<19; j++){
-					if(obs[j][i]==0 && isGap[i][1]==0){
-						isGap[i][1] = 0;					
-					}
-					else
-						isGap[i][1] = 1;
+	//	Checks whether an x coordinate is a gap
+	private void setGapDetection(byte[][] obs) {
+		for(int i=0; i<19; i++){
+			for(int j=0; j<19; j++){
+				if((int)(mario.x/blockWidth+j-halfGrid)<=0){
+					isGap[i][1] = 1;
 				}
-			}
-			if(debugGapDetection){
-				System.out.println("Data original/copy");
-				System.out.println(mario.x + " : " + mario.y);
-				System.out.println();
-				boolean printColumnNr = true;
-				for(int i=0; i<19; i++){
-					for(int j=0; j<19; j++){
-						if(printColumnNr){
-							String nr = Integer.toString((int)(mario.x/blockWidth+j-halfGrid));
-							String gap = Boolean.toString(!(isGap[j][1]==1));
-							System.out.printf("|%7s %-7s",nr,gap);
-							System.out.flush();
-						}
-						else{
-							int x = (int)(mario.x/blockWidth+j-halfGrid);
-							int y = (int)(mario.y/blockWidth+i-halfGrid);
-							String c = "["+level.getBlock(x, y)+"]";
-							String o = "["+ch.idsia.benchmark.mario.engine.level.Level.GetBlock(x, y)+"]";
-							System.out.printf("|%7s/%-7s", o,c);
-							System.out.flush();
-						}
-					}
-					printColumnNr = false;
-					System.out.println("");
+				if(obs[j][i]==0 && isGap[i][1]==0){
+					isGap[i][1] = 0;					
 				}
-				System.out.println();
-				System.out.println();
-				System.out.println("**********************************************************************************************");
-				System.out.println();
+				else if (obs[j][i]!=0 && isGap[i][1]==0){
+					isGap[i][0] = j;
+					isGap[i][1] = 1;
+				}
+				else
+					isGap[i][1] = 1;
 			}
-
+		}
+		//		Determines the lowest y-coordinate of gap
+		int maxY = 19;
+		for(int i=0; i<19; i++){
+			if(isGap[i][1] == 0){
+				int j = i;
+				while((j<18 && isGap[j][1] == 0)){	
+					j++;
+				}
+				maxY=isGap[j][0];
+			}
+			isGap[i][0]=maxY;
 		}
 
-		/**
-		 * 
-		 * @param node
-		 * @return Checks whether a node's x coordinate is in a gap and whether the y-coordinate is below platforms on either side returning a boolean
-		 */
-		public boolean isInGap(Node node){
-			if(isGap[(int)(node.mario.x/blockWidth)][1]==0
-					&& node.mario.y/blockWidth>12){
-				return true;
+
+		//		 Sets the vantage point for the current instance for later use
+		marioXVantage = mario.x;
+		marioYVantage = mario.y;
+		
+		//debug
+		if(debugGapDetection){
+			System.out.println("x : gap y : gap boolean");
+			System.out.println("Data original/copy");
+			System.out.println("Mario coordinates:"+mario.x + " : " + mario.y);
+			System.out.println();
+			boolean printColumnNr = true;
+			for(int i=0; i<19; i++){
+				for(int j=0; j<19; j++){
+					if(printColumnNr){
+						String nr = Integer.toString((int)(mario.x/blockWidth+j-halfGrid));
+						String gap = Boolean.toString(!(isGap[j][1]==1));
+						String y = Integer.toString(isGap[j][0]);
+						System.out.printf("|%5s:%4s %-7s",nr,y,gap);
+						System.out.flush();
+					}
+					else{
+						int x = (int)(mario.x/blockWidth+j-halfGrid);
+						int y = (int)(mario.y/blockWidth+i-halfGrid);
+						String c = "["+level.getBlock(x, y)+"]";
+						String o = "["+ch.idsia.benchmark.mario.engine.level.Level.GetBlock(x, y)+"]";
+						System.out.printf("| %7s/%-7s  ", o,c);
+						System.out.flush();
+					}
+				}
+				printColumnNr = false;
+				System.out.println("");
 			}
+			System.out.println();
+			System.out.println();
+			System.out.println("**********************************************************************************************");
+			System.out.println();
+		}
+
+	}
+
+	/**
+	 * 
+	 * @param node
+	 * @return Checks whether a node's x coordinate is in a gap and whether the y-coordinate is below platform on right
+	 */
+	public boolean isInGap(Node node){
+		int x = (int)(node.mario.x/blockWidth)-(int)(marioXVantage/blockWidth)+9;
+		if(x<0)
+			return false;
+		if(isGap[x][1]==0
+				&& node.mario.y/blockWidth>isGap[x][0]){
+			return true;
+		}
 		else
 			return false;
-		}
+	}
 
 	//    public boolean setLevelScene(byte[][] data)
 	//    {
@@ -746,55 +781,55 @@ public final class LevelScene implements SpriteContext, Cloneable
 
 			switch (type) 
 			{
-				case (Sprite.KIND_GOOMBA_WINGED):
-				case (Sprite.KIND_GREEN_KOOPA_WINGED):
-				case (Sprite.KIND_RED_KOOPA_WINGED):
-				case (Sprite.KIND_SPIKY_WINGED):
-					winged = true;
-					break;
-				case (Sprite.KIND_BULLET_BILL):
-				case (Sprite.KIND_SHELL):
-				case (Sprite.KIND_GOOMBA):
-				case (Sprite.KIND_ENEMY_FLOWER):
-				case (Sprite.KIND_GREEN_KOOPA):
-				case (Sprite.KIND_RED_KOOPA):
-				case (Sprite.KIND_SPIKY):
-				case (Sprite.KIND_WAVE_GOOMBA):
-				default:
-					winged = false;
+			case (Sprite.KIND_GOOMBA_WINGED):
+			case (Sprite.KIND_GREEN_KOOPA_WINGED):
+			case (Sprite.KIND_RED_KOOPA_WINGED):
+			case (Sprite.KIND_SPIKY_WINGED):
+				winged = true;
+			break;
+			case (Sprite.KIND_BULLET_BILL):
+			case (Sprite.KIND_SHELL):
+			case (Sprite.KIND_GOOMBA):
+			case (Sprite.KIND_ENEMY_FLOWER):
+			case (Sprite.KIND_GREEN_KOOPA):
+			case (Sprite.KIND_RED_KOOPA):
+			case (Sprite.KIND_SPIKY):
+			case (Sprite.KIND_WAVE_GOOMBA):
+			default:
+				winged = false;
 			}
-//			switch (kind) {
-//			case(Sprite.KIND_BULLET_BILL): 
-//				type = -2;
-//				break;
-//			case(Sprite.KIND_SHELL): 
-//				type = Enemy.KIND_SHELL;
-//				break;
-//			case(Sprite.KIND_GOOMBA): 
-//				type = Enemy.KIND_GOOMBA;
-//				break;
-//			case(Sprite.KIND_GOOMBA_WINGED): 
-//				type = Enemy.KIND_GOOMBA_WINGED; 
-//				winged = true;
-//				break;
-//			case(Sprite.KIND_GREEN_KOOPA): 
-//				type = Enemy.KIND_GREEN_KOOPA;
-//				break;
-//			case(Sprite.KIND_GREEN_KOOPA_WINGED): 
-//				type = Enemy.KIND_GREEN_KOOPA_WINGEDE; 
-//				winged = true;
-//				break;
-//			case(Sprite.KIND_RED_KOOPA): type = Enemy.ENEMY_RED_KOOPA;
-//			break;
-//			case(Sprite.KIND_RED_KOOPA_WINGED): type = Enemy.ENEMY_RED_KOOPA; winged = true;
-//			break;
-//			case(Sprite.KIND_SPIKY): type = Enemy.ENEMY_SPIKY;
-//			break;
-//			case(Sprite.KIND_SPIKY_WINGED): type = Enemy.ENEMY_SPIKY; winged = true;
-//			break;
-//			default : type=-1;
-//			break;
-//			}
+			//			switch (kind) {
+			//			case(Sprite.KIND_BULLET_BILL): 
+			//				type = -2;
+			//				break;
+			//			case(Sprite.KIND_SHELL): 
+			//				type = Enemy.KIND_SHELL;
+			//				break;
+			//			case(Sprite.KIND_GOOMBA): 
+			//				type = Enemy.KIND_GOOMBA;
+			//				break;
+			//			case(Sprite.KIND_GOOMBA_WINGED): 
+			//				type = Enemy.KIND_GOOMBA_WINGED; 
+			//				winged = true;
+			//				break;
+			//			case(Sprite.KIND_GREEN_KOOPA): 
+			//				type = Enemy.KIND_GREEN_KOOPA;
+			//				break;
+			//			case(Sprite.KIND_GREEN_KOOPA_WINGED): 
+			//				type = Enemy.KIND_GREEN_KOOPA_WINGEDE; 
+			//				winged = true;
+			//				break;
+			//			case(Sprite.KIND_RED_KOOPA): type = Enemy.ENEMY_RED_KOOPA;
+			//			break;
+			//			case(Sprite.KIND_RED_KOOPA_WINGED): type = Enemy.ENEMY_RED_KOOPA; winged = true;
+			//			break;
+			//			case(Sprite.KIND_SPIKY): type = Enemy.ENEMY_SPIKY;
+			//			break;
+			//			case(Sprite.KIND_SPIKY_WINGED): type = Enemy.ENEMY_SPIKY; winged = true;
+			//			break;
+			//			default : type=-1;
+			//			break;
+			//			}
 			Sprite sprite = null;
 			if(type == -1)
 			{
