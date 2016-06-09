@@ -210,8 +210,8 @@ public final class LevelScene implements SpriteContext, Cloneable
 			if (!(sprite instanceof Mario))
 			{
 				sprite.tick();
+				sprite.collideCheck();
 			}
-			sprite.collideCheck();
 		}
 
 		for (Shell shell : shellsToCheck)
