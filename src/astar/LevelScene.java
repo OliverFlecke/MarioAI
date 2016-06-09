@@ -35,7 +35,7 @@ public final class LevelScene implements SpriteContext, Cloneable
 	//debug flags
 	int debugSetBlocks = 0; // 1 prints 19:19 environment and set data. 2 also prints whole level
 	boolean debugSetEnemies = false;
-	private boolean debugGapDetection = false;
+	private boolean debugGapDetection = true;
 	
 	//grid constants
 	public static final int cellSize = 16;
@@ -218,8 +218,10 @@ public final class LevelScene implements SpriteContext, Cloneable
 
 		for (Sprite sprite : sprites)
 		{			
-//			if (!(sprite instanceof Mario))
-			sprite.tick();
+			if (!(sprite instanceof Mario))
+			{
+				sprite.tick();
+			}
 			sprite.collideCheck();
 		}
 
@@ -291,7 +293,7 @@ public final class LevelScene implements SpriteContext, Cloneable
 			if (((Level.TILE_BEHAVIORS[block & 0xff]) & Level.BIT_SPECIAL) > 0)
 			{
 				{
-					if (!mario.large)
+					if (!Mario.large)
 					{
 						addSprite(new Mushroom(this, x * cellSize + 8, y * cellSize + 8));
 						++level.counters.mushrooms;

@@ -99,7 +99,7 @@ public class Node implements Comparable<Node> {
 	private void tick() 
 	{
 		this.levelScene.tick();
-//		this.mario.tick();
+		this.mario.tick();
 	}
 
 	/**
@@ -122,7 +122,7 @@ public class Node implements Comparable<Node> {
 		this.y = mario.y;
 		
 		// If Mario is dead or to low in the level, the path is dead
-		if (mario.damageTaken > 0 || mario.isDead() || this.y > 223f) 
+		if (mario.isDead() || this.y > 223f) 
 		{
 			this.fitness = Float.MAX_VALUE;
 		}
@@ -130,8 +130,8 @@ public class Node implements Comparable<Node> {
 		{
 			this.fitness = Float.MAX_VALUE;
 		}
-//		else if (levelScene.isInGap(this))
-//			this.fitness = Float.MAX_VALUE;
+		else if (levelScene.isInGap(this))
+			this.fitness = Float.MAX_VALUE;
 		else 
 		{
 			this.fitness = getHeuristic(this);
@@ -178,11 +178,8 @@ public class Node implements Comparable<Node> {
 		// Set the start time of the search
 		setStartTime(System.currentTimeMillis());
 		
-		// The main search loop. Keep searching for better nodes, until some node reach the goal or time is up
 		while (!current.atGoal())
-		{		
-			// Stop the search when out of time
-			if ((System.currentTimeMillis() - getStartTime()) > timeLimit) break;
+		{			
 			if (debug) printNodeData(current);
 			
 			// Used when testing. Insuring that the graph does not search too far
@@ -190,12 +187,16 @@ public class Node implements Comparable<Node> {
 			{
 				current = queue.poll();
 				continue;
-			}		
+			}
+						
+			if ((System.currentTimeMillis() - getStartTime()) > timeLimit)
+			{
+				if (debug) System.out.println("Out of time!");
+				break;
+			}
 			
 			// Generate the children for this node
-			if (current.fitness != Float.MAX_VALUE)
-				generateNodes(current, queue);
-			
+			generateNodes(current, queue);
 			if (queue.isEmpty()) break;	// If there are no more options, end the search
 			
 			current = queue.poll();	// Poll the new best options
