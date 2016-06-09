@@ -98,8 +98,8 @@ public class Node implements Comparable<Node> {
 	 */
 	private void tick() 
 	{
-		this.levelScene.tick();
 		this.mario.tick();
+		this.levelScene.tick();
 	}
 
 	/**
@@ -188,8 +188,7 @@ public class Node implements Comparable<Node> {
 			{
 				current = queue.poll();
 				continue;
-			}
-						
+			}			
 			
 			// Generate the children for this node
 			if (current.fitness != Float.MAX_VALUE)
@@ -215,6 +214,8 @@ public class Node implements Comparable<Node> {
 	 * Generate all the new nodes which Mario can move to from this.
 	 * This method should take into account what options Mario have at a given moment. 
 	 * That means that jump nodes are not generated when Mario do not have the option of jumping
+	 * @param current The current node to generate new nodes from
+	 * @param queue The queue to add all the new nodes to. This should be sorted based on the Node class's compareTo
 	 */
 	public static void generateNodes(Node current, PriorityQueue<Node> queue)
 	{

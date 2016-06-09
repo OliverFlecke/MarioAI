@@ -26,8 +26,6 @@ public final class Mario extends Sprite implements Cloneable
 
 	private static float marioGravity;
 
-	public static boolean large = false;
-	public static boolean fire = false;
 	public static int coins = 0;
 	public static int hiddenBlocksFound = 0;
 	public static int collisionsWithCreatures = 0;
@@ -42,6 +40,7 @@ public final class Mario extends Sprite implements Cloneable
 	private int status = STATUS_RUNNING;
 	// for racoon when carrying the shell
 
+	@SuppressWarnings("unused")
 	private boolean isRacoon;
 	public float yaa = 1;
 
@@ -49,11 +48,14 @@ public final class Mario extends Sprite implements Cloneable
 	private static float iceCoeff = 0f;
 	private static float jumpPower;
 	private boolean inLadderZone;
+	@SuppressWarnings("unused")
 	private boolean onLadder;
 	private boolean onTopOfLadder = false;
 	private static float GROUND_INERTIA = 0.89f;
 	private static float AIR_INERTIA = 0.89f;
 	
+	public boolean large = false;
+	public boolean fire = false;
 	public boolean[] keys = new boolean[Environment.numberOfKeys];
 	public boolean[] cheatKeys;
 	public float runTime;
@@ -107,8 +109,8 @@ public final class Mario extends Sprite implements Cloneable
 		mapY = (int) (y / 16);
 		
 		facing = 1;
-		setMode(Mario.large, Mario.fire);
-		
+//		setMode(Mario.large, Mario.fire);
+		setMode(this.large, this.fire);
 		// Get gravity
 		MarioAIOptions options = MarioAIOptions.getDefaultOptions();
 		marioGravity = options.getMarioGravity();
@@ -150,8 +152,8 @@ public final class Mario extends Sprite implements Cloneable
 
 	public static void resetStatic(MarioAIOptions marioAIOptions)
 	{
-		large = marioAIOptions.getMarioMode() > 0;
-		fire = marioAIOptions.getMarioMode() == 2;
+//		large = marioAIOptions.getMarioMode() > 0;
+//		fire = marioAIOptions.getMarioMode() == 2;
 		coins = 0;
 		hiddenBlocksFound = 0;
 		mushroomsDevoured = 0;
@@ -177,8 +179,8 @@ public final class Mario extends Sprite implements Cloneable
 
 	private void blink(boolean on)
 	{
-		Mario.large = on ? newLarge : lastLarge;
-		Mario.fire = on ? newFire : lastFire;
+		this.large = on ? newLarge : lastLarge;
+		this.fire = on ? newFire : lastFire;
 	}
 
 	void setMode(boolean large, boolean fire)
@@ -187,14 +189,14 @@ public final class Mario extends Sprite implements Cloneable
 		if (fire) large = true;
 		if (!large) fire = false;
 
-		lastLarge = Mario.large;
-		lastFire = Mario.fire;
+		lastLarge = this.large;
+		lastFire = this.fire;
 
-		Mario.large = large;
-		Mario.fire = fire;
+		this.large = large;
+		this.fire = fire;
 
-		newLarge = Mario.large;
-		newFire = Mario.fire;
+		newLarge = this.large;
+		newFire = this.fire;
 
 		blink(true);
 	}
@@ -318,7 +320,7 @@ public final class Mario extends Sprite implements Cloneable
 			sliding = false;
 		}
 
-		if (keys[KEY_SPEED] && ableToShoot && Mario.fire && levelScene.fireballsOnScreen < 2)
+		if (keys[KEY_SPEED] && ableToShoot && this.fire && levelScene.fireballsOnScreen < 2)
 		{
 			levelScene.addSprite(new Fireball(levelScene, x + facing * 6, y - 20, facing));
 		}
@@ -568,6 +570,7 @@ public final class Mario extends Sprite implements Cloneable
 
 	public void getHurt(final int spriteKind)
 	{
+		System.out.println("I got hurt! :(");
 		if (deathTime > 0 || isMarioInvulnerable) return;
 
 		if (invulnerableTime > 0) return;
