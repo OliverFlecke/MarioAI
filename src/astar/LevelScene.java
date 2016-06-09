@@ -35,26 +35,21 @@ public final class LevelScene implements SpriteContext, Cloneable
 	//debug flags
 	int debugSetBlocks = 0; // 1 prints 19:19 environment and set data. 2 also prints whole level
 	boolean debugSetEnemies = false;
-	private boolean debugGapDetection = false;
+	boolean debugGapDetection = true;
+	
+	private int[][] isGap= new int[19][2];
+	private float blockWidth = 16;
+	private float halfGrid = 9;
+	
+	//Vantage point for simulation
+	private float marioXVantage;
+	private float marioYVantage;
 
-	//grid constants
 	public static final int cellSize = 16;
-	private static final float blockWidth = 16;
-	private static final float halfGrid = 9;
-
-	//First coordinate is x, second array is 0 if gap is present else it is minimum y-coordinate
-	int[][] isGap = new int[19][2]; 
 
 	public List<Sprite> sprites = new ArrayList<Sprite>();
 	private List<Sprite> spritesToAdd = new ArrayList<Sprite>();
 	private List<Sprite> spritesToRemove = new ArrayList<Sprite>();
-
-	// The position and kind of the enemies
-	public float[] enemies;
-
-	//The mario position from which the current instance is generated
-	float marioXVantage;
-	float marioYVantage;
 
 	public static Level level;
 	public Mario mario;
@@ -134,11 +129,11 @@ public final class LevelScene implements SpriteContext, Cloneable
 		try 
 		{
 			clone = (LevelScene) super.clone();
-
+			
 			// Copy Mario and other objects
 			clone.mario = (Mario) this.mario.clone();
 			clone.mario.levelScene = clone;
-
+	
 			// Clone the list of sprites into the new object
 			clone.sprites = new ArrayList<Sprite>();
 			for (Sprite sprite : this.sprites)
@@ -158,6 +153,7 @@ public final class LevelScene implements SpriteContext, Cloneable
 		enemiesFloatsList.clear();
 		for (Sprite sprite : sprites)
 		{
+			// TODO:[M]: add unit tests for getEnemiesFloatPos involving all kinds of creatures
 			if (sprite.isDead()) continue;
 			switch (sprite.kind)
 			{
@@ -199,8 +195,7 @@ public final class LevelScene implements SpriteContext, Cloneable
 	}
 
 	List<Fireball> fireballsToCheck = new ArrayList<Fireball>();
-
-
+	
 
 	public void checkFireballCollide(Fireball fireball)
 	{
@@ -212,10 +207,10 @@ public final class LevelScene implements SpriteContext, Cloneable
 		timeLeft--;
 		if (timeLeft == 0)
 			mario.die("Time out!");
-
+		
 		if (startTime > 0)
 			startTime++;
-
+	
 		fireballsOnScreen = 0;
 
 		tickCount++;
@@ -342,15 +337,9 @@ public final class LevelScene implements SpriteContext, Cloneable
 		}
 	}
 
-	public int getTimeSpent() 
-	{
-		return startTime / GlobalOptions.mariosecondMultiplier;
-	}
+	public int getTimeSpent() { return startTime / GlobalOptions.mariosecondMultiplier; }
 
-	public int getTimeLeft() 
-	{
-		return timeLeft / GlobalOptions.mariosecondMultiplier;
-	}
+	public int getTimeLeft() { return timeLeft / GlobalOptions.mariosecondMultiplier; }
 
 	public int getKillsTotal()
 	{
@@ -423,15 +412,11 @@ public final class LevelScene implements SpriteContext, Cloneable
 		return ret;
 	}
 
-	public boolean isMarioOnGround() 
-	{
-		return mario.isOnGround();
-	}
+	public boolean isMarioOnGround()
+	{ return mario.isOnGround(); }
 
-	public boolean isMarioAbleToJump() 
-	{
-		return mario.mayJump();
-	}
+	public boolean isMarioAbleToJump()
+	{ return mario.mayJump(); }
 
 	public float[] getMarioFloatPos()
 	{
@@ -492,14 +477,9 @@ public final class LevelScene implements SpriteContext, Cloneable
 		bonusPoints += superPunti;
 	}
 
-	/**
-	 * Used to update the levelgrid and the enemies in the level
-	 * @param levelSceneObservationZ The grid of the level. This should contain the data of where
-	 * blocks and the ground are.
-	 * @param enemiesFloatPos Kind and position of the enemies in the level 
-	 */
 	public void setup(byte[][] levelSceneObservationZ, float[] enemiesFloatPos) {
-		setLevelScene(levelSceneObservationZ);
+		//		this.level.map = levelSceneObservationZ;
+		this.setLevelScene(levelSceneObservationZ);
 		setEnemiesFloatPos(enemiesFloatPos);
 	}
 
@@ -514,11 +494,11 @@ public final class LevelScene implements SpriteContext, Cloneable
 				byte b = obs[i][j];
 				if(b==-60)
 					b=-127;
-				int x = (int)(mario.x/blockWidth+j-halfGrid);
-				int y = (int)(mario.y/blockWidth+i-halfGrid);
+				int x = (int)(mario.x/16+j-9);
+				int y = (int)(mario.y/16+i-9);
 				level.setBlock(x, y, b);
 			}
-		} 
+		}
 		if(debugSetBlocks>0){
 			System.out.println();
 			System.out.println("Data original/copy");
@@ -532,8 +512,8 @@ public final class LevelScene implements SpriteContext, Cloneable
 						System.out.printf("|%7s%-8s",nr,"");
 					}
 					else{
-						int x = (int)(mario.x/blockWidth+j-halfGrid);
-						int y = (int)(mario.y/blockWidth+i-halfGrid);
+						int x = (int)(mario.x/16+j-9);
+						int y = (int)(mario.y/16+i-9);
 						String c = "["+level.getBlock(x, y)+"]";
 						String o = "["+ch.idsia.benchmark.mario.engine.level.Level.GetBlock(x, y)+"]";
 						System.out.printf("|%7s/%-7s", o,c);
@@ -594,10 +574,11 @@ public final class LevelScene implements SpriteContext, Cloneable
 				}
 				else
 					isGap[i][1] = 1;
+				
 			}
 		}
 		//		Determines the lowest y-coordinate of gap
-		int maxY = 19;
+		int maxY=0;
 		for(int i=0; i<19; i++){
 			if(isGap[i][1] == 0){
 				int j = i;
@@ -605,8 +586,10 @@ public final class LevelScene implements SpriteContext, Cloneable
 					j++;
 				}
 				maxY=isGap[j][0];
+				for(; i<j; i++){
+				isGap[i][0]=maxY;
+				}
 			}
-			isGap[i][0]=maxY;
 		}
 
 
@@ -772,7 +755,6 @@ public final class LevelScene implements SpriteContext, Cloneable
 	 */
 	public void setEnemiesFloatPos(float[] enemiesFloatPos)
 	{
-		enemies = enemiesFloatPos;
 		for(int i = 0; i < enemiesFloatPos.length; i += 3){
 
 			int type = (int)enemiesFloatPos[i];
@@ -783,55 +765,55 @@ public final class LevelScene implements SpriteContext, Cloneable
 
 			switch (type) 
 			{
-			case (Sprite.KIND_GOOMBA_WINGED):
-			case (Sprite.KIND_GREEN_KOOPA_WINGED):
-			case (Sprite.KIND_RED_KOOPA_WINGED):
-			case (Sprite.KIND_SPIKY_WINGED):
-				winged = true;
-			break;
-			case (Sprite.KIND_BULLET_BILL):
-			case (Sprite.KIND_SHELL):
-			case (Sprite.KIND_GOOMBA):
-			case (Sprite.KIND_ENEMY_FLOWER):
-			case (Sprite.KIND_GREEN_KOOPA):
-			case (Sprite.KIND_RED_KOOPA):
-			case (Sprite.KIND_SPIKY):
-			case (Sprite.KIND_WAVE_GOOMBA):
-			default:
-				winged = false;
+				case (Sprite.KIND_GOOMBA_WINGED):
+				case (Sprite.KIND_GREEN_KOOPA_WINGED):
+				case (Sprite.KIND_RED_KOOPA_WINGED):
+				case (Sprite.KIND_SPIKY_WINGED):
+					winged = true;
+					break;
+				case (Sprite.KIND_BULLET_BILL):
+				case (Sprite.KIND_SHELL):
+				case (Sprite.KIND_GOOMBA):
+				case (Sprite.KIND_ENEMY_FLOWER):
+				case (Sprite.KIND_GREEN_KOOPA):
+				case (Sprite.KIND_RED_KOOPA):
+				case (Sprite.KIND_SPIKY):
+				case (Sprite.KIND_WAVE_GOOMBA):
+				default:
+					winged = false;
 			}
-			//			switch (kind) {
-			//			case(Sprite.KIND_BULLET_BILL): 
-			//				type = -2;
-			//				break;
-			//			case(Sprite.KIND_SHELL): 
-			//				type = Enemy.KIND_SHELL;
-			//				break;
-			//			case(Sprite.KIND_GOOMBA): 
-			//				type = Enemy.KIND_GOOMBA;
-			//				break;
-			//			case(Sprite.KIND_GOOMBA_WINGED): 
-			//				type = Enemy.KIND_GOOMBA_WINGED; 
-			//				winged = true;
-			//				break;
-			//			case(Sprite.KIND_GREEN_KOOPA): 
-			//				type = Enemy.KIND_GREEN_KOOPA;
-			//				break;
-			//			case(Sprite.KIND_GREEN_KOOPA_WINGED): 
-			//				type = Enemy.KIND_GREEN_KOOPA_WINGEDE; 
-			//				winged = true;
-			//				break;
-			//			case(Sprite.KIND_RED_KOOPA): type = Enemy.ENEMY_RED_KOOPA;
-			//			break;
-			//			case(Sprite.KIND_RED_KOOPA_WINGED): type = Enemy.ENEMY_RED_KOOPA; winged = true;
-			//			break;
-			//			case(Sprite.KIND_SPIKY): type = Enemy.ENEMY_SPIKY;
-			//			break;
-			//			case(Sprite.KIND_SPIKY_WINGED): type = Enemy.ENEMY_SPIKY; winged = true;
-			//			break;
-			//			default : type=-1;
-			//			break;
-			//			}
+//			switch (kind) {
+//			case(Sprite.KIND_BULLET_BILL): 
+//				type = -2;
+//				break;
+//			case(Sprite.KIND_SHELL): 
+//				type = Enemy.KIND_SHELL;
+//				break;
+//			case(Sprite.KIND_GOOMBA): 
+//				type = Enemy.KIND_GOOMBA;
+//				break;
+//			case(Sprite.KIND_GOOMBA_WINGED): 
+//				type = Enemy.KIND_GOOMBA_WINGED; 
+//				winged = true;
+//				break;
+//			case(Sprite.KIND_GREEN_KOOPA): 
+//				type = Enemy.KIND_GREEN_KOOPA;
+//				break;
+//			case(Sprite.KIND_GREEN_KOOPA_WINGED): 
+//				type = Enemy.KIND_GREEN_KOOPA_WINGEDE; 
+//				winged = true;
+//				break;
+//			case(Sprite.KIND_RED_KOOPA): type = Enemy.ENEMY_RED_KOOPA;
+//			break;
+//			case(Sprite.KIND_RED_KOOPA_WINGED): type = Enemy.ENEMY_RED_KOOPA; winged = true;
+//			break;
+//			case(Sprite.KIND_SPIKY): type = Enemy.ENEMY_SPIKY;
+//			break;
+//			case(Sprite.KIND_SPIKY_WINGED): type = Enemy.ENEMY_SPIKY; winged = true;
+//			break;
+//			default : type=-1;
+//			break;
+//			}
 			Sprite sprite = null;
 			if(type == -1)
 			{
