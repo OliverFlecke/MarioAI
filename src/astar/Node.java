@@ -39,7 +39,7 @@ public class Node implements Comparable<Node> {
 	public Node parent;
 	public static Node head;
 	public List<Node> children = new ArrayList<Node>();
-	private static int maxDepth = 1000;
+	private static int maxDepth = 6;
 	
 	/**
 	 * Create a new node, which should have everything needed to compute next frame
@@ -121,13 +121,18 @@ public class Node implements Comparable<Node> {
 		this.x = mario.x;
 		this.y = mario.y;
 		
-		// If Mario is dead or to low in the level, the path is dead
+//		// If Mario is dead or to low in the level, the path is dead
 		if (mario.isDead() || this.y > 223f) 
 		{
 			this.fitness = Float.MAX_VALUE;
 		}
 		else if (checkCollision())
 		{
+			this.fitness = Float.MAX_VALUE;
+		}
+		else if (levelScene.isInGap(this))
+		{
+			System.out.println("true");
 			this.fitness = Float.MAX_VALUE;
 		}
 		else 
