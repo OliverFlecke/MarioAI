@@ -43,10 +43,8 @@ public class Node implements Comparable<Node> {
 	/**
 	 * Create a new node, which should have everything needed to compute next frame
 	 * @param parent of the current node
-	 * @param levelScene
-	 * @param mario
-	 * @param enemies
-	 * @param action
+	 * @param levelScene to run the simulation
+	 * @param action which is simulated in this node
 	 */
 	public Node(Node parent, LevelScene levelScene, boolean[] action) 
 	{
@@ -70,10 +68,10 @@ public class Node implements Comparable<Node> {
 
 	/**
 	 * Create a node without a parent. Everything else is in a normal node
-	 * @param levelScene
-	 * @param mario
-	 * @param enemies
-	 * @param action
+	 * @param levelScene used for the simulation
+	 * @param mario which is used in the simulation
+	 * @param enemies in the simulation
+	 * @param action which is simulated in this node
 	 */
 	public Node(LevelScene levelScene, Mario mario, List<Sprite> enemies, boolean[] action)
 	{
