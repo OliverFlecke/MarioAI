@@ -204,9 +204,10 @@ public class Node implements Comparable<Node> {
 			}
 			// Generate the children for this node
 			generateNodes(current, queue);
-			if (queue.isEmpty()) break;	// If there are no more options, end the search
-			
-			current = queue.poll();	// Poll the new best options
+			if (queue.isEmpty()) 
+				break;	// If there are no more options, end the search
+			else 
+				current = queue.poll();	// Poll the new best options
 						
 			// Update the best node
 			if (best.fitness >= current.fitness)
