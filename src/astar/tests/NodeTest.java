@@ -112,8 +112,7 @@ public class NodeTest {
 	 */
 	@Test
 	public void testNode() {
-		Graph graph = new Graph();
-		Node node = new Node(graph, scene, null);
+		Node node = new Node(scene, null);
 		Assert.assertNotNull(node);
 	}
 
@@ -123,15 +122,15 @@ public class NodeTest {
 	@Test
 	public void testFitnessEval() {
 		Graph graph = new Graph();
-		Node head = new Node(graph, scene, null);
+		Node head = new Node(scene, null);
 		graph.setHead(head);
 		graph.setGoal(200);
 
 		// Setup test object
-		Node node = new Node(graph, scene, Node.createAction(false, false, false, false));
+		Node node = new Node(scene, Node.createAction(false, false, false, false));
 		node.mario.x = 100;
 
-		node.fitnessEvaluation();
+		node.fitnessEvaluation(graph.goal, graph.head.x);
 		Assert.assertTrue(node.fitness > 0);
 	}
 
@@ -140,12 +139,12 @@ public class NodeTest {
 	 */
 	@Test
 	public void testGenerateNewNodes() {
-		PriorityQueue<Node> queue = new PriorityQueue<Node>();
 		Graph graph = new Graph();
-		Node node = new Node(graph, scene, Node.createAction(true, true, true, true));
+		PriorityQueue<Node> queue = graph.queue;
+		Node node = new Node(scene, Node.createAction(true, true, true, true));
 		graph.setHead(node);
 
-		node.generateNodes(queue);
+		node.generateNodes(queue, 1000, 0);
 		Assert.assertEquals(10, queue.size());
 	}
 
@@ -168,9 +167,8 @@ public class NodeTest {
 	 */
 	@Test
 	public void testCompareTo() {
-		Graph graph = new Graph();
-		Node lowest = new Node(graph, scene, null);
-		Node highest = new Node(graph, scene, null);
+		Node lowest = new Node(scene, null);
+		Node highest = new Node(scene, null);
 
 		lowest.fitness = 10;
 		highest.fitness = Float.MAX_VALUE;
@@ -197,10 +195,10 @@ public class NodeTest {
 	@Test
 	public void testDistanceTraveled() {
 		Graph graph = new Graph();
-		Node node = new Node(graph, scene, null);
+		Node node = new Node(scene, null);
 		graph.setHead(node);
 
-		float distTraveled = node.getDistanceTraveled();
+		float distTraveled = node.getDistanceTraveled(graph.head.x);
 
 		Assert.assertEquals(0.0f, distTraveled);
 	}
@@ -211,13 +209,13 @@ public class NodeTest {
 	@Test
 	public void testDistanceTraveledWithDistance() {
 		Graph graph = new Graph();
-		Node node = new Node(graph, scene, null);
-		Node headNode = new Node(graph, scene, null);
+		Node node = new Node(scene, null);
+		Node headNode = new Node(scene, null);
 		graph.setHead(headNode);
 		node.x = 50f;
 		headNode.x = 100f;
 
-		float distTraveled = node.getDistanceTraveled();
+		float distTraveled = node.getDistanceTraveled(graph.head.x);
 
 		Assert.assertEquals(-50f, distTraveled);
 	}
@@ -319,8 +317,7 @@ public class NodeTest {
 	 */
 	@Test
 	public void testMarioIsDead() {
-		Graph graph = new Graph();
-		Node node = new Node(graph, scene, Node.createAction(true, false, false, false));
+		Node node = new Node(scene, Node.createAction(true, false, false, false));
 
 		// scene.mario.carried = new Sprite();
 
@@ -329,7 +326,7 @@ public class NodeTest {
 
 		// System.out.print(scene.mario.isDead());
 
-		node.fitnessEvaluation();
+		node.fitnessEvaluation(0, 0);
 
 		assertEquals(Float.MAX_VALUE, node.fitness, 0);
 	}
@@ -339,12 +336,11 @@ public class NodeTest {
 	 */
 	@Test
 	public void testMariosYIsToLarge() {
-		Graph graph = new Graph();
-		Node node = new Node(graph, scene, Node.createAction(true, false, false, false));
+		Node node = new Node(scene, Node.createAction(true, false, false, false));
 
 		scene.mario.y = 224f;
 
-		node.fitnessEvaluation();
+		node.fitnessEvaluation(0, 0);
 
 		assertEquals(Float.MAX_VALUE, node.fitness, 0);
 	}
@@ -357,7 +353,7 @@ public class NodeTest {
 
 		// generate a random graph of nodes.
 		Graph graph = new Graph();
-		Node topNode = new Node(graph, scene, Node.createAction(false, false, false, false));
+		Node topNode = new Node(scene, Node.createAction(false, false, false, false));
 		topNode.depth = 0;
 		int graphDepth = 8;
 		int numbOfParents = 1;
@@ -375,7 +371,7 @@ public class NodeTest {
 
 			for (int j = 0; j < numOfNodes; j++) {
 
-				Node node = new Node(graph, scene, Node.createAction(false, false, false, false));
+				Node node = new Node(scene, Node.createAction(false, false, false, false));
 				float randomXCoord = rand.nextFloat() * numOfNodes + 1;
 				int randParent = rand.nextInt(numbOfParents);
 
@@ -383,7 +379,7 @@ public class NodeTest {
 				node.mario.x = randomXCoord;
 
 				// eval fitness
-				node.fitnessEvaluation();
+				node.fitnessEvaluation(graph.goal, 0);
 
 				// setting the parent
 				if (i == 0) {
@@ -404,7 +400,7 @@ public class NodeTest {
 			numbOfParents = numOfNodes;
 		}
 
-		Node goalNode = new Node(graph, scene, Node.createAction(false, false, false, false));
+		Node goalNode = new Node(scene, Node.createAction(false, false, false, false));
 		goalNode.depth = graphDepth;
 
 		// order nodes after decending fitness score.
@@ -430,9 +426,8 @@ public class NodeTest {
 	 */
 	@Test
 	public void testLargerAccelerationBetterFitness() {
-		Graph graph = new Graph();
-		Node walkingNode = new Node(graph, scene, Node.createAction(true, false, false, false));
-		Node runningNode = new Node(graph, scene, Node.createAction(true, false, false, true));
+		Node walkingNode = new Node(scene, Node.createAction(true, false, false, false));
+		Node runningNode = new Node(scene, Node.createAction(true, false, false, true));
 
 		walkingNode.mario.x = 100f;
 		walkingNode.mario.xa = 1f;
@@ -442,11 +437,9 @@ public class NodeTest {
 		runningNode.mario.xa = Node.maxSpeed;
 		runningNode.mario.y = 20f;
 
-		walkingNode.fitnessEvaluation();
-		runningNode.fitnessEvaluation();
+		walkingNode.fitnessEvaluation(1000, 0);
+		runningNode.fitnessEvaluation(1000, 0);
 
-		System.out.println(walkingNode.fitness);
-		System.out.println(runningNode.fitness);
 		assertTrue(walkingNode.fitness > runningNode.fitness);
 	}
 
@@ -455,9 +448,8 @@ public class NodeTest {
 	 */
 	@Test
 	public void testJumpWhileFalling() {
-		Graph graph = new Graph();
-		Node parentNode = new Node(graph, scene, Node.createAction(true, false, false, true));
-		Node currentNode = new Node(graph, scene, Node.createAction(true, false, false, true));
+		Node parentNode = new Node(scene, Node.createAction(true, false, false, true));
+		Node currentNode = new Node(scene, Node.createAction(true, false, false, true));
 
 		currentNode.parent = parentNode;
 
@@ -476,9 +468,8 @@ public class NodeTest {
 	 */
 	@Test
 	public void testJumpWhileJumping() {
-		Graph graph = new Graph();
-		Node parentNode = new Node(graph, scene, Node.createAction(true, false, false, true));
-		Node currentNode = new Node(graph, scene, Node.createAction(true, false, false, true));
+		Node parentNode = new Node(scene, Node.createAction(true, false, false, true));
+		Node currentNode = new Node(scene, Node.createAction(true, false, false, true));
 
 		currentNode.parent = parentNode;
 
@@ -499,8 +490,8 @@ public class NodeTest {
 	@Test
 	public void testJumpWhileOnGroundHoldingJump() {
 		Graph graph = new Graph();
-		Node parentNode = new Node(graph, scene, Node.createAction(true, false, true, true));
-		Node currentNode = new Node(graph, scene, Node.createAction(true, false, false, true));
+		Node parentNode = new Node(scene, Node.createAction(true, false, true, true));
+		Node currentNode = new Node(scene, Node.createAction(true, false, false, true));
 
 		currentNode.parent = parentNode;
 

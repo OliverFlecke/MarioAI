@@ -20,19 +20,23 @@ public class Graph {
 	public PriorityQueue<Node> queue;// Queue to store all the nodes that are yet to be explored
 	public Node head;
 
+	public Graph() {
+		queue = new PriorityQueue<Node>();
+	}
+	
 	/**
 	 * Search for a path from a 
 	 * @param head The node to search from
 	 * @return A list of action, which contains the optimal path through the world
 	 */
-	public LinkedList<boolean[]> searchForPath(Node head, PriorityQueue<Node> queue)
+	public LinkedList<boolean[]> searchForPath(Node head)
 	{
 		if (debug) System.out.println("Head: X: " + head.x + " Y: " + head.y + " Goal: " + goal);
 		
 		nodeCount = 1;
 		setHead(head);
-		head.generateNodes(queue);
-		
+		head.generateNodes(queue, goal, head.x);
+
 		// Choose to use this, if we find a solution, but want to continue our search
 		Node current = queue.poll();
 		Node best = current; 
@@ -40,8 +44,9 @@ public class Graph {
 		// Set the start time of the search
 		setStartTime(System.currentTimeMillis());
 		
-		while (!atGoal(current))
+		while (current != null && !atGoal(current))
 		{			
+			nodeCount++;
 			if (debug) Node.printNodeData(current);
 			
 			// Used when testing. Insuring that the graph does not search too far
@@ -58,7 +63,7 @@ public class Graph {
 			}
 			
 			// Generate the children for this node
-			current.generateNodes(queue);
+			current.generateNodes(queue, goal, head.x);
 			if (queue.isEmpty()) break;	// If there are no more options, end the search
 			
 			current = queue.poll();	// Poll the new best options

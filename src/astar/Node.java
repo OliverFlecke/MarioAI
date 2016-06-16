@@ -14,7 +14,7 @@ public class Node implements Comparable<Node> {
 	public float x, y;	
 	// Graph pointers 
 	public Node parent;
-	private Graph graph;
+//	private Graph graph;
 	
 	private static float alpha = 0.5f;		// Factor to modify the heuristic 
 	public float fitness = 0f;				// Overall rating of this option 
@@ -35,10 +35,10 @@ public class Node implements Comparable<Node> {
 	 * @param levelScene A copy of the level sceneS
 	 * @param action which Mario should take in this simulation
 	 */
-	public Node(Graph graph, Node parent, LevelScene levelScene, boolean[] action) 
+	public Node(Node parent, LevelScene levelScene, boolean[] action) 
 	{
-		this.graph = graph;
-		graph.nodeCount++;
+//		this.graph = graph;
+//		graph.nodeCount++;
 		
 		// Set the parent and the depth of the node
 		this.parent = parent;
@@ -63,9 +63,9 @@ public class Node implements Comparable<Node> {
 	 * @param enemies in the simulation
 	 * @param action which is simulated in this node
 	 */
-	public Node(Graph graph, LevelScene levelScene, boolean[] action)
+	public Node(LevelScene levelScene, boolean[] action)
 	{
-		this(graph, null, levelScene, action);
+		this(null, levelScene, action);
 	}
 	
 	/**
@@ -78,7 +78,7 @@ public class Node implements Comparable<Node> {
 	 */
 	private static Node createNode(Node parent, boolean[] actions, List<Sprite> enemies)
 	{
-		return new Node(parent.graph, parent, (LevelScene) parent.levelScene.clone(), actions);
+		return new Node(parent, (LevelScene) parent.levelScene.clone(), actions);
 	}
 	
 	/**
@@ -92,8 +92,10 @@ public class Node implements Comparable<Node> {
 
 	/**
 	 *  The function to evaluate the nodes fitness.
+	 * @param goal which the node should aim to be at
+	 * @param start The start position of a given search
 	 */
-	public void fitnessEvaluation()
+	public void fitnessEvaluation(float goal, float start)
 	{
 		// Evaluate the simulation
 		this.tick();
@@ -116,30 +118,30 @@ public class Node implements Comparable<Node> {
 		}
 		else 
 		{
-			this.fitness = getHeuristic();
+			this.fitness = getHeuristic(goal);
 		}
 	}
 	
 	
 	/**
 	 * Get the heuristic for a given node
-	 * @param node to get the heuristic value from
+	 * @param Graph in where the goal is represented
 	 * @return A float, representing 
 	 */
-	public float getHeuristic()
+	public float getHeuristic(float goal)
 	{
-		return alpha * (graph.goal - this.x) 
+		return alpha * (goal - this.x) 
 				+ (Node.maxSpeed - this.mario.xa); 
 	}
 	
 	/**
 	 * Get the distance which the passed node has already traveled
-	 * @param node to get the distance from 
+	 * @param start The start coordinate for the given search
 	 * @return The distance with the given node is from the starting point
 	 */
-	public float getDistanceTraveled()
+	public float getDistanceTraveled(float start)
 	{
-		return (this.x - graph.head.x);
+		return (this.x - start);
 	}
 	
 	
@@ -150,7 +152,7 @@ public class Node implements Comparable<Node> {
 	 * @param current The node which there should be generated new (child) nodes from 
 	 * @param queue The queue to add the nodes to
 	 */
-	public void generateNodes(PriorityQueue<Node> queue)
+	public void generateNodes(PriorityQueue<Node> queue, float goal, float start)
 	{
 		// Compute all the new positions for the enemies
 		List<Sprite> newEnemies = new ArrayList<Sprite>();
@@ -189,7 +191,7 @@ public class Node implements Comparable<Node> {
 		for (boolean[] action : options)
 		{
 			Node node = createNode(this, action, newEnemies);
-			node.fitnessEvaluation();
+			node.fitnessEvaluation(goal, start);
 			queue.add(node);
 		}
 	}
@@ -334,8 +336,8 @@ public class Node implements Comparable<Node> {
 		System.out.print(getActionAsString(node.getAction()));
 		System.out.printf("Depth: %3d ", node.depth);
 		System.out.printf("F: %.3f\t", node.fitness);
-		System.out.printf("g: %.3f\t", node.getDistanceTraveled());
-		System.out.printf("h: %.3f\t", node.getHeuristic());
+//		System.out.printf("g: %.3f\t", node.getDistanceTraveled());
+//		System.out.printf("h: %.3f\t", node.getHeuristic());
 		System.out.println();
 	}
 }

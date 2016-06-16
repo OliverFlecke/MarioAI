@@ -130,11 +130,11 @@ public class AstarAgent extends KeyAdapter implements Agent {
 				mario.onGround = isMarioOnGround;
 				
 				// Create graph starting point and set goal
-				head = new Node(graph, levelScene, currentAction);
+				head = new Node(levelScene, currentAction);
 				graph.setGoal(marioFloatPos[0] + 144f);
 				
 				// Search for the best path
-				actionPath = graph.searchForPath(head, new PriorityQueue<Node>());
+				actionPath = graph.searchForPath(head);
 			}
 			
 			// If the action path found by the algorithm is not empty, 

@@ -3,7 +3,6 @@ package astar.tests;
 import static org.junit.Assert.*;
 
 import java.util.LinkedList;
-import java.util.PriorityQueue;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -56,11 +55,11 @@ public class GraphTests {
 	@Test
 	public void testSearchForPath() {
 		Graph graph = new Graph();
-		Node node = new Node(graph, scene, Node.createAction(false, false, false, false));
-		PriorityQueue<Node> queue = new PriorityQueue<Node>();
+		Node node = new Node(scene, Node.createAction(false, false, false, false));
+		
 		graph.setGoal(1000);
 
-		LinkedList<boolean[]> listOfActions = graph.searchForPath(node, queue);
+		LinkedList<boolean[]> listOfActions = graph.searchForPath(node);
 
 		assertTrue(0 != graph.nodeCount);
 		assertNotNull(listOfActions);
@@ -74,7 +73,7 @@ public class GraphTests {
 	public void testAtGoal() {
 		Graph graph = new Graph();
 		graph.setGoal(200);
-		Node node = new Node(graph, scene, null);
+		Node node = new Node(scene, null);
 		node.x = 200;
 
 		Assert.assertTrue(graph.atGoal(node));
@@ -121,7 +120,7 @@ public class GraphTests {
 	@Test
 	public void testSetHead() {
 		Graph graph = new Graph();
-		Node head = new Node(graph, scene, null);
+		Node head = new Node(scene, null);
 		graph.setHead(head);
 
 		Assert.assertNotNull(graph.head);
@@ -132,11 +131,10 @@ public class GraphTests {
 	 */
 	@Test
 	public void testGetActionPath() {
-		Graph graph = new Graph();
-		Node headNode = new Node(graph, scene, Node.createAction(true, false, false, false));
-		Node currentNode = new Node(graph, scene, Node.createAction(false, true, false, false));
-		Node middleNode = new Node(graph, scene, Node.createAction(false, false, true, false));
-		Node goalNode = new Node(graph, scene, Node.createAction(false, false, false, true));
+		Node headNode = new Node(scene, Node.createAction(true, false, false, false));
+		Node currentNode = new Node(scene, Node.createAction(false, true, false, false));
+		Node middleNode = new Node(scene, Node.createAction(false, false, true, false));
+		Node goalNode = new Node(scene, Node.createAction(false, false, false, true));
 
 		headNode.depth = 0;
 		currentNode.depth = 1;
