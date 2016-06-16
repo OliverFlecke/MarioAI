@@ -136,22 +136,6 @@ public class NodeTest {
 	}
 
 	/**
-	 * Test method for {@link astar.Node#searchForPath()}.
-	 */
-	@Test
-	public void testSearchForPath() {
-		Graph graph = new Graph();
-		Node node = new Node(graph, scene, Node.createAction(false, false, false, false));
-		PriorityQueue<Node> queue = new PriorityQueue<Node>();
-		graph.setGoal(1000);
-
-		LinkedList<boolean[]> listOfActions = graph.searchForPath(graph.head, queue);
-
-		assertTrue(0 != graph.nodeCount);
-		assertNotNull(listOfActions);
-	}
-
-	/**
 	 * Test method for {@link astar.Node#generateNewNodes()}.
 	 */
 	@Test
@@ -192,33 +176,8 @@ public class NodeTest {
 		highest.fitness = Float.MAX_VALUE;
 		Assert.assertTrue(lowest.compareTo(highest) == -1);
 	}
-
 	/**
-	 * Test method for {@link astar.Node#atGoal()}.
-	 */
-	@Test
-	public void testAtGoal() {
-		Graph graph = new Graph();
-		graph.setGoal(200);
-		Node node = new Node(graph, scene, null);
-		node.x = 200;
 
-		Assert.assertTrue(graph.atGoal(node));
-	}
-
-	/**
-	 * Test method for {@link astar.Node#setGoal(float)}.
-	 */
-	@Test
-	public void testSetGoal() {
-		Graph graph = new Graph();
-		float goal = 1000f;
-		graph.setGoal(goal);
-
-		assertEquals(goal, graph.goal, 0);
-	}
-
-	/**
 	 * Test method for {@link astar.Node#getActionAsString(boolean[])}.
 	 */
 	@Test
@@ -230,84 +189,6 @@ public class NodeTest {
 			action[i] = true;
 		}
 		assertEquals("R: t \tL: t \tJ: t \tS: t\t", Node.getActionAsString(action));
-	}
-
-	/**
-	 * Test method for {@link astar.Node#setStartTime(long)}.
-	 */
-	@Test
-	public void testSetStartTime() {
-		Graph graph = new Graph();
-		long time = 10000;
-		graph.setStartTime(time);
-		assertEquals(time, graph.getStartTime());
-	}
-
-	/**
-	 * Test method for {@link astar.Node#getStartTime()}
-	 */
-	@Test
-	public void testGetStartTime() {
-		Graph graph = new Graph();
-		long time = System.currentTimeMillis();
-		graph.setStartTime(time);
-		assertEquals(time, graph.getStartTime());
-	}
-
-	/**
-	 * Test method for {@link astar.Node#setHead(astar.Node)}.
-	 */
-	@Test
-	public void testSetHead() {
-		Graph graph = new Graph();
-		Node head = new Node(graph, scene, null);
-		graph.setHead(head);
-
-		Assert.assertNotNull(graph.head);
-	}
-
-	/**
-	 * Test method for {@link astar.Node#getActionPath(astar.Node)}.
-	 */
-	@Test
-	public void testGetActionPath() {
-		Graph graph = new Graph();
-		Node headNode = new Node(graph, scene, Node.createAction(true, false, false, false));
-		Node currentNode = new Node(graph, scene, Node.createAction(false, true, false, false));
-		Node middleNode = new Node(graph, scene, Node.createAction(false, false, true, false));
-		Node goalNode = new Node(graph, scene, Node.createAction(false, false, false, true));
-
-		headNode.depth = 0;
-		currentNode.depth = 1;
-		middleNode.depth = 2;
-		goalNode.depth = 3;
-
-		currentNode.parent = headNode;
-		middleNode.parent = currentNode;
-		goalNode.parent = middleNode;
-
-		LinkedList<boolean[]> listOfActions = Graph.getActionPath(goalNode);
-
-		assertEquals(3, listOfActions.size());
-
-		boolean[] firstAction = listOfActions.remove();
-		assertEquals(firstAction[Mario.KEY_RIGHT], false);
-		assertEquals(firstAction[Mario.KEY_LEFT], true);
-		assertEquals(firstAction[Mario.KEY_JUMP], false);
-		assertEquals(firstAction[Mario.KEY_SPEED], false);
-
-		boolean[] secondAction = listOfActions.remove();
-		assertEquals(secondAction[Mario.KEY_RIGHT], false);
-		assertEquals(secondAction[Mario.KEY_LEFT], false);
-		assertEquals(secondAction[Mario.KEY_JUMP], true);
-		assertEquals(secondAction[Mario.KEY_SPEED], false);
-
-		boolean[] thirdAction = listOfActions.remove();
-		assertEquals(thirdAction[Mario.KEY_RIGHT], false);
-		assertEquals(thirdAction[Mario.KEY_LEFT], false);
-		assertEquals(thirdAction[Mario.KEY_JUMP], false);
-		assertEquals(thirdAction[Mario.KEY_SPEED], true);
-
 	}
 
 	/**
@@ -559,11 +440,13 @@ public class NodeTest {
 
 		runningNode.mario.x = 100f;
 		runningNode.mario.xa = Node.maxSpeed;
-		walkingNode.mario.y = 20f;
+		runningNode.mario.y = 20f;
 
 		walkingNode.fitnessEvaluation();
 		runningNode.fitnessEvaluation();
 
+		System.out.println(walkingNode.fitness);
+		System.out.println(runningNode.fitness);
 		assertTrue(walkingNode.fitness > runningNode.fitness);
 	}
 

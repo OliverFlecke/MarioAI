@@ -110,16 +110,7 @@ public class Node implements Comparable<Node> {
 		this.y = mario.y;
 		
 //		// If Mario is dead or to low in the level, the path is dead
-		if (mario.isDead() || this.y > 223f) 
-		{
-			this.fitness = Float.MAX_VALUE;
-		}
-		else if (checkCollision())
-		{
-			this.fitness = Float.MAX_VALUE;
-
-		}
-		else if (levelScene.isInGap(this))
+		if (mario.isDead() || levelScene.isInGap(this) || this.y > 223f) 
 		{
 			this.fitness = Float.MAX_VALUE;
 		}

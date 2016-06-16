@@ -35,7 +35,7 @@ public final class LevelScene implements SpriteContext, Cloneable
 	//debug flags
 	int debugSetBlocks = 0; // 1 prints 19:19 environment and set data. 2 also prints whole level
 	boolean debugSetEnemies = false;
-	boolean debugGapDetection = true;
+	boolean debugGapDetection = false;
 	
 	private int[][] isGap= new int[19][2];
 	private float blockWidth = 16;
