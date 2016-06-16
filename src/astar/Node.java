@@ -9,19 +9,12 @@ import ch.idsia.benchmark.mario.environments.Environment;
  * The node class represent a frame or state in the Mario world, in which the simulation
  * has executed the action stored in this given node. 
  */
-public class Node implements Comparable<Node> {
-
-	private static boolean debug = false;	// True, if the program should output debug data
-	
-	private static int timeLimit = 33;		// Any larger, and the game seem to lack 
-	public static int nodeCount = 0;		// Counter to keep track of the number of generated nodes
-
-	private static long startTime;			// Start time for the current start
-	public static float goal = 0;			// The goal which Mario should reach
-	public static PriorityQueue<Node> queue;// Queue to store all the nodes that are yet to be explored
-	
+public class Node implements Comparable<Node> {	
 	// Coordinates of the node
 	public float x, y;	
+	// Graph pointers 
+	public Node parent;
+	private Graph graph;
 	
 	private static float alpha = 0.5f;		// Factor to modify the heuristic 
 	public float fitness = 0f;				// Overall rating of this option 
@@ -35,11 +28,6 @@ public class Node implements Comparable<Node> {
 	// The level scene used for this simulation
 	public LevelScene levelScene;
 	
-	// Graph pointers 
-	public Node parent;
-	public static Node head;
-	public List<Node> children = new ArrayList<Node>();
-	private static int maxDepth = 100;
 	
 	/**
 	 * Create a new node, which should have everything needed to compute next frame
@@ -47,11 +35,11 @@ public class Node implements Comparable<Node> {
 	 * @param levelScene A copy of the level sceneS
 	 * @param action which Mario should take in this simulation
 	 */
-	public Node(Node parent, LevelScene levelScene, boolean[] action) 
+	public Node(Graph graph, Node parent, LevelScene levelScene, boolean[] action) 
 	{
-		// Increment the node count in order to keep track of the number nodes generated
-		Node.nodeCount++;
-
+		this.graph = graph;
+		graph.nodeCount++;
+		
 		// Set the parent and the depth of the node
 		this.parent = parent;
 		if (this.parent == null) depth = 0;
@@ -75,9 +63,9 @@ public class Node implements Comparable<Node> {
 	 * @param enemies in the simulation
 	 * @param action which is simulated in this node
 	 */
-	public Node(LevelScene levelScene, Mario mario, List<Sprite> enemies, boolean[] action)
+	public Node(Graph graph, LevelScene levelScene, boolean[] action)
 	{
-		this(null, levelScene, action);
+		this(graph, null, levelScene, action);
 	}
 	
 	/**
@@ -90,7 +78,7 @@ public class Node implements Comparable<Node> {
 	 */
 	private static Node createNode(Node parent, boolean[] actions, List<Sprite> enemies)
 	{
-		return new Node(parent, (LevelScene) parent.levelScene.clone(), actions);
+		return new Node(parent.graph, parent, (LevelScene) parent.levelScene.clone(), actions);
 	}
 	
 	/**
@@ -137,19 +125,20 @@ public class Node implements Comparable<Node> {
 		}
 		else 
 		{
-			this.fitness = getHeuristic(this);
+			this.fitness = getHeuristic();
 		}
 	}
-
+	
+	
 	/**
 	 * Get the heuristic for a given node
 	 * @param node to get the heuristic value from
 	 * @return A float, representing 
 	 */
-	public static float getHeuristic(Node node)
+	public float getHeuristic()
 	{
-		return alpha * (goal - node.x) 
-				+ (Node.maxSpeed - node.mario.xa); 
+		return alpha * (graph.goal - this.x) 
+				+ (Node.maxSpeed - this.mario.xa); 
 	}
 	
 	/**
@@ -157,63 +146,11 @@ public class Node implements Comparable<Node> {
 	 * @param node to get the distance from 
 	 * @return The distance with the given node is from the starting point
 	 */
-	public static float getDistanceTraveled(Node node)
+	public float getDistanceTraveled()
 	{
-		return (node.x - head.x);
+		return (this.x - graph.head.x);
 	}
 	
-	/**
-	 * Search for a path from a 
-	 * @param head The node to search from
-	 * @return A list of action, which contains the optimal path through the world
-	 */
-	public static LinkedList<boolean[]> searchForPath(Node head, PriorityQueue<Node> queue)
-	{
-		if (debug) System.out.println("Head: X: " + head.x + " Y: " + head.y + " Goal: " + goal);
-		
-		Node.nodeCount = 0;
-		generateNodes(head, queue);
-		
-		// Choose to use this, if we find a solution, but want to continue our search
-		Node current = queue.poll();
-		Node best = current; 
-		
-		// Set the start time of the search
-		setStartTime(System.currentTimeMillis());
-		
-		while (!current.atGoal())
-		{			
-			if (debug) printNodeData(current);
-			
-			// Used when testing. Insuring that the graph does not search too far
-			if (current.depth > maxDepth)
-			{
-				current = queue.poll();
-				continue;
-			}
-						
-			if ((System.currentTimeMillis() - getStartTime()) > timeLimit)
-			{
-				if (debug) System.out.println("Out of time!");
-				break;
-			}
-			
-			// Generate the children for this node
-			generateNodes(current, queue);
-			if (queue.isEmpty()) break;	// If there are no more options, end the search
-			
-			current = queue.poll();	// Poll the new best options
-						
-			// Update the best node
-			if (best.fitness >= current.fitness)
-				best = current;
-		}
-		
-		if (debug)
-			System.out.println("Depth: " + best.depth + " Fitness: " + best.fitness);
-		
-		return getActionPath(best);
-	}
 	
 	/**
 	 * Generate all the new nodes which Mario can move to from this.
@@ -222,7 +159,7 @@ public class Node implements Comparable<Node> {
 	 * @param current The node which there should be generated new (child) nodes from 
 	 * @param queue The queue to add the nodes to
 	 */
-	public static void generateNodes(Node current, PriorityQueue<Node> queue)
+	public void generateNodes(PriorityQueue<Node> queue)
 	{
 		// Compute all the new positions for the enemies
 		List<Sprite> newEnemies = new ArrayList<Sprite>();
@@ -231,8 +168,8 @@ public class Node implements Comparable<Node> {
 		List<boolean[]> options = new ArrayList<boolean[]>();
 		
 		// Only created if it is possible to go right, or if Mario is in the air
-		if (current.parent == null || (Math.abs(current.x - current.parent.x) > 0.7) 
-				|| (current.y != current.parent.y))
+		if (this.parent == null || (Math.abs(this.x - this.parent.x) > 0.7) 
+				|| (this.y != this.parent.y))
 		{
 			options.add(createAction(false, false, false, false));	// Do nothing
 
@@ -246,7 +183,7 @@ public class Node implements Comparable<Node> {
 		}
 
 		// Check if pressing the jump key makes a differers, and generate nodes if it does
-		if (current.canJump())
+		if (this.canJump())
 		{
 			options.add(createAction(false, false, true, false));	// Jump
 			options.add(createAction(true, false, true, false));	// Jump and move right
@@ -260,7 +197,7 @@ public class Node implements Comparable<Node> {
 		// Create a node from all the options
 		for (boolean[] action : options)
 		{
-			Node node = createNode(current, action, newEnemies);
+			Node node = createNode(this, action, newEnemies);
 			node.fitnessEvaluation();
 			queue.add(node);
 		}
@@ -312,25 +249,6 @@ public class Node implements Comparable<Node> {
 	}
 	
 	/**
-	 * Get a path of actions to the node from the head. This is done recursively
-	 * @return A LinkedList with a path representing the actions to get to that node/position 
-	 */
-	public static LinkedList<boolean[]> getActionPath(Node node)
-	{
-		LinkedList<boolean[]> list;
-		// We only want the path from the node AFTER the root. The root does not have any actions
-		if (node.parent.depth == 0) 
-			list = new LinkedList<boolean[]>();
-		else 
-			list = getActionPath(node.parent);
-		list.add(node.getAction());
-		
-		// Output debug information
-		if (debug) printNodeData(node);
-		return list;
-	}
-	
-	/**
 	 * Get the action from the current node, e.g. the action that Mario is taken in the current
 	 * step. This is stored in Mario's keys field.
 	 * @return The action of this node
@@ -379,22 +297,6 @@ public class Node implements Comparable<Node> {
 	 */
 	public boolean checkCollision() 
 	{
-//		for (Sprite sprite : levelScene.sprites)
-//		{
-//			if (sprite.kind != Sprite.KIND_MARIO)
-//			{
-//				return Math.abs(mario.x - sprite.x) < 32 && Math.abs(mario.y - sprite.y) < 16;
-//			}
-//		}
-//		return false;
-//		for (int i = 0; i < levelScene.enemies.length; i += 3)
-//		{
-//			x = levelScene.enemies[i + 1];
-//			y = levelScene.enemies[i + 2];
-//			
-//			if (Math.abs(x - getX()) < 64 && Math.abs(y - getY()) < 64)
-//				return true;
-//		}
 		return false;
 	}
 
@@ -415,48 +317,6 @@ public class Node implements Comparable<Node> {
 	}
 	
 	/**
-	 * Test to see if this node is at the goal
-	 * @return True, if this node is at the goal line
-	 */
-	public boolean atGoal()
-	{
-		return this.x >= Node.goal;
-	}
-	
-	/**
-	 * Set the goal for the current search
-	 * @param goal which Mario should aim for 
-	 */
-	public static void setGoal(float goal)
-	{
-		Node.goal = goal;
-	}
-	
-	/**
-	 * Set the start time of the current search
-	 * @param currentTimeMillis the time which the search started at 
-	 */
-	public static void setStartTime(long currentTimeMillis) {
-		Node.startTime  = currentTimeMillis;
-	}
-	
-	/**
-	 * Get the start time of the latest search
-	 * @return The start time of the latest search
-	 */
-	public static long getStartTime() {
-		return Node.startTime;
-	}
-
-	/**
-	 * Set the head/starting point of the graph.
-	 * @param head The starting point of the graph
-	 */
-	public static void setHead(Node head) {
-		Node.head = head;
-	}
-	
-	/**
 	 * Returns a string with displaying the given actions
 	 * @param action to display
 	 * @return A string displaying the action
@@ -474,7 +334,7 @@ public class Node implements Comparable<Node> {
 	 * Print out the data about the node
 	 * @param node to output data about
 	 */
-	private static void printNodeData(Node node) {
+	public static void printNodeData(Node node) {
 		System.out.printf("X: %.2f\t", node.x);
 		System.out.printf("Y: %.2f\t", node.y);
 		System.out.printf("Vx: %.2f\t", node.mario.xa);
@@ -483,8 +343,8 @@ public class Node implements Comparable<Node> {
 		System.out.print(getActionAsString(node.getAction()));
 		System.out.printf("Depth: %3d ", node.depth);
 		System.out.printf("F: %.3f\t", node.fitness);
-		System.out.printf("g: %.3f\t", Node.getDistanceTraveled(node));
-		System.out.printf("h: %.3f\t", Node.getHeuristic(node));
+		System.out.printf("g: %.3f\t", node.getDistanceTraveled());
+		System.out.printf("h: %.3f\t", node.getHeuristic());
 		System.out.println();
 	}
 }

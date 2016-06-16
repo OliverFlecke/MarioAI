@@ -71,6 +71,8 @@ public class AstarAgent extends KeyAdapter implements Agent {
 
 	private byte[][] observation;
 
+	private Graph graph;
+	
 	public AstarAgent() 
 	{
 		try {
@@ -101,6 +103,7 @@ public class AstarAgent extends KeyAdapter implements Agent {
 			// If we have no more actions left in the list, compute new actions
 			if (actionPath.isEmpty() || actionCount <= 0)
 			{
+				graph = new Graph();
 				actionCount = MAXCOUNT;
 				// Create a new simulation for the AStar 
 				// This is what creates a copy of the game world
@@ -127,12 +130,11 @@ public class AstarAgent extends KeyAdapter implements Agent {
 				mario.onGround = isMarioOnGround;
 				
 				// Create graph starting point and set goal
-				head = new Node(levelScene, null, null, currentAction);
-				Node.setHead(head);
-				Node.setGoal(marioFloatPos[0] + 144f);
+				head = new Node(graph, levelScene, currentAction);
+				graph.setGoal(marioFloatPos[0] + 144f);
 				
 				// Search for the best path
-				actionPath = Node.searchForPath(head, new PriorityQueue<Node>());
+				actionPath = graph.searchForPath(head, new PriorityQueue<Node>());
 			}
 			
 			// If the action path found by the algorithm is not empty, 
@@ -141,9 +143,9 @@ public class AstarAgent extends KeyAdapter implements Agent {
 			{
 				if (outputMemeoryData)
 				{					
-					System.out.printf("Number of nodes: %8d\t", Node.nodeCount);
+					System.out.printf("Number of nodes: %8d\t", graph.nodeCount);
 					System.out.printf("Size: %3d\t", actionPath.size());
-					System.out.printf("Ratio: %.2f\n", actionPath.size() /((float) Node.nodeCount));
+					System.out.printf("Ratio: %.2f\n", actionPath.size() /((float) graph.nodeCount));
 				}
 				action = actionPath.removeFirst();
 				actionCount--;
@@ -178,36 +180,36 @@ public class AstarAgent extends KeyAdapter implements Agent {
 	 */
 	private void runSim() 
 	{
-		if (head == null) 
-		{
-			currentAction[Mario.KEY_JUMP] = true;
-			currentAction[Mario.KEY_SPEED] = true;
-			levelScene = new LevelScene();
-			LevelScene.level = new Level(1500, 15);
-			levelScene.setup(this.observation, enemiesFloatPos);
-			mario = levelScene.mario;	
-			levelScene.addSprite(mario);			
-			mario.x = marioFloatPos[0];
-			mario.y = marioFloatPos[1];
-			head = new Node(null, levelScene, currentAction);
-		}
-		else
-		{
-			LevelScene.level.map = this.observation;
-		}
-		
-//		mario.x = marioFloatPos[0];
-//		mario.y = marioFloatPos[1];
-//		mario.xa = (marioFloatPos[0] - lastX) * 0.89f;
-//		if (Math.abs(mario.y - marioFloatPos[1]) > 0.1f)
-//			mario.ya = (marioFloatPos[1] - lastY) * 0.89f;
-		head.levelScene.tick();
-//		System.out.println("Jump time: " + mario.yaa);
-		printMario();
-//		printLevelGrid();
-
-//		System.out.println("tick\n" );
-//		printCreatures(head.levelScene);
+//		if (head == null) 
+//		{
+//			currentAction[Mario.KEY_JUMP] = true;
+//			currentAction[Mario.KEY_SPEED] = true;
+//			levelScene = new LevelScene();
+//			LevelScene.level = new Level(1500, 15);
+//			levelScene.setup(this.observation, enemiesFloatPos);
+//			mario = levelScene.mario;	
+//			levelScene.addSprite(mario);			
+//			mario.x = marioFloatPos[0];
+//			mario.y = marioFloatPos[1];
+//			head = new Node(null, levelScene, currentAction);
+//		}
+//		else
+//		{
+//			LevelScene.level.map = this.observation;
+//		}
+//		
+////		mario.x = marioFloatPos[0];
+////		mario.y = marioFloatPos[1];
+////		mario.xa = (marioFloatPos[0] - lastX) * 0.89f;
+////		if (Math.abs(mario.y - marioFloatPos[1]) > 0.1f)
+////			mario.ya = (marioFloatPos[1] - lastY) * 0.89f;
+//		head.levelScene.tick();
+////		System.out.println("Jump time: " + mario.yaa);
+//		printMario();
+////		printLevelGrid();
+//
+////		System.out.println("tick\n" );
+////		printCreatures(head.levelScene);
 	}
 	
 	/**
@@ -347,7 +349,7 @@ public class AstarAgent extends KeyAdapter implements Agent {
 			runSimulation = true;		// Start a simulation when 7 is pressed
 			break;
 		case KeyEvent.VK_6:
-			System.out.println("Next goal: " + Node.goal + "\tMario X pos: " + marioFloatPos[0]);
+			System.out.println("Next goal: " + graph.goal + "\tMario X pos: " + marioFloatPos[0]);
 			break;
 		}
 	}

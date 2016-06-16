@@ -26,27 +26,26 @@ import ch.idsia.tools.EvaluationInfo;
 import ch.idsia.tools.MarioAIOptions;
 import junit.framework.Assert;
 
-
 /**
  * Contains test for the node class
  */
 public class NodeTest {
-	
+
 	LevelScene scene;
-	
-	
+
 	/**
 	 * @throws java.lang.Exception
 	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		
+
 		LevelScene scene = new LevelScene();
-		 MarioAIOptions AiOptions = new MarioAIOptions("-vis off -lca off -lco off -lb off -le off -ltb off -ls 22 -fps 24 -ag astar.AstarAgent");
-		 BasicTask bt = new BasicTask(AiOptions);
+		MarioAIOptions AiOptions = new MarioAIOptions(
+				"-vis off -lca off -lco off -lb off -le off -ltb off -ls 22 -fps 24 -ag astar.AstarAgent");
+		BasicTask bt = new BasicTask(AiOptions);
 		bt.setOptionsAndReset(AiOptions);
 		bt.runSingleEpisode(1);
-	    //System.out.println(bt.getEnvironment().getEvaluationInfoAsString());
+		// System.out.println(bt.getEnvironment().getEvaluationInfoAsString());
 	}
 
 	/**
@@ -75,42 +74,46 @@ public class NodeTest {
 	 * 
 	 */
 	@Test
-	public void testRightAndSpeed(){
+	public void testRightAndSpeed() {
 
-	int playThroughs = 3;	
-	int[] times = new int[playThroughs];
-	int[] fitnessScores = new int[playThroughs];
-	
-	for (int i=0;i <playThroughs;i++){
-		
-		 MarioAIOptions AiOptions = new MarioAIOptions("-vis off -lf on -lca off -lco off -lb off -le off -ltb off -ls 22 -fps 24 -ag astar.AstarAgent");
-		 BasicTask bt = new BasicTask(AiOptions);
-		
-		bt.setOptionsAndReset(AiOptions);
-		bt.runSingleEpisode(1);
-		
-		EvaluationInfo evalInfo = bt.getEnvironment().getEvaluationInfo();
-		
-		times[i]=evalInfo.timeLeft;
-		fitnessScores[i] = evalInfo.computeWeightedFitness();
-		
-		
-	}
-	//check time left and print result
+		int playThroughs = 3;
+		int[] times = new int[playThroughs];
+		int[] fitnessScores = new int[playThroughs];
 
-	//System.out.print("Time left in each playthrough: ");
-	for (int i=0; i < playThroughs; i++){
-		//System.out.print(times[i]+", ");
-		assertEquals(true, times[0]==times[i]);
+		for (int i = 0; i < playThroughs; i++) {
+
+			MarioAIOptions AiOptions = new MarioAIOptions(
+					"-vis off -lf on -lca off -lco off -lb off -le off -ltb off -ls 22 -fps 24 -ag astar.AstarAgent");
+			BasicTask bt = new BasicTask(AiOptions);
+
+			bt.setOptionsAndReset(AiOptions);
+			bt.runSingleEpisode(1);
+
+			EvaluationInfo evalInfo = bt.getEnvironment().getEvaluationInfo();
+
+			times[i] = evalInfo.timeLeft;
+			fitnessScores[i] = evalInfo.computeWeightedFitness();
+
+		}
+		// check time left and print result
+
+		// System.out.print("Time left in each playthrough: ");
+		for (int i = 0; i < playThroughs; i++) {
+			// System.out.print(times[i]+", ");
+			assertEquals(true, times[0] == times[i]);
+		}
+
 	}
-	
-}
+
 	/**
-	 * Test method for {@link astar.Node#Node(astar.Node, astar.LevelScene, astar.sprites.Mario, java.util.List, boolean[])}.
+	 * Test method for
+	 * {@link astar.Node#Node(astar.Node, astar.LevelScene, astar.sprites.Mario, java.util.List, boolean[])}
+	 * .
 	 */
 	@Test
 	public void testNode() {
-		Node node = new Node(scene, scene.mario, null, null);
+		Graph graph = new Graph();
+		Node node = new Node(graph, scene, null);
 		Assert.assertNotNull(node);
 	}
 
@@ -119,14 +122,15 @@ public class NodeTest {
 	 */
 	@Test
 	public void testFitnessEval() {
-		Node head = new Node(scene, scene.mario, null, null);
-		Node.setHead(head);
-		Node.setGoal(200);
-		
+		Graph graph = new Graph();
+		Node head = new Node(graph, scene, null);
+		graph.setHead(head);
+		graph.setGoal(200);
+
 		// Setup test object
-		Node node = new Node(scene, scene.mario, null, Node.createAction(false, false, false, false));
+		Node node = new Node(graph, scene, Node.createAction(false, false, false, false));
 		node.mario.x = 100;
-		
+
 		node.fitnessEvaluation();
 		Assert.assertTrue(node.fitness > 0);
 	}
@@ -136,16 +140,14 @@ public class NodeTest {
 	 */
 	@Test
 	public void testSearchForPath() {
-		
-		Node node = new Node(scene, scene.mario, null, Node.createAction(false, false, false, false));
+		Graph graph = new Graph();
+		Node node = new Node(graph, scene, Node.createAction(false, false, false, false));
 		PriorityQueue<Node> queue = new PriorityQueue<Node>();
-		Node.setHead(node);
-		Node.setGoal(1000);
-		
-		
-		LinkedList<boolean[]> listOfActions = Node.searchForPath(Node.head, queue);
-		
-		assertTrue( 0 != Node.nodeCount);
+		graph.setGoal(1000);
+
+		LinkedList<boolean[]> listOfActions = graph.searchForPath(graph.head, queue);
+
+		assertTrue(0 != graph.nodeCount);
 		assertNotNull(listOfActions);
 	}
 
@@ -153,21 +155,20 @@ public class NodeTest {
 	 * Test method for {@link astar.Node#generateNewNodes()}.
 	 */
 	@Test
-	public void testGenerateNewNodes() {	
+	public void testGenerateNewNodes() {
 		PriorityQueue<Node> queue = new PriorityQueue<Node>();
-		
+		Graph graph = new Graph();
+		Node node = new Node(graph, scene, Node.createAction(true, true, true, true));
+		graph.setHead(node);
 
-		Node node = new Node(scene, scene.mario, null, Node.createAction(true, true, true, true));
-		Node.setHead(node);
-
-		
-		
-		Node.generateNodes(node, queue);
+		node.generateNodes(queue);
 		Assert.assertEquals(10, queue.size());
 	}
 
 	/**
-	 * Test method for {@link astar.Node#createAction(boolean, boolean, boolean, boolean, boolean, boolean)}.
+	 * Test method for
+	 * {@link astar.Node#createAction(boolean, boolean, boolean, boolean, boolean, boolean)}
+	 * .
 	 */
 	@Test
 	public void testCreateAction() {
@@ -183,9 +184,10 @@ public class NodeTest {
 	 */
 	@Test
 	public void testCompareTo() {
-		Node lowest = new Node(scene, scene.mario, null, null);
-		Node highest = new Node(scene, scene.mario, null, null);
-		
+		Graph graph = new Graph();
+		Node lowest = new Node(graph, scene, null);
+		Node highest = new Node(graph, scene, null);
+
 		lowest.fitness = 10;
 		highest.fitness = Float.MAX_VALUE;
 		Assert.assertTrue(lowest.compareTo(highest) == -1);
@@ -196,11 +198,12 @@ public class NodeTest {
 	 */
 	@Test
 	public void testAtGoal() {
-		Node.setGoal(200);
-		Node node = new Node(scene, scene.mario, null, null);
+		Graph graph = new Graph();
+		graph.setGoal(200);
+		Node node = new Node(graph, scene, null);
 		node.x = 200;
-		
-		Assert.assertTrue(node.atGoal());
+
+		Assert.assertTrue(graph.atGoal(node));
 	}
 
 	/**
@@ -208,10 +211,11 @@ public class NodeTest {
 	 */
 	@Test
 	public void testSetGoal() {
+		Graph graph = new Graph();
 		float goal = 1000f;
-		Node.setGoal(goal);
-		
-		assertEquals(goal, Node.goal, 0);
+		graph.setGoal(goal);
+
+		assertEquals(goal, graph.goal, 0);
 	}
 
 	/**
@@ -221,7 +225,7 @@ public class NodeTest {
 	public void testPrintAction() {
 		boolean[] action = new boolean[Environment.numberOfKeys];
 		assertEquals("R: f \tL: f \tJ: f \tS: f\t", Node.getActionAsString(action));
-	
+
 		for (int i = 0; i < action.length; i++) {
 			action[i] = true;
 		}
@@ -233,9 +237,10 @@ public class NodeTest {
 	 */
 	@Test
 	public void testSetStartTime() {
+		Graph graph = new Graph();
 		long time = 10000;
-		Node.setStartTime(time);
-		assertEquals(time, Node.getStartTime());
+		graph.setStartTime(time);
+		assertEquals(time, graph.getStartTime());
 	}
 
 	/**
@@ -243,20 +248,22 @@ public class NodeTest {
 	 */
 	@Test
 	public void testGetStartTime() {
+		Graph graph = new Graph();
 		long time = System.currentTimeMillis();
-		Node.setStartTime(time);
-		assertEquals(time, Node.getStartTime());
+		graph.setStartTime(time);
+		assertEquals(time, graph.getStartTime());
 	}
-	
+
 	/**
 	 * Test method for {@link astar.Node#setHead(astar.Node)}.
 	 */
 	@Test
 	public void testSetHead() {
-		Node head = new Node(scene, scene.mario, null, null);
-		Node.setHead(head);
-		
-		Assert.assertNotNull(Node.head);
+		Graph graph = new Graph();
+		Node head = new Node(graph, scene, null);
+		graph.setHead(head);
+
+		Assert.assertNotNull(graph.head);
 	}
 
 	/**
@@ -264,44 +271,43 @@ public class NodeTest {
 	 */
 	@Test
 	public void testGetActionPath() {
-		Node headNode = new Node(scene, scene.mario, null,  Node.createAction(true, false, false, false));
-		Node currentNode = new Node(scene, scene.mario, null,  Node.createAction(false, true, false, false));
-		Node middleNode = new Node(scene, scene.mario, null, Node.createAction(false, false, true, false));
-		Node goalNode = new Node(scene, scene.mario, null,  Node.createAction(false, false, false, true));
-		
+		Graph graph = new Graph();
+		Node headNode = new Node(graph, scene, Node.createAction(true, false, false, false));
+		Node currentNode = new Node(graph, scene, Node.createAction(false, true, false, false));
+		Node middleNode = new Node(graph, scene, Node.createAction(false, false, true, false));
+		Node goalNode = new Node(graph, scene, Node.createAction(false, false, false, true));
+
 		headNode.depth = 0;
-		currentNode.depth =1;
+		currentNode.depth = 1;
 		middleNode.depth = 2;
 		goalNode.depth = 3;
-		
+
 		currentNode.parent = headNode;
-		middleNode.parent=currentNode;
+		middleNode.parent = currentNode;
 		goalNode.parent = middleNode;
-	
-		LinkedList<boolean[]> listOfActions = Node.getActionPath(goalNode);
-		
+
+		LinkedList<boolean[]> listOfActions = Graph.getActionPath(goalNode);
+
 		assertEquals(3, listOfActions.size());
-		
+
 		boolean[] firstAction = listOfActions.remove();
 		assertEquals(firstAction[Mario.KEY_RIGHT], false);
 		assertEquals(firstAction[Mario.KEY_LEFT], true);
 		assertEquals(firstAction[Mario.KEY_JUMP], false);
 		assertEquals(firstAction[Mario.KEY_SPEED], false);
-		
+
 		boolean[] secondAction = listOfActions.remove();
 		assertEquals(secondAction[Mario.KEY_RIGHT], false);
 		assertEquals(secondAction[Mario.KEY_LEFT], false);
 		assertEquals(secondAction[Mario.KEY_JUMP], true);
 		assertEquals(secondAction[Mario.KEY_SPEED], false);
-		
+
 		boolean[] thirdAction = listOfActions.remove();
 		assertEquals(thirdAction[Mario.KEY_RIGHT], false);
 		assertEquals(thirdAction[Mario.KEY_LEFT], false);
 		assertEquals(thirdAction[Mario.KEY_JUMP], false);
 		assertEquals(thirdAction[Mario.KEY_SPEED], true);
-		
-		
-		
+
 	}
 
 	/**
@@ -309,12 +315,12 @@ public class NodeTest {
 	 */
 	@Test
 	public void testDistanceTraveled() {
-		Node node = new Node(scene, scene.mario, null, null);
-		Node.setHead(node);
-		
-		
-		float distTraveled = Node.getDistanceTraveled(node);
-		
+		Graph graph = new Graph();
+		Node node = new Node(graph, scene, null);
+		graph.setHead(node);
+
+		float distTraveled = node.getDistanceTraveled();
+
 		Assert.assertEquals(0.0f, distTraveled);
 	}
 
@@ -323,344 +329,332 @@ public class NodeTest {
 	 */
 	@Test
 	public void testDistanceTraveledWithDistance() {
-		Node node = new Node(scene, scene.mario, null, null);
-		Node headNode = new Node(scene, scene.mario, null, null);
-		Node.setHead(headNode);
+		Graph graph = new Graph();
+		Node node = new Node(graph, scene, null);
+		Node headNode = new Node(graph, scene, null);
+		graph.setHead(headNode);
 		node.x = 50f;
 		headNode.x = 100f;
-		
-		
-		
-		float distTraveled = Node.getDistanceTraveled(node);
-		
+
+		float distTraveled = node.getDistanceTraveled();
+
 		Assert.assertEquals(-50f, distTraveled);
-		}
+	}
+
 	/**
 	 * 
 	 */
 	@Test
-	public void testAiLoading(){
-		    MarioAIOptions AiOptions = new MarioAIOptions("-vis off -lca off -lco off -lb off -le off -ltb off -ls 22 -fps 24 -ag astar.AstarAgent");
-		    assertNotNull(AiOptions.getAgent());
-		    assertEquals(AiOptions.getAgent().getName(), "AstarAgent");
-		    assertEquals(AiOptions.getAgentFullLoadName(), "astar.AstarAgent");
-		    
-		}
+	public void testAiLoading() {
+		MarioAIOptions AiOptions = new MarioAIOptions(
+				"-vis off -lca off -lco off -lb off -le off -ltb off -ls 22 -fps 24 -ag astar.AstarAgent");
+		assertNotNull(AiOptions.getAgent());
+		assertEquals(AiOptions.getAgent().getName(), "AstarAgent");
+		assertEquals(AiOptions.getAgentFullLoadName(), "astar.AstarAgent");
+
+	}
+
 	/**
 	 * 
 	 */
 	@Test
 	public void testLevelCompletionNoGapsNoEnemies() {
-			MarioAIOptions AiOptions = new MarioAIOptions("-vis off -lca off -lco off -lb off -le off -ltb off -ls 22 -fps 24 -ag astar.AstarAgent");
-			BasicTask bt = new BasicTask(AiOptions);
-			bt.setOptionsAndReset(AiOptions);
-			bt.runSingleEpisode(1);
-		    //System.out.println(bt.getEnvironment().getEvaluationInfoAsString());
-			
-		    assertEquals(1, Mario.STATUS_WIN);
-		    
-		
-		}
-	
+		MarioAIOptions AiOptions = new MarioAIOptions(
+				"-vis off -lca off -lco off -lb off -le off -ltb off -ls 22 -fps 24 -ag astar.AstarAgent");
+		BasicTask bt = new BasicTask(AiOptions);
+		bt.setOptionsAndReset(AiOptions);
+		bt.runSingleEpisode(1);
+		// System.out.println(bt.getEnvironment().getEvaluationInfoAsString());
+
+		assertEquals(1, Mario.STATUS_WIN);
+
+	}
+
 	/**
 	 * 
 	 */
 	@Test
 	public void testDeterminism() {
-		
-	
-		int playThroughs = 3;	
+
+		int playThroughs = 3;
 		int[] times = new int[playThroughs];
 		int[] fitnessScores = new int[playThroughs];
-		
-		for (int i=0;i <playThroughs;i++){
-			
-			 MarioAIOptions AiOptions = new MarioAIOptions("-vis off -lca off -lco off -lb off -le off -ltb off -ls 22 -fps 24 -ag astar.AstarAgent");
-			 BasicTask bt = new BasicTask(AiOptions);
-			
+
+		for (int i = 0; i < playThroughs; i++) {
+
+			MarioAIOptions AiOptions = new MarioAIOptions(
+					"-vis off -lca off -lco off -lb off -le off -ltb off -ls 22 -fps 24 -ag astar.AstarAgent");
+			BasicTask bt = new BasicTask(AiOptions);
+
 			bt.setOptionsAndReset(AiOptions);
 			bt.runSingleEpisode(1);
-			
+
 			EvaluationInfo evalInfo = bt.getEnvironment().getEvaluationInfo();
-			
-			times[i]=evalInfo.timeLeft;
+
+			times[i] = evalInfo.timeLeft;
 			fitnessScores[i] = evalInfo.computeWeightedFitness();
-			
-			
+
 		}
-		//check time left and print result
-	
-		//System.out.print("Time left in each playthrough: ");
-		for (int i=0; i < playThroughs; i++){
-			//System.out.print(times[i]+", ");
+		// check time left and print result
+
+		// System.out.print("Time left in each playthrough: ");
+		for (int i = 0; i < playThroughs; i++) {
+			// System.out.print(times[i]+", ");
 			assertEquals(times[0], times[i], 10);
-			
-		//check weighted fitness and print result
-			
+
+			// check weighted fitness and print result
+
 		}
-		//System.out.print("\n Fitness Score for each playthrough: ");
-		for (int i=0; i < playThroughs; i++){
-			//System.out.print(fitnessScores[i]+", ");
-			assertEquals(fitnessScores[0], fitnessScores[i],80);
+		// System.out.print("\n Fitness Score for each playthrough: ");
+		for (int i = 0; i < playThroughs; i++) {
+			// System.out.print(fitnessScores[i]+", ");
+			assertEquals(fitnessScores[0], fitnessScores[i], 80);
 		}
-		
-	
-		
-		
-		}
-	
+
+	}
+
 	/**
 	 * 
 	 */
 	@Test
 	public void testLevelCompletionWithGapWithoutEnemies() {
-		 MarioAIOptions AiOptions = new MarioAIOptions("-vis off -lca off -lco off -lb off -le off -ltb off -ls 22 -ld 5 -fps 24 -ag astar.AstarAgent");
-		 BasicTask bt = new BasicTask(AiOptions);
+		MarioAIOptions AiOptions = new MarioAIOptions(
+				"-vis off -lca off -lco off -lb off -le off -ltb off -ls 22 -ld 5 -fps 24 -ag astar.AstarAgent");
+		BasicTask bt = new BasicTask(AiOptions);
 		bt.setOptionsAndReset(AiOptions);
 		bt.runSingleEpisode(1);
-	
+
 		EvaluationInfo evalInfo = bt.getEnvironment().getEvaluationInfo();
-		
-		//check time left
-		//System.out.print(evalInfo.marioStatus);
-		
-	    assertEquals(1, evalInfo.marioStatus);
-	    
-		}
-	
+
+		// check time left
+		// System.out.print(evalInfo.marioStatus);
+
+		assertEquals(1, evalInfo.marioStatus);
+
+	}
+
 	/**
 	 * 
 	 */
 	@Test
 	public void testMarioIsDead() {
-		
-		Node node = new Node(scene, scene.mario, null,  Node.createAction(true, false, false, false));
-	
-	
-		//scene.mario.carried = new Sprite();
-		
+		Graph graph = new Graph();
+		Node node = new Node(graph, scene, Node.createAction(true, false, false, false));
+
+		// scene.mario.carried = new Sprite();
+
 		scene.mario.spriteTemplate = new SpriteTemplate(Sprite.KIND_MARIO);
 		scene.mario.spriteTemplate.isDead = true;
-		
-		
-		//System.out.print(scene.mario.isDead());
-		
+
+		// System.out.print(scene.mario.isDead());
+
 		node.fitnessEvaluation();
-		
+
 		assertEquals(Float.MAX_VALUE, node.fitness, 0);
 	}
-	
+
 	/**
 	 * 
 	 */
 	@Test
 	public void testMariosYIsToLarge() {
-		
-		Node node = new Node(scene, scene.mario, null, Node.createAction(true, false, false, false));
-	
-		scene.mario.y=224f;
-		
+		Graph graph = new Graph();
+		Node node = new Node(graph, scene, Node.createAction(true, false, false, false));
+
+		scene.mario.y = 224f;
+
 		node.fitnessEvaluation();
-		
+
 		assertEquals(Float.MAX_VALUE, node.fitness, 0);
 	}
-	
-	
+
 	/**
 	 * 
 	 */
 	@Test
 	public void testCoalitionBetweenXandFitness() {
-		
-		
-	//generate a random graph of nodes.
-		
-		Node topNode = new Node(scene, scene.mario, null,  Node.createAction(false, false, false, false));
+
+		// generate a random graph of nodes.
+		Graph graph = new Graph();
+		Node topNode = new Node(graph, scene, Node.createAction(false, false, false, false));
 		topNode.depth = 0;
 		int graphDepth = 8;
-		int numbOfParents=1;
+		int numbOfParents = 1;
 		Random rand = new Random();
-		
+
 		List<Node> nodeList = new ArrayList<Node>();
 		Node[] parentNodes = new Node[10];
-		Node.setGoal(100000f);
-		
-		for (int i=0;i<graphDepth;i++){
-			
-			
-			int numOfNodes = rand.nextInt(10)+1;
-			
-			
+		graph.setGoal(100000f);
+
+		for (int i = 0; i < graphDepth; i++) {
+
+			int numOfNodes = rand.nextInt(10) + 1;
+
 			Node[] currentNodes = new Node[numOfNodes];
-			
-			for (int j=0; j<numOfNodes;j++){
-				
-				Node node = new Node(scene, scene.mario, null,  Node.createAction(false, false, false, false));
-				float randomXCoord =  rand.nextFloat() * numOfNodes + 1;
+
+			for (int j = 0; j < numOfNodes; j++) {
+
+				Node node = new Node(graph, scene, Node.createAction(false, false, false, false));
+				float randomXCoord = rand.nextFloat() * numOfNodes + 1;
 				int randParent = rand.nextInt(numbOfParents);
-				
+
 				node.mario.y = 20f;
 				node.mario.x = randomXCoord;
-				
-				//eval fitness
+
+				// eval fitness
 				node.fitnessEvaluation();
-				
-				
-				//setting the parent
-				if (i==0){
+
+				// setting the parent
+				if (i == 0) {
 					node.parent = topNode;
 				} else {
 					node.parent = parentNodes[randParent];
 				}
-				
-				//adding to array.
+
+				// adding to array.
 				currentNodes[j] = node;
 				nodeList.add(node);
-				
+
 			}
-			
-			//Set current nodes to be parent nodes
-	
+
+			// Set current nodes to be parent nodes
+
 			parentNodes = currentNodes;
 			numbOfParents = numOfNodes;
 		}
-		
-		Node goalNode = new Node(scene, scene.mario, null,  Node.createAction(false, false, false, false));
+
+		Node goalNode = new Node(graph, scene, Node.createAction(false, false, false, false));
 		goalNode.depth = graphDepth;
-		
-		
-	
-	
-		
-		//order nodes after decending fitness score.
+
+		// order nodes after decending fitness score.
 		Collections.sort(nodeList);
-		
-		//assert if the coalition between x and fitness holds
-		for (int i=1; i < nodeList.size(); i++){
-			Node prevNode = nodeList.get(i-1);
+
+		// assert if the coalition between x and fitness holds
+		for (int i = 1; i < nodeList.size(); i++) {
+			Node prevNode = nodeList.get(i - 1);
 			Node curNode = nodeList.get(i);
-			//System.out.println("X-coordinate: " + prevNode.x + " >= " + curNode.x + " Fitness: " + prevNode.fitness + " <= " + curNode.fitness);
-			if (curNode.fitness != Float.MAX_VALUE){
-			assertTrue(prevNode.x >= curNode.x);
-			assertTrue(prevNode.fitness <= curNode.fitness);
+			// System.out.println("X-coordinate: " + prevNode.x + " >= " +
+			// curNode.x + " Fitness: " + prevNode.fitness + " <= " +
+			// curNode.fitness);
+			if (curNode.fitness != Float.MAX_VALUE) {
+				assertTrue(prevNode.x >= curNode.x);
+				assertTrue(prevNode.fitness <= curNode.fitness);
 			}
 		}
-			
-		
-		}
+
+	}
+
 	/**
 	 * 
 	 */
 	@Test
 	public void testLargerAccelerationBetterFitness() {
-		
-		Node walkingNode = new Node(scene, scene.mario, null, Node.createAction(true, false, false, false));
-		Node runningNode = new Node(scene, scene.mario, null, Node.createAction(true, false, false, true));
-		
+		Graph graph = new Graph();
+		Node walkingNode = new Node(graph, scene, Node.createAction(true, false, false, false));
+		Node runningNode = new Node(graph, scene, Node.createAction(true, false, false, true));
+
 		walkingNode.mario.x = 100f;
 		walkingNode.mario.xa = 1f;
 		walkingNode.mario.y = 20f;
-		
+
 		runningNode.mario.x = 100f;
 		runningNode.mario.xa = Node.maxSpeed;
 		walkingNode.mario.y = 20f;
-		
+
 		walkingNode.fitnessEvaluation();
 		runningNode.fitnessEvaluation();
-		
+
 		assertTrue(walkingNode.fitness > runningNode.fitness);
-		}
-	
+	}
+
 	/**
 	 * 
 	 */
 	@Test
 	public void testJumpWhileFalling() {
-		Node parentNode = new Node(scene, scene.mario, null, Node.createAction(true, false, false, true));
-		Node currentNode = new Node(scene, scene.mario, null, Node.createAction(true, false, false, true));
-		
+		Graph graph = new Graph();
+		Node parentNode = new Node(graph, scene, Node.createAction(true, false, false, true));
+		Node currentNode = new Node(graph, scene, Node.createAction(true, false, false, true));
+
 		currentNode.parent = parentNode;
-		
+
 		parentNode.mario.x = 200f;
 		parentNode.y = 20f;
-		
-		currentNode.mario.x=203f;
-		currentNode.y=21f;
-		
+
+		currentNode.mario.x = 203f;
+		currentNode.y = 21f;
+
 		assertFalse(currentNode.canJump());
-		
-		
+
 	}
-	
+
 	/**
 	 * 
 	 */
 	@Test
 	public void testJumpWhileJumping() {
-		Node parentNode = new Node(scene, scene.mario, null, Node.createAction(true, false, false, true));
-		Node currentNode = new Node(scene, scene.mario, null, Node.createAction(true, false, false, true));
-		
+		Graph graph = new Graph();
+		Node parentNode = new Node(graph, scene, Node.createAction(true, false, false, true));
+		Node currentNode = new Node(graph, scene, Node.createAction(true, false, false, true));
+
 		currentNode.parent = parentNode;
-		
+
 		parentNode.mario.x = 200f;
 		parentNode.y = 20f;
-		
-		currentNode.mario.x=203f;
-		currentNode.y=19f;
-		
+
+		currentNode.mario.x = 203f;
+		currentNode.y = 19f;
+
 		System.out.println(currentNode.canJump());
 		assertTrue(currentNode.canJump());
-		
-		
+
 	}
-	
-	
+
 	/**
 	 * 
 	 */
 	@Test
 	public void testJumpWhileOnGroundHoldingJump() {
-		Node parentNode = new Node(scene, scene.mario, null, Node.createAction(true, false, true, true));
-		Node currentNode = new Node(scene, scene.mario, null, Node.createAction(true, false, false, true));
-		
+		Graph graph = new Graph();
+		Node parentNode = new Node(graph, scene, Node.createAction(true, false, true, true));
+		Node currentNode = new Node(graph, scene, Node.createAction(true, false, false, true));
+
 		currentNode.parent = parentNode;
-		
+
 		parentNode.mario.x = 200f;
 		parentNode.y = 20f;
-		
-		currentNode.mario.x=203f;
-		currentNode.y=20f;	
-		
+
+		currentNode.mario.x = 203f;
+		currentNode.y = 20f;
+
 		assertFalse(currentNode.canJump());
 	}
-	
+
 	/**
 	 * 
 	 */
 	@Test
 	public void testSimulationGridCenterAndSize() {
-//        
-        MarioAIOptions AiOptions = new MarioAIOptions("-vis on -ls 22 -fps 24 -ag astar.AstarAgent");
-        MarioEnvironment environment = MarioEnvironment.getInstance();
+		//
+		MarioAIOptions AiOptions = new MarioAIOptions("-vis on -ls 22 -fps 24 -ag astar.AstarAgent");
+		MarioEnvironment environment = MarioEnvironment.getInstance();
 
+		environment.reset(AiOptions);
 
-        environment.reset(AiOptions);
-        
-        
-        AstarAgent simulationObject = new AstarAgent();
-        simulationObject.integrateObservation(environment);
-        simulationObject.reset();
-        simulationObject.getAction();
-        
-        //check size of grid in simulation
-        assertEquals(19, simulationObject.receptiveFieldHeight);
-        assertEquals(19, simulationObject.receptiveFieldWidth);
-        
-        
-        //center position of the enviroment, and it should be the middle of the grid in the simulation.
-        int[] marioPos = environment.getMarioEgoPos();
-        assertEquals(9, marioPos[0], 0);
-        assertEquals(9, marioPos[1], 0);
+		AstarAgent simulationObject = new AstarAgent();
+		simulationObject.integrateObservation(environment);
+		simulationObject.reset();
+		simulationObject.getAction();
+
+		// check size of grid in simulation
+		assertEquals(19, simulationObject.receptiveFieldHeight);
+		assertEquals(19, simulationObject.receptiveFieldWidth);
+
+		// center position of the enviroment, and it should be the middle of the
+		// grid in the simulation.
+		int[] marioPos = environment.getMarioEgoPos();
+		assertEquals(9, marioPos[0], 0);
+		assertEquals(9, marioPos[1], 0);
 	}
 
 	/**
@@ -668,32 +662,32 @@ public class NodeTest {
 	 */
 	@Test
 	public void testMarioCoordinateInGameAndSimulation() {
-		
+
 		Random rand = new Random();
 		int x = rand.nextInt(1000);
-		String options = "-vis off -lca off -lco off -lb off -le off -ltb off -ls 22 -fps 24 -miy 200 -tl 1" + " -mix "+ x; 
+		String options = "-vis off -lca off -lco off -lb off -le off -ltb off -ls 22 -fps 24 -miy 200 -tl 1" + " -mix "
+				+ x;
 		MarioAIOptions AiOptionsForGame = new MarioAIOptions(options);
 		BasicTask btForGame = new BasicTask(AiOptionsForGame);
-		
+
 		MarioEnvironment environmentForGame = MarioEnvironment.getInstance();
-        MarioEnvironment environmentForSim = MarioEnvironment.getInstance();
-        
-        int[] levelSceneFromGame = environmentForGame.getSerializedLevelSceneObservationZ(1);
-        
+		MarioEnvironment environmentForSim = MarioEnvironment.getInstance();
+
+		int[] levelSceneFromGame = environmentForGame.getSerializedLevelSceneObservationZ(1);
+
 		scene.reset(AiOptionsForGame);
-        AstarAgent simulationObject = new AstarAgent();
-        simulationObject.integrateObservation(environmentForGame);
-        simulationObject.reset();
-        simulationObject.getAction();
-        
-        int[] levelSceneFromSim = environmentForSim.getSerializedLevelSceneObservationZ(1);
-        
-        
-        for (int i = 0; i < levelSceneFromSim.length; i=i+19){
-        	for(int j=0; j <19; j++){
-        		assertEquals(levelSceneFromSim[j+i], levelSceneFromGame[j+i]);
-        	}
-        }
+		AstarAgent simulationObject = new AstarAgent();
+		simulationObject.integrateObservation(environmentForGame);
+		simulationObject.reset();
+		simulationObject.getAction();
+
+		int[] levelSceneFromSim = environmentForSim.getSerializedLevelSceneObservationZ(1);
+
+		for (int i = 0; i < levelSceneFromSim.length; i = i + 19) {
+			for (int j = 0; j < 19; j++) {
+				assertEquals(levelSceneFromSim[j + i], levelSceneFromGame[j + i]);
+			}
+		}
 
 	}
 }
