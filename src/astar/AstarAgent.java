@@ -73,6 +73,26 @@ public class AstarAgent extends KeyAdapter implements Agent {
 
 	private Graph graph;
 	
+	// Variables for the search
+	private final int MAXCOUNT = 4;		// Number of actions to follow at most
+	private int actionCount = MAXCOUNT;
+	
+	// The found path 
+	private LinkedList<boolean[]> actionPath = new LinkedList<boolean[]>(); 
+
+	// The elements to simulate the game 
+	LevelScene levelScene = null;
+	Mario mario;
+	// The last position of Mario 
+	private float lastX = 0, lastY = 0;
+	
+	// The action to return to the game 
+	boolean[] currentAction = new boolean[Environment.numberOfKeys];
+	
+	// Flags to run the A* or just a simulation
+	private boolean runSimulation = false;
+	private boolean runAstar = true;
+	
 	public AstarAgent() 
 	{
 		try {
@@ -130,11 +150,10 @@ public class AstarAgent extends KeyAdapter implements Agent {
 				mario.onGround = isMarioOnGround;
 				
 				// Create graph starting point and set goal
-				head = new Node(levelScene, currentAction);
 				graph.setGoal(marioFloatPos[0] + 144f);
 				
 				// Search for the best path
-				actionPath = graph.searchForPath(head);
+				actionPath = graph.searchForPath(new Node(levelScene, currentAction));
 			}
 			
 			// If the action path found by the algorithm is not empty, 
@@ -162,17 +181,6 @@ public class AstarAgent extends KeyAdapter implements Agent {
 		
 		return action;
 	}
-	
-	private final int MAXCOUNT = 2;
-	private int actionCount = MAXCOUNT;
-	private LinkedList<boolean[]> actionPath = new LinkedList<boolean[]>();
-	Node head = null;
-	LevelScene levelScene = null;
-	Mario mario;
-	boolean[] currentAction = new boolean[Environment.numberOfKeys];
-	private boolean runSimulation = false;
-	private boolean runAstar = true;
-	private float lastX = 0, lastY = 0;
 	
 	/**
 	 * This function is used to test a simulation of Mario running 
