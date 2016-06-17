@@ -219,7 +219,7 @@ public class Node implements Comparable<Node> {
 				return false;
 		return true;
 	}
-
+	
 	/**
 	 * Create an action array with the given actions, which should
 	 * get Mario to moved in the given direction
